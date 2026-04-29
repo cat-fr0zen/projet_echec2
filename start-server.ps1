@@ -11,4 +11,10 @@ Write-Host "Starting PHP server for Projet_echec2 on http://127.0.0.1:8000"
 Write-Host "Output log: $outputLog"
 Write-Host "Error log: $errorLog"
 
-php -S 127.0.0.1:8000 -t $projectRoot 2>> $errorLog | Tee-Object -FilePath $outputLog -Append
+Push-Location $projectRoot
+try {
+    php -S 127.0.0.1:8000 -t $projectRoot router.php 2>> $errorLog | Tee-Object -FilePath $outputLog -Append
+}
+finally {
+    Pop-Location
+}

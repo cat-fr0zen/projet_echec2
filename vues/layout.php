@@ -9,7 +9,7 @@ $flashMessages = $siteData['flash_messages'] ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="<?= e($metaDescription) ?>">
     <title><?= e($metaTitle) ?></title>
-    <link rel="stylesheet" href="ressources/styles/style.css">
+    <link rel="stylesheet" href="<?= e(asset_url('ressources/styles/style.css')) ?>">
 </head>
 <body data-theme="<?= e($theme) ?>">
     <a class="skip-link" href="#main-content">Aller au contenu</a>
@@ -35,6 +35,6 @@ $flashMessages = $siteData['flash_messages'] ?? [];
     </div>
     <?php require __DIR__ . '/partiels/auth-modal.php'; ?>
     <?php require __DIR__ . '/partiels/consent.php'; ?>
-    <script src="ressources/scripts/site.js" defer></script>
+    <script src="<?= e(asset_url('ressources/scripts/site.js')) ?>" defer></script>
 </body>
 </html>

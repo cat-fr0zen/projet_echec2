@@ -5,6 +5,7 @@ Prototype MVC en PHP pour un site d'association d'echecs avec espace membre loca
 ## Ce qui a ete mis en place
 
 - `index.php` comme front controller
+- `router.php` comme routeur unique pour toutes les URL
 - `controleurs/PageController.php` pour le routage simple
 - `controleurs/ActionController.php` pour les actions `POST`
 - `modeles/SiteModel.php` pour les donnees du site
@@ -17,7 +18,8 @@ Prototype MVC en PHP pour un site d'association d'echecs avec espace membre loca
 ```text
 Projet_echec2/
 |-- index.php
-|-- index.html
+|-- router.php
+|-- start-server.ps1
 |-- journaux/
 |   |-- server-error.log
 |   `-- server-output.log
@@ -60,23 +62,23 @@ Projet_echec2/
 
 ## Routes disponibles
 
-- `index.php?page=accueil`
-- `index.php?page=guide`
-- `index.php?page=mediatheque`
-- `index.php?page=articles`
-- `index.php?page=merch`
-- `index.php?page=club`
-- `index.php?page=activites`
-- `index.php?page=contact`
-- `index.php?page=profil`
-- `index.php?page=parametres`
+- `/`
+- `/guide`
+- `/mediatheque`
+- `/articles`
+- `/merch`
+- `/club`
+- `/activites`
+- `/contact`
+- `/profil`
+- `/parametres`
 
 ## Lancement local
 
-- ne pas ouvrir `index.php` en `file://`
-- lancer `php -S 127.0.0.1:8000 -t Projet_echec2`
-- ouvrir `http://127.0.0.1:8000/index.php`
-- ou lancer `./start-server.ps1` depuis le dossier du projet
+- lancer seulement `./start-server.ps1` depuis le dossier du projet
+- ouvrir `http://127.0.0.1:8000/`
+- le routeur unique est `router.php`
+- le point d'entree unique de l'application est `index.php`
 - les logs serveur sont ecrits dans `journaux/`
 
 ## Direction design

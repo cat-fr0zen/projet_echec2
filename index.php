@@ -45,9 +45,21 @@ function e(?string $value): string
 
 function route_url(string $slug, array $query = []): string
 {
-    $params = array_merge(['page' => $slug], $query);
+    $normalizedSlug = trim($slug, '/');
+    $path = $normalizedSlug === '' || $normalizedSlug === 'accueil'
+        ? '/'
+        : '/' . rawurlencode($normalizedSlug);
 
-    return './index.php?' . http_build_query($params);
+    if ($query === []) {
+        return $path;
+    }
+
+    return $path . '?' . http_build_query($query);
+}
+
+function asset_url(string $path): string
+{
+    return '/' . ltrim(str_replace('\\', '/', $path), '/');
 }
 
 function redirect_to(string $url): never
