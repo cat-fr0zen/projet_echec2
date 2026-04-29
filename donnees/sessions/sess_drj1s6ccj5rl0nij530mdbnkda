@@ -1,1 +1,0 @@
-csrf_token|s:13:"article-token";user_id|s:21:"user_7dd490d24add2d67";flash_messages|a:1:{i:0;a:2:{s:4:"type";s:7:"success";s:7:"message";s:74:"Votre article a ete enregistre et attend maintenant une validation future.";}}
