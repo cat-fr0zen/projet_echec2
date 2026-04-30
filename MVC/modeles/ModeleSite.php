@@ -300,6 +300,12 @@ final class ModeleSite
                 'Paramètres, thème, cookies et informations de session.',
                 intro: "Cette page regroupe les préférences du site, les informations sur les cookies et les réglages d'interface."
             ),
+            'admin' => $this->page(
+                'Administration',
+                'admin.php',
+                'Tableau de bord de moderation, comptes, articles et mediatheque.',
+                intro: "Ce tableau de bord prive permet au president administrateur de gerer les comptes, les articles et les medias sans quitter le site."
+            ),
         ];
     }
 

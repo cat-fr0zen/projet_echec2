@@ -2440,3 +2440,71 @@ body[data-theme="dark"] .legal-card {
         width: 100%;
     }
 }
+
+.article-form select,
+.admin-form select {
+    width: 100%;
+    padding: 0.78rem 0.9rem;
+    border: 1px solid rgba(23, 32, 27, 0.12);
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.92);
+    color: #17201b;
+}
+
+.media-preview {
+    display: block;
+    width: 100%;
+    margin-top: 0.9rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(23, 32, 27, 0.08);
+    background: rgba(255, 255, 255, 0.5);
+    object-fit: cover;
+}
+
+.media-preview--small {
+    max-height: 12rem;
+}
+
+.admin-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 1rem;
+}
+
+.admin-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.admin-card {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.admin-card--contrast {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 250, 243, 0.12);
+}
+
+.admin-form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.admin-inline-form {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.burger-user-role {
+    margin-top: 0.35rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    font-weight: 600;
+}
+
+@media (max-width: 900px) {
+    .admin-summary-grid,
+    .admin-inline-form {
+        grid-template-columns: 1fr;
+    }
+}

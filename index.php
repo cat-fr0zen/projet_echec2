@@ -35,6 +35,8 @@ require_once __DIR__ . '/MVC/modeles/ModeleSite.php';
 require_once __DIR__ . '/MVC/modeles/StockageJson.php';
 require_once __DIR__ . '/MVC/modeles/DepotUtilisateurs.php';
 require_once __DIR__ . '/MVC/modeles/DepotArticles.php';
+require_once __DIR__ . '/MVC/modeles/DepotMedias.php';
+require_once __DIR__ . '/MVC/modeles/DepotCommandes.php';
 require_once __DIR__ . '/MVC/modeles/ServiceChessCom.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurActions.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurPages.php';
@@ -121,10 +123,14 @@ function recuperer_etat_formulaire(): array
 
 $stockageUtilisateurs = new StockageJson(__DIR__ . '/donnees/utilisateurs.json');
 $stockageArticles = new StockageJson(__DIR__ . '/donnees/articles.json');
+$stockageMedias = new StockageJson(__DIR__ . '/donnees/medias.json');
+$stockageCommandes = new StockageJson(__DIR__ . '/donnees/commandes.json');
 
 $depotUtilisateurs = new DepotUtilisateurs($stockageUtilisateurs);
 $depotArticles = new DepotArticles($stockageArticles);
-$controleurActions = new ControleurActions($depotUtilisateurs, $depotArticles);
+$depotMedias = new DepotMedias($stockageMedias);
+$depotCommandes = new DepotCommandes($stockageCommandes);
+$controleurActions = new ControleurActions($depotUtilisateurs, $depotArticles, $depotMedias, $depotCommandes, __DIR__ . '/ressources/media/uploads');
 $controleurActions->traiter();
 
 $pageDemandee = isset($_GET['page']) ? (string) $_GET['page'] : 'accueil';
@@ -147,6 +153,8 @@ $controleurPages = new ControleurPages(
     new ModeleSite(),
     $depotUtilisateurs,
     $depotArticles,
+    $depotMedias,
+    $depotCommandes,
     $serviceChessCom,
     $messagesFlash,
     $etatFormulaire

@@ -37,11 +37,11 @@ $donneesAuthentification = $donneesSite['authentification'];
                 type="button"
                 class="theme-toggle"
                 data-theme-toggle
-                aria-label="<?= $donneesSite['theme'] === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre' ?>"
+                aria-label="<?= $donneesSite['theme'] === 'dark' ? 'Activer le theme clair' : 'Activer le theme sombre' ?>"
                 aria-pressed="<?= $donneesSite['theme'] === 'dark' ? 'true' : 'false' ?>"
             >
-                <span class="theme-icon theme-icon--sun" aria-hidden="true">☀</span>
-                <span class="theme-icon theme-icon--moon" aria-hidden="true">☾</span>
+                <span class="theme-icon theme-icon--sun" aria-hidden="true">Soleil</span>
+                <span class="theme-icon theme-icon--moon" aria-hidden="true">Lune</span>
             </button>
 
             <button
@@ -62,7 +62,7 @@ $donneesAuthentification = $donneesSite['authentification'];
         </div>
     </div>
 
-        <div id="burger-panel" class="burger-panel" data-burger-panel hidden aria-label="Menu secondaire">
+    <div id="burger-panel" class="burger-panel" data-burger-panel hidden aria-label="Menu secondaire">
         <div class="burger-columns">
             <section class="burger-group">
                 <p class="eyebrow">Navigation</p>
@@ -79,23 +79,25 @@ $donneesAuthentification = $donneesSite['authentification'];
                     <div class="burger-user-card">
                         <p class="burger-user-name"><?= e($donneesAuthentification['nom_affichage']) ?></p>
                         <p class="burger-user-mail"><?= e($donneesAuthentification['utilisateur']['courriel'] ?? '') ?></p>
+                        <p class="burger-user-role"><?= e($donneesAuthentification['role_label'] ?? 'Compte') ?></p>
                     </div>
                     <div class="burger-links">
                         <a class="burger-link" href="<?= e(url_route('profil')) ?>">Profil</a>
-                        <a class="burger-link" href="<?= e(url_route('parametres')) ?>">Paramètres</a>
+                        <a class="burger-link" href="<?= e(url_route('parametres')) ?>">Parametres</a>
+                        <?php if ($donneesAuthentification['est_admin'] ?? false): ?>
+                            <a class="burger-link" href="<?= e(url_route('admin')) ?>">Administration</a>
+                        <?php endif; ?>
                     </div>
                     <form method="post" action="<?= e(url_route($pageCourante)) ?>" class="burger-logout-form">
                         <input type="hidden" name="action" value="deconnexion">
                         <input type="hidden" name="jeton_csrf" value="<?= e($donneesSite['jeton_csrf']) ?>">
-                        <button type="submit" class="button button-secondary burger-logout-button">Déconnexion</button>
+                        <button type="submit" class="button button-secondary burger-logout-button">Deconnexion</button>
                     </form>
                 <?php else: ?>
-                    <p class="burger-helper">Connecte-toi pour accéder au profil, aux réglages et à la rédaction d’articles.</p>
+                    <p class="burger-helper">Connecte-toi pour acceder aux guides, a la boutique et a ton profil membre.</p>
                     <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
                 <?php endif; ?>
             </section>
         </div>
     </div>
 </header>
-
-
