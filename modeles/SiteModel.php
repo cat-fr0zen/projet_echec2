@@ -225,7 +225,7 @@ final class SiteModel
                         [
                             'title' => 'Données potentiellement traitées',
                             'items' => [
-                                "Nom, prénom, date de naissance facultative, email, mot de passe hashé et description de profil saisis lors de l'inscription.",
+                                "Nom, prénom, date de naissance facultative, email, mot de passe hashé, description de profil et pseudo Chess.com facultatif saisis lors de l'inscription ou de la mise à jour du profil.",
                                 "Métadonnées minimales nécessaires à la sécurité du service, au consentement, à la session membre, à la modération éditoriale et aux journaux serveurs.",
                                 "Le cas échéant, informations liées aux médias, à leurs ayants droit, à leur durée de diffusion et aux autorisations de publication.",
                             ],
@@ -233,7 +233,7 @@ final class SiteModel
                         [
                             'title' => 'Finalités du traitement',
                             'items' => [
-                                "Créer et maintenir un compte membre, permettre la connexion par email, l'édition du profil et la création d'articles en attente de modération.",
+                                "Créer et maintenir un compte membre, permettre la connexion par email, l'édition du profil, la liaison facultative à un pseudo Chess.com public et la création d'articles en attente de modération.",
                                 "Administrer le site, assurer la sécurité technique, la modération et conserver la preuve du consentement lorsque cela est nécessaire.",
                                 "Préparer la gestion future d'une médiathèque, d'un espace merch et d'une base Oracle structurée pour la maintenance long terme.",
                             ],
@@ -271,13 +271,13 @@ final class SiteModel
                             'title' => 'Comptes membres',
                             'items' => [
                                 "Chaque compte doit être créé avec un email valable et un mot de passe confidentiel choisi par l'utilisateur.",
-                                "L'utilisateur reste responsable des informations qu'il saisit dans son profil et dans les contenus qu'il soumet.",
+                                "L'utilisateur reste responsable des informations qu'il saisit dans son profil, y compris le pseudo Chess.com éventuellement renseigné, et dans les contenus qu'il soumet.",
                             ],
                         ],
                         [
                             'title' => 'Articles, médias et merch',
                             'items' => [
-                                "Les articles, médias du club et contenus merch peuvent être affichés, modifiés, refusés ou retirés selon les besoins de modération, de conformité ou de publication.",
+                                "Les articles, médias du club, contenus merch et statistiques publiques liées à des services tiers peuvent être affichés, modifiés, refusés ou retirés selon les besoins de modération, de conformité ou de publication.",
                                 "Aucune offre commerciale, publication ou diffusion de média ne vaut engagement définitif tant qu'elle n'a pas été publiée officiellement par l'association.",
                             ],
                         ],
@@ -359,8 +359,8 @@ final class SiteModel
             'profil' => [
                 'title' => 'Profil',
                 'view' => 'profile.php',
-                'meta_description' => "Profil membre, description éditable et informations personnelles.",
-                'intro' => "Cette page permet au membre connecté de modifier son profil, sa description et ses informations personnelles.",
+                'meta_description' => "Profil membre, description éditable, pseudo Chess.com facultatif et informations personnelles.",
+                'intro' => "Cette page permet au membre connecté de modifier son profil, sa description, son pseudo Chess.com facultatif et ses informations personnelles.",
             ],
             'parametres' => [
                 'title' => 'Paramètres',

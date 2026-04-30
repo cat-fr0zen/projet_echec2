@@ -2,63 +2,90 @@
 $primaryNav = $siteData['primary_nav'];
 $secondaryNav = $siteData['secondary_nav'];
 $authData = $siteData['auth'];
+$allNavItems = array_merge($primaryNav, $secondaryNav);
+$currentNavLabel = 'Navigation';
+
+foreach ($allNavItems as $item) {
+    if (($item['slug'] ?? '') === $currentPage) {
+        $currentNavLabel = (string) ($item['label'] ?? 'Navigation');
+        break;
+    }
+}
+
+if ($currentNavLabel === 'Navigation') {
+    $memberLabels = [
+        'profil' => 'Profil',
+        'parametres' => 'Paramètres',
+    ];
+
+    $currentNavLabel = $memberLabels[$currentPage] ?? 'Association';
+}
 ?>
 
-<header class="site-header reveal reveal-1">
-    <div class="brand-lockup">
-        <p class="eyebrow">Association d'échecs de proximité</p>
-        <a class="brand" href="<?= e(route_url('accueil')) ?>"><?= e($siteData['brand']) ?></a>
-        <p class="brand-caption"><?= e($siteData['city']) ?></p>
+<header class="site-header reveal reveal-1" data-site-header>
+    <div class="header-rail">
+        <div class="brand-lockup">
+            <p class="eyebrow">Association d'échecs de proximité</p>
+            <a class="brand" href="<?= e(route_url('accueil')) ?>"><?= e($siteData['brand']) ?></a>
+            <p class="brand-caption"><?= e($siteData['city']) ?></p>
+        </div>
+
+        <div class="header-main-nav">
+            <nav class="primary-nav" aria-label="Navigation principale">
+                <?php foreach ($primaryNav as $item): ?>
+                    <?php $isActive = $item['slug'] === $currentPage; ?>
+                    <a
+                        class="nav-link<?= $isActive ? ' is-active' : '' ?>"
+                        href="<?= e(route_url($item['slug'])) ?>"
+                        <?= $isActive ? 'aria-current="page"' : '' ?>
+                    >
+                        <?= e($item['label']) ?>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+        </div>
+
+        <div class="header-actions">
+            <button
+                type="button"
+                class="theme-toggle"
+                data-theme-toggle
+                aria-label="<?= $siteData['theme'] === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre' ?>"
+                aria-pressed="<?= $siteData['theme'] === 'dark' ? 'true' : 'false' ?>"
+            >
+                <span class="theme-icon theme-icon--sun" aria-hidden="true">☀</span>
+                <span class="theme-icon theme-icon--moon" aria-hidden="true">☾</span>
+            </button>
+
+            <?php if ($authData['is_authenticated']): ?>
+                <a class="header-cta" href="<?= e(route_url('profil')) ?>">Mon profil</a>
+            <?php else: ?>
+                <button type="button" class="header-cta" data-auth-open data-auth-tab="login">Connexion</button>
+            <?php endif; ?>
+
+            <button
+                type="button"
+                class="burger-toggle"
+                data-burger-toggle
+                aria-expanded="false"
+                aria-controls="burger-panel"
+                aria-label="Ouvrir le menu"
+            >
+                <span class="burger-label">Menu</span>
+                <span class="burger-lines" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
+        </div>
     </div>
 
-    <div class="header-main-nav">
-        <nav class="primary-nav" aria-label="Navigation principale">
-            <?php foreach ($primaryNav as $item): ?>
-                <?php $isActive = $item['slug'] === $currentPage; ?>
-                <a
-                    class="nav-link<?= $isActive ? ' is-active' : '' ?>"
-                    href="<?= e(route_url($item['slug'])) ?>"
-                    <?= $isActive ? 'aria-current="page"' : '' ?>
-                >
-                    <?= e($item['label']) ?>
-                </a>
-            <?php endforeach; ?>
-        </nav>
-    </div>
-
-    <div class="header-actions">
-        <button
-            type="button"
-            class="theme-toggle"
-            data-theme-toggle
-            aria-label="<?= $siteData['theme'] === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre' ?>"
-            aria-pressed="<?= $siteData['theme'] === 'dark' ? 'true' : 'false' ?>"
-        >
-            <span class="theme-icon theme-icon--sun" aria-hidden="true">☀</span>
-            <span class="theme-icon theme-icon--moon" aria-hidden="true">☾</span>
-        </button>
-
-        <?php if ($authData['is_authenticated']): ?>
-            <a class="header-cta" href="<?= e(route_url('profil')) ?>">Mon profil</a>
-        <?php else: ?>
-            <button type="button" class="header-cta" data-auth-open data-auth-tab="login">Connexion</button>
-        <?php endif; ?>
-
-        <button
-            type="button"
-            class="burger-toggle"
-            data-burger-toggle
-            aria-expanded="false"
-            aria-controls="burger-panel"
-            aria-label="Ouvrir le menu"
-        >
-            <span class="burger-label">Menu</span>
-            <span class="burger-lines" aria-hidden="true">
-                <span></span>
-                <span></span>
-                <span></span>
-            </span>
-        </button>
+    <div class="header-mobile-bar">
+        <p class="header-current-page"><?= e($currentNavLabel) ?></p>
+        <p class="header-mobile-hint">
+            <?= $authData['is_authenticated'] ? 'Profil, réglages et accès rapides dans le menu.' : 'Navigation rapide, connexion et inscription dans le menu.' ?>
+        </p>
     </div>
 
     <div id="burger-panel" class="burger-panel" data-burger-panel hidden aria-label="Menu secondaire">

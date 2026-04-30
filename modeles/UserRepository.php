@@ -48,6 +48,7 @@ final class UserRepository
             'email' => mb_strtolower(trim($payload['email'])),
             'password_hash' => password_hash($payload['password'], PASSWORD_DEFAULT),
             'profile_description' => $payload['profile_description'],
+            'chess_username' => $this->normalizeChessUsername($payload['chess_username'] ?? ''),
             'created_at' => gmdate('c'),
         ];
 
@@ -70,6 +71,7 @@ final class UserRepository
             $users[$index]['first_name'] = $payload['first_name'];
             $users[$index]['birth_date'] = $payload['birth_date'];
             $users[$index]['profile_description'] = $payload['profile_description'];
+            $users[$index]['chess_username'] = $this->normalizeChessUsername($payload['chess_username'] ?? '');
             $users[$index]['updated_at'] = gmdate('c');
 
             $this->store->write($users);
@@ -78,5 +80,10 @@ final class UserRepository
         }
 
         return null;
+    }
+
+    private function normalizeChessUsername(mixed $value): string
+    {
+        return mb_strtolower(trim((string) $value));
     }
 }

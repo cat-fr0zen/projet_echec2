@@ -72,6 +72,7 @@ final class ActionController
             'email' => trim((string) ($_POST['email'] ?? '')),
             'password' => (string) ($_POST['password'] ?? ''),
             'profile_description' => trim((string) ($_POST['profile_description'] ?? '')),
+            'chess_username' => trim((string) ($_POST['chess_username'] ?? '')),
         ];
 
         $errors = [];
@@ -98,6 +99,10 @@ final class ActionController
 
         if (mb_strlen($payload['profile_description']) > 1200) {
             $errors[] = 'La description de profil doit rester inférieure à 1200 caractères.';
+        }
+
+        if (!$this->isValidChessUsername($payload['chess_username'])) {
+            $errors[] = 'Le pseudo Chess.com doit contenir seulement des lettres, chiffres, tirets ou underscores.';
         }
 
         if ($this->userRepository->findByEmail($payload['email']) !== null) {
@@ -166,6 +171,7 @@ final class ActionController
             'first_name' => trim((string) ($_POST['first_name'] ?? '')),
             'birth_date' => trim((string) ($_POST['birth_date'] ?? '')),
             'profile_description' => trim((string) ($_POST['profile_description'] ?? '')),
+            'chess_username' => trim((string) ($_POST['chess_username'] ?? '')),
         ];
 
         $errors = [];
@@ -184,6 +190,10 @@ final class ActionController
 
         if (mb_strlen($payload['profile_description']) > 1200) {
             $errors[] = 'La description de profil doit rester inférieure à 1200 caractères.';
+        }
+
+        if (!$this->isValidChessUsername($payload['chess_username'])) {
+            $errors[] = 'Le pseudo Chess.com doit contenir seulement des lettres, chiffres, tirets ou underscores.';
         }
 
         if ($errors !== []) {
@@ -265,5 +275,14 @@ final class ActionController
         $date = DateTimeImmutable::createFromFormat('Y-m-d', $value);
 
         return $date instanceof DateTimeImmutable && $date->format('Y-m-d') === $value;
+    }
+
+    private function isValidChessUsername(string $value): bool
+    {
+        if ($value === '') {
+            return true;
+        }
+
+        return mb_strlen($value) <= 50 && preg_match('/^[A-Za-z0-9_-]+$/', $value) === 1;
     }
 }

@@ -140,9 +140,38 @@ function initThemeToggle() {
     });
 }
 
+function initStickyHeader() {
+    const siteHeader = document.querySelector("[data-site-header]");
+
+    if (!(siteHeader instanceof HTMLElement)) {
+        return;
+    }
+
+    let ticking = false;
+
+    function syncHeaderState() {
+        siteHeader.classList.toggle("is-condensed", window.scrollY > 48);
+        ticking = false;
+    }
+
+    function requestSync() {
+        if (ticking) {
+            return;
+        }
+
+        ticking = true;
+        window.requestAnimationFrame(syncHeaderState);
+    }
+
+    syncHeaderState();
+    window.addEventListener("scroll", requestSync, { passive: true });
+    window.addEventListener("resize", requestSync);
+}
+
 function initBurgerMenu() {
     const burgerToggle = document.querySelector("[data-burger-toggle]");
     const burgerPanel = document.querySelector("[data-burger-panel]");
+    const siteHeader = document.querySelector("[data-site-header]");
     let previousFocusedElement = null;
 
     if (!(burgerToggle instanceof HTMLButtonElement) || !(burgerPanel instanceof HTMLElement)) {
@@ -153,6 +182,7 @@ function initBurgerMenu() {
         burgerToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
         burgerPanel.hidden = !isOpen;
         document.body.classList.toggle("burger-open", isOpen);
+        siteHeader?.classList.toggle("is-menu-open", isOpen);
 
         if (isOpen) {
             previousFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -437,6 +467,7 @@ function initSettingsActions() {
 document.addEventListener("DOMContentLoaded", () => {
     initConsentGate();
     initThemeToggle();
+    initStickyHeader();
     initBurgerMenu();
     initAuthModal();
     initPieceCarousel();

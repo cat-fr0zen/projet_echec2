@@ -8,6 +8,7 @@ final class PageController
         private SiteModel $siteModel,
         private UserRepository $userRepository,
         private ArticleRepository $articleRepository,
+        private ChessDotComService $chessDotComService,
         private array $flashMessages,
         private array $formState
     ) {
@@ -30,6 +31,22 @@ final class PageController
         $siteData['merch_cards'] = $this->siteModel->getMerchCards();
         $siteData['published_articles'] = $this->articleRepository->findApproved();
         $siteData['my_articles'] = $currentUser !== null ? $this->articleRepository->findByAuthorId((string) $currentUser['id']) : [];
+        $siteData['chess_com'] = [
+            'status' => 'missing',
+            'username' => '',
+            'message' => '',
+            'ratings' => [],
+            'player' => null,
+            'stats_note' => '',
+            'fetched_at_label' => '',
+            'cache_source' => '',
+        ];
+
+        if ($slug === 'profil' && $currentUser !== null) {
+            $siteData['chess_com'] = $this->chessDotComService->fetchPlayerSnapshot(
+                (string) ($currentUser['chess_username'] ?? '')
+            );
+        }
 
         $pageData = $pages[$slug] ?? null;
 

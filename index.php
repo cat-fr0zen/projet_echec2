@@ -35,6 +35,7 @@ require_once __DIR__ . '/modeles/SiteModel.php';
 require_once __DIR__ . '/modeles/JsonStore.php';
 require_once __DIR__ . '/modeles/UserRepository.php';
 require_once __DIR__ . '/modeles/ArticleRepository.php';
+require_once __DIR__ . '/modeles/ChessDotComService.php';
 require_once __DIR__ . '/controleurs/ActionController.php';
 require_once __DIR__ . '/controleurs/PageController.php';
 
@@ -129,11 +130,16 @@ $actionController->handle();
 $requestedPage = isset($_GET['page']) ? (string) $_GET['page'] : 'accueil';
 $flashMessages = pull_flash_messages();
 $formState = pull_form_state();
+$chessDotComService = new ChessDotComService(
+    __DIR__ . '/donnees/cache/chesscom',
+    'association-echecs-site/1.0'
+);
 
 $controller = new PageController(
     new SiteModel(),
     $userRepository,
     $articleRepository,
+    $chessDotComService,
     $flashMessages,
     $formState
 );
