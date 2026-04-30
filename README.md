@@ -1,147 +1,95 @@
-# Projet Échec 2
+# Projet Echec 2
 
-Prototype MVC en PHP pour un site d'association d'échecs avec espace membre local, cookies, thème clair/sombre, médiathèque encadrée et publication modérée.
+## Description du projet
 
-## Ce qui a été mis en place
+Ce projet est un site web de club d'echecs.
+Il permet de presenter le club, de publier des contenus, de gerer des comptes membres et de poser une base solide pour une vraie exploitation (activites, adhesion, mediatheque, boutique, conformite).
 
-- `index.php` comme front controller
-- `routeur.php` comme routeur unique pour toutes les URL
-- `controleurs/ControleurPages.php` pour le routage des pages
-- `controleurs/ControleurActions.php` pour les actions `POST`
-- `modeles/ModeleSite.php` pour les données éditoriales et juridiques du site
-- `modeles/DepotUtilisateurs.php` et `modeles/DepotArticles.php` pour le stockage JSON local
-- `base_de_donnees/oracle/` pour le schéma SQL Oracle et la maintenance PL/SQL
-- `vues/` pour le layout, les partiels et les pages
-- `ressources/styles/style.css` et `ressources/scripts/site.js` pour le design, le motion system et les interactions
+L'application actuelle est un projet PHP organise en MVC, avec une base Oracle preparee dans `base_de_donnees/oracle/BDD_echec_v1.sql`.
 
-## Structure
+## Objectifs principaux
+
+1. Donner une presence web claire au club.
+2. Permettre aux membres de creer un compte et gerer leur profil.
+3. Encadrer la publication d'articles avec moderation.
+4. Gerer les contenus medias avec suivi des droits de diffusion.
+5. Preparer une vraie gestion club: saisons, adhesions, activites, tournois, interclubs.
+6. Poser un socle juridique et technique reutilisable en production.
+
+## Pour qui ce projet est utilise
+
+- Les visiteurs du site: consulter les pages publiques du club.
+- Les membres: se connecter, modifier leur profil, proposer des articles.
+- Les responsables du club: organiser les activites et la vie du club.
+- Les administrateurs: moderer les contenus et piloter les donnees.
+
+## A quelle fin il est utilise
+
+- Communication du club (presentation, contact, infos utiles).
+- Gestion de la relation membres (comptes, profils, consentements).
+- Publication de contenu (articles, medias) avec workflow controle.
+- Preparation d'une exploitation reelle type club de sport (adhesions, paiements, activites, tournois, rencontres interclubs).
+
+## Arborescence du projet
 
 ```text
 Projet_echec2/
 |-- .gitignore
 |-- index.php
 |-- routeur.php
-|-- start-server.ps1
 |-- README.md
 |-- base_de_donnees/
 |   `-- oracle/
-|       |-- 001_schema.sql
-|       |-- 002_reference-data.sql
-|       |-- 003_maintenance.sql
-|       `-- data-model.md
-|-- controleurs/
-|   |-- ControleurActions.php
-|   `-- ControleurPages.php
+|       |-- BDD_echec_v1.sql
+|       `-- BDD_echec_v1.md
 |-- donnees/
 |   |-- articles.json
-|   `-- utilisateurs.json
+|   |-- utilisateurs.json
+|   |-- cache/
+|   `-- sessions/
 |-- journaux/
 |   |-- server-error.log
 |   `-- server-output.log
-|-- modeles/
-|   |-- DepotArticles.php
-|   |-- StockageJson.php
-|   |-- ModeleSite.php
-|   `-- DepotUtilisateurs.php
-|-- ressources/
-|   |-- scripts/
-|   |   `-- site.js
-|   `-- styles/
-|       `-- style.css
-`-- vues/
-    |-- mise-en-page.php
-    |-- partiels/
-    |   |-- modale-authentification.php
-    |   |-- consentement.php
-    |   |-- pied-de-page.php
-    |   `-- entete.php
-    `-- pages/
-        |-- activites.php
-        |-- articles.php
-        |-- club.php
-        |-- contact.php
-        |-- guide.php
-        |-- accueil.php
-        |-- mediatheque.php
-        |-- boutique.php
-        |-- introuvable.php
-        |-- profil.php
-        `-- parametres.php
+|-- MVC/
+|   |-- controleurs/
+|   |   |-- ControleurActions.php
+|   |   `-- ControleurPages.php
+|   |-- modeles/
+|   |   |-- DepotArticles.php
+|   |   |-- DepotUtilisateurs.php
+|   |   |-- ModeleSite.php
+|   |   |-- ServiceChessCom.php
+|   |   `-- StockageJson.php
+|   `-- vues/
+|       |-- mise-en-page.php
+|       |-- pages/
+|       `-- partiels/
+`-- ressources/
+    |-- media/
+    |-- scripts/
+    |   `-- site.js
+    `-- styles/
+        `-- style.css
 ```
 
-## Routes disponibles
+## Langages utilises
 
-- `/`
-- `/guide`
-- `/mediatheque`
-- `/articles`
-- `/boutique`
-- `/club`
-- `/activites`
-- `/contact`
-- `/profil`
-- `/parametres`
+- PHP: logique serveur (routing, controllers, modeles, vues).
+- JavaScript: interactions front-end.
+- CSS: styles et mise en forme.
+- SQL / PL-SQL (Oracle): schema de base de donnees, vues, triggers, maintenance.
+- Markdown: documentation projet.
 
-## Lancement local
+## Logiciels et outils utilises
 
-- lancer seulement `./start-server.ps1` depuis le dossier du projet
-- ouvrir `http://127.0.0.1:8000/`
-- le routeur unique est `routeur.php`
-- le point d'entrée unique de l'application est `index.php`
-- les logs serveur sont écrits dans `journaux/`
+- Visual Studio Code (ou IDE equivalent): developpement.
+- PHP (serveur local): execution du site.
+- Oracle Database: base de donnees cible.
+- Git: versioning du code.
+- Navigateur web: test et validation du rendu.
 
-## Direction design
+## Credits
 
-- ambiance éditoriale / club historique
-- palette ivoire, vert profond, laiton
-- titres serif et corps très lisible
-- animations légères et utiles, sans effet gadget
-
-## Motion system
-
-- `fade-up` à l'entrée des sections
-- `float` très légère sur les badges du hero
-- `hover-lift` sur les cartes et boutons
-- popup membre, menu burger et switch de thème en JS natif
-- prise en charge de `prefers-reduced-motion`
-
-## Espace membre
-
-- connexion et inscription dans une popup
-- champs d'inscription : nom, prénom, date de naissance facultative, email, mot de passe, description
-- profil éditable après connexion
-- articles créés par les membres avec statut `en_attente_validation`
-- stockage local JSON pour le prototype
-
-## Cookies et juridique
-
-- consentement obligatoire à l'entrée du site
-- cookie de thème `site_theme`
-- cookie de consentement `site_consent`
-- cookie de session PHP pour les membres connectés
-- footer légal avec mentions légales, confidentialité, droit à l'image et conditions d'utilisation
-
-## Base Oracle cible
-
-- schéma pensé au plus près de Boyce-Codd
-- prise en charge des comptes, profils, consentements, articles, médias, boutique et commandes
-- gestion des images et vidéos via métadonnées Oracle, droits de diffusion et stockage BLOB ou externe
-- maintenance automatique via triggers, package PL/SQL et job `DBMS_SCHEDULER`
-
-## Passage vers Laravel
-
-Quand `composer` sera installé, le plus simple sera de migrer comme ceci :
-
-- `vues/mise-en-page.php` -> `resources/views/layouts/app.blade.php`
-- `vues/partiels/*` -> `resources/views/partials/*`
-- `vues/pages/*` -> `resources/views/pages/*`
-- `modeles/ModeleSite.php` -> service ou view model Laravel
-- `controleurs/ControleurPages.php` -> `app/Http/Controllers/ControleurPages.php`
-- `ressources/styles/style.css` -> `resources/css/app.css` ou Tailwind
-
-## Stack cible conseillée
-
-- site public : Laravel + Blade + Tailwind + Alpine
-- zones riches : Vue 3 + Pinia seulement si un vrai état applicatif est utile
-- base : Oracle via `yajra/laravel-oci8` quand l'environnement sera prêt
+- Matthéo Mullois
+- Association Les Cavaliers d'Hérouville
 
