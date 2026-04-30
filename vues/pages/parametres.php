@@ -1,12 +1,12 @@
 <?php
-$cookieRegister = $siteData['cookie_register'];
-$authData = $siteData['auth'];
+$registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_register'] ?? [];
+$donneesAuthentification = $donneesSite['authentification'];
 ?>
 
 <section class="page-banner reveal reveal-2">
     <p class="eyebrow">Paramètres</p>
-    <h1><?= e($pageData['title']) ?></h1>
-    <p><?= e($pageData['intro']) ?></p>
+    <h1><?= e($donneesPage['titre']) ?></h1>
+    <p><?= e($donneesPage['intro']) ?></p>
 </section>
 
 <section class="split-grid reveal reveal-3">
@@ -33,9 +33,9 @@ $authData = $siteData['auth'];
     <article class="panel panel-contrast">
         <div class="section-head section-head--compact">
             <p class="eyebrow">Compte membre</p>
-            <h2><?= $authData['is_authenticated'] ? 'Session active' : 'Connexion non active' ?></h2>
+            <h2><?= $donneesAuthentification['est_connecte'] ? 'Session active' : 'Connexion non active' ?></h2>
             <p>
-                <?= $authData['is_authenticated']
+                <?= $donneesAuthentification['est_connecte']
                     ? "Un cookie de session PHP maintient votre connexion et permet l'accès au profil ainsi qu'à la création d'articles."
                     : "Aucune session membre active pour le moment. La connexion par email ouvre l'accès au profil et à la rédaction d'articles." ?>
             </p>
@@ -51,12 +51,13 @@ $authData = $siteData['auth'];
     </div>
 
     <div class="card-grid card-grid--three">
-        <?php foreach ($cookieRegister as $cookie): ?>
+        <?php foreach ($registreCookies as $cookie): ?>
             <article class="info-card">
                 <p class="card-tag"><?= e($cookie['type']) ?></p>
-                <h3><?= e($cookie['name']) ?></h3>
-                <p><?= e($cookie['purpose']) ?></p>
+                <h3><?= e($cookie['nom']) ?></h3>
+                <p><?= e($cookie['finalite']) ?></p>
             </article>
         <?php endforeach; ?>
     </div>
 </section>
+

@@ -1,67 +1,70 @@
 -- Reference data for the Oracle schema.
 
-INSERT INTO account_role (role_code, role_label) VALUES ('member', 'Membre');
-INSERT INTO account_role (role_code, role_label) VALUES ('editor', 'Rédacteur');
-INSERT INTO account_role (role_code, role_label) VALUES ('admin', 'Administrateur');
+INSERT INTO role_compte (code_role, libelle_role) VALUES ('membre', 'Membre');
+INSERT INTO role_compte (code_role, libelle_role) VALUES ('redacteur', 'Rédacteur');
+INSERT INTO role_compte (code_role, libelle_role) VALUES ('admin', 'Administrateur');
 
-INSERT INTO account_status (status_code, status_label) VALUES ('pending', 'En attente');
-INSERT INTO account_status (status_code, status_label) VALUES ('active', 'Actif');
-INSERT INTO account_status (status_code, status_label) VALUES ('suspended', 'Suspendu');
-INSERT INTO account_status (status_code, status_label) VALUES ('deleted', 'Supprimé');
+INSERT INTO statut_compte (code_statut, libelle_statut) VALUES ('en_attente', 'En attente');
+INSERT INTO statut_compte (code_statut, libelle_statut) VALUES ('actif', 'Actif');
+INSERT INTO statut_compte (code_statut, libelle_statut) VALUES ('suspendu', 'Suspendu');
+INSERT INTO statut_compte (code_statut, libelle_statut) VALUES ('supprime', 'Supprimé');
 
-INSERT INTO publication_status (status_code, status_label) VALUES ('draft', 'Brouillon');
-INSERT INTO publication_status (status_code, status_label) VALUES ('pending_review', 'En attente de validation');
-INSERT INTO publication_status (status_code, status_label) VALUES ('approved', 'Approuvé');
-INSERT INTO publication_status (status_code, status_label) VALUES ('rejected', 'Refusé');
-INSERT INTO publication_status (status_code, status_label) VALUES ('published', 'Publié');
-INSERT INTO publication_status (status_code, status_label) VALUES ('archived', 'Archivé');
+INSERT INTO statut_publication (code_statut, libelle_statut) VALUES ('brouillon', 'Brouillon');
+INSERT INTO statut_publication (code_statut, libelle_statut) VALUES ('en_attente_validation', 'En attente de validation');
+INSERT INTO statut_publication (code_statut, libelle_statut) VALUES ('approuve', 'Approuvé');
+INSERT INTO statut_publication (code_statut, libelle_statut) VALUES ('refuse', 'Refusé');
+INSERT INTO statut_publication (code_statut, libelle_statut) VALUES ('publie', 'Publié');
+INSERT INTO statut_publication (code_statut, libelle_statut) VALUES ('archive', 'Archivé');
 
-INSERT INTO review_decision_type (decision_code, decision_label) VALUES ('request_changes', 'Demander des modifications');
-INSERT INTO review_decision_type (decision_code, decision_label) VALUES ('approve', 'Approuver');
-INSERT INTO review_decision_type (decision_code, decision_label) VALUES ('reject', 'Refuser');
+INSERT INTO type_decision_revision (code_decision, libelle_decision) VALUES ('demander_modifications', 'Demander des modifications');
+INSERT INTO type_decision_revision (code_decision, libelle_decision) VALUES ('approuver', 'Approuver');
+INSERT INTO type_decision_revision (code_decision, libelle_decision) VALUES ('refuser', 'Refuser');
 
-INSERT INTO consent_type (consent_code, consent_label, legal_basis, retention_months, is_required)
-VALUES ('privacy_policy', 'Politique de confidentialité', 'Obligation d''information', 24, 'Y');
-INSERT INTO consent_type (consent_code, consent_label, legal_basis, retention_months, is_required)
-VALUES ('site_terms', 'Conditions d''utilisation', 'Intérêt légitime', 24, 'Y');
-INSERT INTO consent_type (consent_code, consent_label, legal_basis, retention_months, is_required)
-VALUES ('essential_cookies', 'Cookies essentiels', 'Fonctionnement du service', 24, 'Y');
-INSERT INTO consent_type (consent_code, consent_label, legal_basis, retention_months, is_required)
-VALUES ('theme_preference', 'Préférence de thème', 'Préférence utilisateur', 24, 'N');
-INSERT INTO consent_type (consent_code, consent_label, legal_basis, retention_months, is_required)
-VALUES ('media_publication', 'Autorisation de diffusion d''image ou de vidéo', 'Consentement', 36, 'N');
+INSERT INTO type_consentement (code_consentement, libelle_consentement, base_legale, duree_conservation_mois, est_obligatoire)
+VALUES ('politique_confidentialite', 'Politique de confidentialité', 'Obligation d''information', 24, 'Y');
+INSERT INTO type_consentement (code_consentement, libelle_consentement, base_legale, duree_conservation_mois, est_obligatoire)
+VALUES ('conditions_utilisation', 'Conditions d''utilisation', 'Intérêt légitime', 24, 'Y');
+INSERT INTO type_consentement (code_consentement, libelle_consentement, base_legale, duree_conservation_mois, est_obligatoire)
+VALUES ('cookies_essentiels', 'Cookies essentiels', 'Fonctionnement du service', 24, 'Y');
+INSERT INTO type_consentement (code_consentement, libelle_consentement, base_legale, duree_conservation_mois, est_obligatoire)
+VALUES ('preference_theme', 'Préférence de thème', 'Préférence utilisateur', 24, 'N');
+INSERT INTO type_consentement (code_consentement, libelle_consentement, base_legale, duree_conservation_mois, est_obligatoire)
+VALUES ('publication_media', 'Autorisation de diffusion d''image ou de vidéo', 'Consentement', 36, 'N');
 
-INSERT INTO media_type (media_type_code, media_type_label) VALUES ('image', 'Image');
-INSERT INTO media_type (media_type_code, media_type_label) VALUES ('video', 'Vidéo');
+INSERT INTO type_media (code_type_media, libelle_type_media) VALUES ('image', 'Image');
+INSERT INTO type_media (code_type_media, libelle_type_media) VALUES ('video', 'Vidéo');
 
-INSERT INTO media_usage_type (usage_code, usage_label) VALUES ('article_cover', 'Illustration principale d''article');
-INSERT INTO media_usage_type (usage_code, usage_label) VALUES ('article_gallery', 'Galerie d''article');
-INSERT INTO media_usage_type (usage_code, usage_label) VALUES ('album_gallery', 'Galerie de médiathèque');
-INSERT INTO media_usage_type (usage_code, usage_label) VALUES ('product_primary', 'Visuel principal de produit');
-INSERT INTO media_usage_type (usage_code, usage_label) VALUES ('product_gallery', 'Galerie de produit');
+INSERT INTO type_usage_media (code_usage, libelle_usage) VALUES ('couverture_article', 'Illustration principale d''article');
+INSERT INTO type_usage_media (code_usage, libelle_usage) VALUES ('galerie_article', 'Galerie d''article');
+INSERT INTO type_usage_media (code_usage, libelle_usage) VALUES ('galerie_album', 'Galerie de médiathèque');
+INSERT INTO type_usage_media (code_usage, libelle_usage) VALUES ('produit_principal', 'Visuel principal de produit');
+INSERT INTO type_usage_media (code_usage, libelle_usage) VALUES ('galerie_produit', 'Galerie de produit');
 
-INSERT INTO media_rights_status (status_code, status_label) VALUES ('pending', 'En attente de vérification');
-INSERT INTO media_rights_status (status_code, status_label) VALUES ('granted', 'Droits accordés');
-INSERT INTO media_rights_status (status_code, status_label) VALUES ('expired', 'Droits expirés');
-INSERT INTO media_rights_status (status_code, status_label) VALUES ('revoked', 'Droits révoqués');
+INSERT INTO statut_droits_media (code_statut, libelle_statut) VALUES ('en_attente', 'En attente de vérification');
+INSERT INTO statut_droits_media (code_statut, libelle_statut) VALUES ('accorde', 'Droits accordés');
+INSERT INTO statut_droits_media (code_statut, libelle_statut) VALUES ('expire', 'Droits expirés');
+INSERT INTO statut_droits_media (code_statut, libelle_statut) VALUES ('revoque', 'Droits révoqués');
 
-INSERT INTO media_storage_mode (storage_mode_code, storage_mode_label) VALUES ('database_blob', 'Stockage dans Oracle');
-INSERT INTO media_storage_mode (storage_mode_code, storage_mode_label) VALUES ('external_uri', 'Stockage externe référencé');
+INSERT INTO mode_stockage_media (code_mode_stockage, libelle_mode_stockage) VALUES ('blob_base', 'Stockage dans Oracle');
+INSERT INTO mode_stockage_media (code_mode_stockage, libelle_mode_stockage) VALUES ('uri_externe', 'Stockage externe référencé');
 
-INSERT INTO product_category (category_code, category_label) VALUES ('textile', 'Textile');
-INSERT INTO product_category (category_code, category_label) VALUES ('accessoire', 'Accessoire');
-INSERT INTO product_category (category_code, category_label) VALUES ('materiel', 'Matériel');
-INSERT INTO product_category (category_code, category_label) VALUES ('autre', 'Autre');
+INSERT INTO categorie_produit (code_categorie, libelle_categorie) VALUES ('textile', 'Textile');
+INSERT INTO categorie_produit (code_categorie, libelle_categorie) VALUES ('accessoire', 'Accessoire');
+INSERT INTO categorie_produit (code_categorie, libelle_categorie) VALUES ('materiel', 'Matériel');
+INSERT INTO categorie_produit (code_categorie, libelle_categorie) VALUES ('autre', 'Autre');
 
-INSERT INTO product_status (status_code, status_label) VALUES ('draft', 'Brouillon');
-INSERT INTO product_status (status_code, status_label) VALUES ('active', 'Actif');
-INSERT INTO product_status (status_code, status_label) VALUES ('unavailable', 'Indisponible');
-INSERT INTO product_status (status_code, status_label) VALUES ('expired', 'Expiré');
-INSERT INTO product_status (status_code, status_label) VALUES ('archived', 'Archivé');
+INSERT INTO statut_produit (code_statut, libelle_statut) VALUES ('brouillon', 'Brouillon');
+INSERT INTO statut_produit (code_statut, libelle_statut) VALUES ('actif', 'Actif');
+INSERT INTO statut_produit (code_statut, libelle_statut) VALUES ('indisponible', 'Indisponible');
+INSERT INTO statut_produit (code_statut, libelle_statut) VALUES ('expire', 'Expiré');
+INSERT INTO statut_produit (code_statut, libelle_statut) VALUES ('archive', 'Archivé');
 
-INSERT INTO order_status (status_code, status_label) VALUES ('pending', 'En attente');
-INSERT INTO order_status (status_code, status_label) VALUES ('paid', 'Payé');
-INSERT INTO order_status (status_code, status_label) VALUES ('canceled', 'Annulé');
-INSERT INTO order_status (status_code, status_label) VALUES ('refunded', 'Remboursé');
+INSERT INTO statut_commande (code_statut, libelle_statut) VALUES ('en_attente', 'En attente');
+INSERT INTO statut_commande (code_statut, libelle_statut) VALUES ('paye', 'Payé');
+INSERT INTO statut_commande (code_statut, libelle_statut) VALUES ('annule', 'Annulé');
+INSERT INTO statut_commande (code_statut, libelle_statut) VALUES ('rembourse', 'Remboursé');
 
 COMMIT;
+
+
+

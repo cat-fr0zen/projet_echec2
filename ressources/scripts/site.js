@@ -123,7 +123,7 @@ function initThemeToggle() {
     function applyTheme(theme) {
         document.body.setAttribute("data-theme", theme);
         themeToggle.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
-        themeToggle.setAttribute("aria-label", theme === "dark" ? "Activer le theme clair" : "Activer le theme sombre");
+        themeToggle.setAttribute("aria-label", theme === "dark" ? "Activer le thème clair" : "Activer le thème sombre");
     }
 
     const savedTheme = getCookieValue("site_theme");
@@ -166,6 +166,27 @@ function initStickyHeader() {
     syncHeaderState();
     window.addEventListener("scroll", requestSync, { passive: true });
     window.addEventListener("resize", requestSync);
+}
+
+function initFlashMessages() {
+    const flashMessages = Array.from(document.querySelectorAll(".flash-message"));
+
+    flashMessages.forEach((message, index) => {
+        if (!(message instanceof HTMLElement)) {
+            return;
+        }
+
+        const dismiss = () => {
+            message.style.opacity = "0";
+            message.style.transform = "translateY(-8px)";
+            window.setTimeout(() => {
+                message.remove();
+            }, 220);
+        };
+
+        window.setTimeout(dismiss, 4200 + index * 350);
+        message.addEventListener("click", dismiss);
+    });
 }
 
 function initBurgerMenu() {
@@ -238,10 +259,10 @@ function initAuthModal() {
     const panels = Array.from(modalRoot.querySelectorAll("[data-auth-panel]"));
     const initialOpenState = modalRoot.getAttribute("data-auth-open-state") === "true";
     let previousFocusedElement = null;
-    let currentTab = modalRoot.getAttribute("data-auth-tab") || "login";
+    let currentTab = modalRoot.getAttribute("data-auth-tab") || "connexion";
 
     function renderTab(tabName) {
-        currentTab = tabName === "register" ? "register" : "login";
+        currentTab = tabName === "inscription" ? "inscription" : "connexion";
 
         tabButtons.forEach((button) => {
             const isActive = button.getAttribute("data-auth-tab-trigger") === currentTab;
@@ -282,7 +303,7 @@ function initAuthModal() {
 
     openButtons.forEach((button) => {
         button.addEventListener("click", () => {
-            openModal(button.getAttribute("data-auth-tab") || "login");
+            openModal(button.getAttribute("data-auth-tab") || "connexion");
         });
     });
 
@@ -292,7 +313,7 @@ function initAuthModal() {
 
     tabButtons.forEach((button) => {
         button.addEventListener("click", () => {
-            renderTab(button.getAttribute("data-auth-tab-trigger") || "login");
+            renderTab(button.getAttribute("data-auth-tab-trigger") || "connexion");
         });
     });
 
@@ -468,6 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initConsentGate();
     initThemeToggle();
     initStickyHeader();
+    initFlashMessages();
     initBurgerMenu();
     initAuthModal();
     initPieceCarousel();

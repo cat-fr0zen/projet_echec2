@@ -1,9 +1,9 @@
-<?php $guideCards = $siteData['guide_cards']; ?>
+<?php $cartesGuide = $donneesSite['cartes_guide']; ?>
 
 <section class="page-banner reveal reveal-2">
     <p class="eyebrow">Guide</p>
-    <h1><?= e($pageData['title']) ?></h1>
-    <p><?= e($pageData['intro']) ?></p>
+    <h1><?= e($donneesPage['titre']) ?></h1>
+    <p><?= e($donneesPage['intro']) ?></p>
 </section>
 
 <section class="section-block reveal reveal-3">
@@ -14,7 +14,7 @@
     </div>
 
     <div class="card-grid card-grid--three">
-        <?php foreach ($guideCards as $guide): ?>
+        <?php foreach ($cartesGuide as $guide): ?>
             <article class="info-card">
                 <p class="card-tag"><?= e($guide['tag']) ?></p>
                 <h3><?= e($guide['title']) ?></h3>

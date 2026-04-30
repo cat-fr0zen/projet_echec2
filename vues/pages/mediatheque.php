@@ -1,9 +1,9 @@
-<?php $mediaCards = $siteData['media_cards']; ?>
+<?php $cartesMediatheque = $donneesSite['cartes_mediatheque']; ?>
 
 <section class="page-banner reveal reveal-2">
     <p class="eyebrow">Médiathèque</p>
-    <h1><?= e($pageData['title']) ?></h1>
-    <p><?= e($pageData['intro']) ?></p>
+    <h1><?= e($donneesPage['titre']) ?></h1>
+    <p><?= e($donneesPage['intro']) ?></p>
 </section>
 
 <section class="section-block reveal reveal-3">
@@ -14,12 +14,12 @@
     </div>
 
     <div class="card-grid card-grid--three">
-        <?php foreach ($mediaCards as $mediaCard): ?>
+        <?php foreach ($cartesMediatheque as $carteMedia): ?>
             <article class="info-card media-card">
-                <p class="card-tag"><?= e($mediaCard['type']) ?></p>
-                <h3><?= e($mediaCard['title']) ?></h3>
-                <p><?= e($mediaCard['text']) ?></p>
-                <p class="status-pill"><?= e($mediaCard['status']) ?></p>
+                <p class="card-tag"><?= e($carteMedia['type']) ?></p>
+                <h3><?= e($carteMedia['titre']) ?></h3>
+                <p><?= e($carteMedia['texte']) ?></p>
+                <p class="status-pill"><?= e($carteMedia['statut']) ?></p>
             </article>
         <?php endforeach; ?>
     </div>

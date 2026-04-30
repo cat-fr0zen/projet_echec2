@@ -1,5 +1,5 @@
 <?php
-$authData = $siteData['auth'];
+$authData = $siteData['authentification'];
 $publishedArticles = $siteData['published_articles'];
 $myArticles = $siteData['my_articles'];
 ?>
@@ -45,9 +45,9 @@ $myArticles = $siteData['my_articles'];
         </div>
 
         <?php if ($authData['is_authenticated']): ?>
-            <form method="post" action="<?= e(route_url('articles')) ?>" class="article-form">
+            <form method="post" action="<?= e(url_route('articles')) ?>" class="article-form">
                 <input type="hidden" name="action" value="create_article">
-                <input type="hidden" name="csrf_token" value="<?= e($siteData['csrf_token']) ?>">
+                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
 
                 <label class="form-group">
                     <span>Titre</span>
@@ -71,7 +71,7 @@ $myArticles = $siteData['my_articles'];
                 <p class="card-tag">Connexion requise</p>
                 <h3>Connecte-toi pour proposer un article.</h3>
                 <p>La rédaction est réservée aux membres inscrits avec un compte email.</p>
-                <button type="button" class="button button-primary" data-auth-open data-auth-tab="login">Connexion / inscription</button>
+                <button type="button" class="button button-primary" data-auth-open data-auth-tab="login">Connexion</button>
             </div>
         <?php endif; ?>
     </article>
@@ -104,3 +104,5 @@ $myArticles = $siteData['my_articles'];
         <?php endif; ?>
     </section>
 <?php endif; ?>
+
+

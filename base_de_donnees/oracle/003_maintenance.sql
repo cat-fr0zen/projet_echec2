@@ -4,30 +4,30 @@
 -- 2. update timestamps automatically
 -- 3. archive or expire stale records through a scheduled package
 
-CREATE OR REPLACE TRIGGER trg_member_account_biu
-BEFORE INSERT OR UPDATE ON member_account
+CREATE OR REPLACE TRIGGER trg_compte_membre_biu
+BEFORE INSERT OR UPDATE ON compte_membre
 FOR EACH ROW
 BEGIN
-    :NEW.email_address := LOWER(TRIM(:NEW.email_address));
+    :NEW.adresse_courriel := LOWER(TRIM(:NEW.adresse_courriel));
 
     IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
     ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
     END IF;
 END;
 /
 
-CREATE OR REPLACE TRIGGER trg_member_profile_biu
-BEFORE INSERT OR UPDATE ON member_profile
+CREATE OR REPLACE TRIGGER trg_profil_membre_biu
+BEFORE INSERT OR UPDATE ON profil_membre
 FOR EACH ROW
 BEGIN
     IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
     ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
     END IF;
 END;
 /
@@ -36,255 +36,255 @@ CREATE OR REPLACE TRIGGER trg_article_biu
 BEFORE INSERT OR UPDATE ON article
 FOR EACH ROW
 DECLARE
-    v_published_status_id publication_status.publication_status_id%TYPE;
+    v_publie_status_id statut_publication.identifiant_statut_publication%TYPE;
 BEGIN
-    SELECT publication_status_id
-      INTO v_published_status_id
-      FROM publication_status
-     WHERE status_code = 'published';
+    SELECT identifiant_statut_publication
+      INTO v_publie_status_id
+      FROM statut_publication
+     WHERE code_statut = 'publie';
 
     IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
-        :NEW.submitted_at := COALESCE(:NEW.submitted_at, SYSTIMESTAMP);
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
+        :NEW.soumis_le := COALESCE(:NEW.soumis_le, SYSTIMESTAMP);
     ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
     END IF;
 
-    IF :NEW.publication_status_id = v_published_status_id AND :NEW.published_at IS NULL THEN
-        :NEW.published_at := SYSTIMESTAMP;
+    IF :NEW.identifiant_statut_publication = v_publie_status_id AND :NEW.publie_le IS NULL THEN
+        :NEW.publie_le := SYSTIMESTAMP;
     END IF;
 END;
 /
 
-CREATE OR REPLACE TRIGGER trg_media_asset_biu
-BEFORE INSERT OR UPDATE ON media_asset
+CREATE OR REPLACE TRIGGER trg_ressource_media_biu
+BEFORE INSERT OR UPDATE ON ressource_media
 FOR EACH ROW
 BEGIN
     IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
     ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
     END IF;
 END;
 /
 
-CREATE OR REPLACE TRIGGER trg_media_binary_payload_biu
-BEFORE INSERT OR UPDATE ON media_binary_payload
+CREATE OR REPLACE TRIGGER trg_charge_binaire_media_biu
+BEFORE INSERT OR UPDATE ON charge_binaire_media
 FOR EACH ROW
 BEGIN
     IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
     ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
     END IF;
 END;
 /
 
-CREATE OR REPLACE TRIGGER trg_media_external_reference_biu
-BEFORE INSERT OR UPDATE ON media_external_reference
+CREATE OR REPLACE TRIGGER trg_reference_externe_media_biu
+BEFORE INSERT OR UPDATE ON reference_externe_media
 FOR EACH ROW
 BEGIN
-    :NEW.storage_provider := TRIM(:NEW.storage_provider);
-    :NEW.storage_uri := TRIM(:NEW.storage_uri);
-    :NEW.checksum_sha256 := LOWER(TRIM(:NEW.checksum_sha256));
+    :NEW.fournisseur_stockage := TRIM(:NEW.fournisseur_stockage);
+    :NEW.uri_stockage := TRIM(:NEW.uri_stockage);
+    :NEW.empreinte_sha256 := LOWER(TRIM(:NEW.empreinte_sha256));
 
     IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
     ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
     END IF;
 END;
 /
 
-CREATE OR REPLACE TRIGGER trg_media_rights_grant_biu
-BEFORE INSERT OR UPDATE ON media_rights_grant
-FOR EACH ROW
-BEGIN
-    IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
-    ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
-    END IF;
-END;
-/
-
-CREATE OR REPLACE TRIGGER trg_media_album_biu
-BEFORE INSERT OR UPDATE ON media_album
+CREATE OR REPLACE TRIGGER trg_autorisation_droits_media_biu
+BEFORE INSERT OR UPDATE ON autorisation_droits_media
 FOR EACH ROW
 BEGIN
     IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
     ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
     END IF;
 END;
 /
 
-CREATE OR REPLACE TRIGGER trg_product_biu
-BEFORE INSERT OR UPDATE ON product
+CREATE OR REPLACE TRIGGER trg_album_media_biu
+BEFORE INSERT OR UPDATE ON album_media
 FOR EACH ROW
 BEGIN
     IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
     ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
     END IF;
 END;
 /
 
-CREATE OR REPLACE TRIGGER trg_customer_order_biu
-BEFORE INSERT OR UPDATE ON customer_order
+CREATE OR REPLACE TRIGGER trg_produit_biu
+BEFORE INSERT OR UPDATE ON produit
 FOR EACH ROW
 BEGIN
-    :NEW.billing_email := LOWER(TRIM(:NEW.billing_email));
-
     IF INSERTING THEN
-        :NEW.created_at := COALESCE(:NEW.created_at, SYSTIMESTAMP);
-        :NEW.updated_at := COALESCE(:NEW.updated_at, SYSTIMESTAMP);
-        :NEW.placed_at := COALESCE(:NEW.placed_at, SYSTIMESTAMP);
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
     ELSE
-        :NEW.updated_at := SYSTIMESTAMP;
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
     END IF;
 END;
 /
 
-CREATE OR REPLACE VIEW vw_media_assets_ready_for_publication AS
-SELECT ma.media_asset_id,
-       ma.media_type_id,
-       ma.media_storage_mode_id,
-       ma.uploaded_by_account_id,
-       ma.original_filename,
-       ma.mime_type,
-       ma.byte_size,
-       ma.width_px,
-       ma.height_px,
-       ma.duration_seconds,
-       ma.alt_text,
-       ma.capture_date,
-       ma.created_at,
-       ma.updated_at
-  FROM media_asset ma
+CREATE OR REPLACE TRIGGER trg_commande_client_biu
+BEFORE INSERT OR UPDATE ON commande_client
+FOR EACH ROW
+BEGIN
+    :NEW.courriel_facturation := LOWER(TRIM(:NEW.courriel_facturation));
+
+    IF INSERTING THEN
+        :NEW.cree_le := COALESCE(:NEW.cree_le, SYSTIMESTAMP);
+        :NEW.mis_a_jour_le := COALESCE(:NEW.mis_a_jour_le, SYSTIMESTAMP);
+        :NEW.commandee_le := COALESCE(:NEW.commandee_le, SYSTIMESTAMP);
+    ELSE
+        :NEW.mis_a_jour_le := SYSTIMESTAMP;
+    END IF;
+END;
+/
+
+CREATE OR REPLACE VIEW vw_ressources_media_pretes_publication AS
+SELECT ma.identifiant_ressource_media,
+       ma.identifiant_type_media,
+       ma.identifiant_mode_stockage_media,
+       ma.identifiant_compte_depot,
+       ma.nom_fichier_original,
+       ma.type_mime,
+       ma.taille_octets,
+       ma.largeur_px,
+       ma.hauteur_px,
+       ma.duree_secondes,
+       ma.texte_alternatif,
+       ma.date_capture,
+       ma.cree_le,
+       ma.mis_a_jour_le
+  FROM ressource_media ma
  WHERE EXISTS (
         SELECT 1
-          FROM media_rights_grant mrg
-          JOIN media_rights_status mrs
-            ON mrs.media_rights_status_id = mrg.media_rights_status_id
-         WHERE mrg.media_asset_id = ma.media_asset_id
-           AND mrs.status_code = 'granted'
-           AND (mrg.expires_at IS NULL OR mrg.expires_at >= SYSTIMESTAMP)
+          FROM autorisation_droits_media mrg
+          JOIN statut_droits_media mrs
+            ON mrs.identifiant_statut_droits_media = mrg.identifiant_statut_droits_media
+         WHERE mrg.identifiant_ressource_media = ma.identifiant_ressource_media
+           AND mrs.code_statut = 'accorde'
+           AND (mrg.expire_le IS NULL OR mrg.expire_le >= SYSTIMESTAMP)
       );
 /
 
-CREATE OR REPLACE VIEW vw_customer_order_totals AS
-SELECT coi.customer_order_id,
-       SUM(coi.quantity * coi.unit_price) AS total_amount
-  FROM customer_order_item coi
- GROUP BY coi.customer_order_id;
+CREATE OR REPLACE VIEW vw_totaux_commande_client AS
+SELECT coi.identifiant_commande_client,
+       SUM(coi.quantite * coi.prix_unitaire) AS total_montant
+  FROM ligne_commande_client coi
+ GROUP BY coi.identifiant_commande_client;
 /
 
-CREATE OR REPLACE PACKAGE pkg_site_maintenance AS
-    PROCEDURE close_expired_media_rights;
-    PROCEDURE archive_stale_pending_articles(p_days_threshold NUMBER DEFAULT 180);
-    PROCEDURE expire_merch_catalog;
-    PROCEDURE purge_old_visitor_consents(p_keep_months NUMBER DEFAULT 24);
-    PROCEDURE run_daily_maintenance;
-END pkg_site_maintenance;
+CREATE OR REPLACE PACKAGE pkg_maintenance_site AS
+    PROCEDURE cloturer_droits_media_expires;
+    PROCEDURE archiver_articles_en_attente_anciens(p_seuil_jours NUMBER DEFAULT 180);
+    PROCEDURE expirer_catalogue_boutique;
+    PROCEDURE purger_anciens_consentements_visiteurs(p_mois_conservation NUMBER DEFAULT 24);
+    PROCEDURE lancer_maintenance_quotidienne;
+END pkg_maintenance_site;
 /
 
-CREATE OR REPLACE PACKAGE BODY pkg_site_maintenance AS
-    PROCEDURE close_expired_media_rights IS
-        v_expired_status_id media_rights_status.media_rights_status_id%TYPE;
-        v_granted_status_id media_rights_status.media_rights_status_id%TYPE;
+CREATE OR REPLACE PACKAGE BODY pkg_maintenance_site AS
+    PROCEDURE cloturer_droits_media_expires IS
+        v_expire_status_id statut_droits_media.identifiant_statut_droits_media%TYPE;
+        v_accorde_status_id statut_droits_media.identifiant_statut_droits_media%TYPE;
     BEGIN
-        SELECT media_rights_status_id
-          INTO v_expired_status_id
-          FROM media_rights_status
-         WHERE status_code = 'expired';
+        SELECT identifiant_statut_droits_media
+          INTO v_expire_status_id
+          FROM statut_droits_media
+         WHERE code_statut = 'expire';
 
-        SELECT media_rights_status_id
-          INTO v_granted_status_id
-          FROM media_rights_status
-         WHERE status_code = 'granted';
+        SELECT identifiant_statut_droits_media
+          INTO v_accorde_status_id
+          FROM statut_droits_media
+         WHERE code_statut = 'accorde';
 
-        UPDATE media_rights_grant
-           SET media_rights_status_id = v_expired_status_id,
-               updated_at = SYSTIMESTAMP
-         WHERE media_rights_status_id = v_granted_status_id
-           AND expires_at IS NOT NULL
-           AND expires_at < SYSTIMESTAMP;
-    END close_expired_media_rights;
+        UPDATE autorisation_droits_media
+           SET identifiant_statut_droits_media = v_expire_status_id,
+               mis_a_jour_le = SYSTIMESTAMP
+         WHERE identifiant_statut_droits_media = v_accorde_status_id
+           AND expire_le IS NOT NULL
+           AND expire_le < SYSTIMESTAMP;
+    END cloturer_droits_media_expires;
 
-    PROCEDURE archive_stale_pending_articles(p_days_threshold NUMBER DEFAULT 180) IS
-        v_pending_status_id publication_status.publication_status_id%TYPE;
-        v_archived_status_id publication_status.publication_status_id%TYPE;
+    PROCEDURE archiver_articles_en_attente_anciens(p_seuil_jours NUMBER DEFAULT 180) IS
+        v_en_attente_status_id statut_publication.identifiant_statut_publication%TYPE;
+        v_archive_status_id statut_publication.identifiant_statut_publication%TYPE;
     BEGIN
-        SELECT publication_status_id
-          INTO v_pending_status_id
-          FROM publication_status
-         WHERE status_code = 'pending_review';
+        SELECT identifiant_statut_publication
+          INTO v_en_attente_status_id
+          FROM statut_publication
+         WHERE code_statut = 'en_attente_validation';
 
-        SELECT publication_status_id
-          INTO v_archived_status_id
-          FROM publication_status
-         WHERE status_code = 'archived';
+        SELECT identifiant_statut_publication
+          INTO v_archive_status_id
+          FROM statut_publication
+         WHERE code_statut = 'archive';
 
         UPDATE article
-           SET publication_status_id = v_archived_status_id,
-               updated_at = SYSTIMESTAMP
-         WHERE publication_status_id = v_pending_status_id
-           AND submitted_at < SYSTIMESTAMP - NUMTODSINTERVAL(p_days_threshold, 'DAY');
-    END archive_stale_pending_articles;
+           SET identifiant_statut_publication = v_archive_status_id,
+               mis_a_jour_le = SYSTIMESTAMP
+         WHERE identifiant_statut_publication = v_en_attente_status_id
+           AND soumis_le < SYSTIMESTAMP - NUMTODSINTERVAL(p_seuil_jours, 'DAY');
+    END archiver_articles_en_attente_anciens;
 
-    PROCEDURE expire_merch_catalog IS
-        v_active_status_id product_status.product_status_id%TYPE;
-        v_expired_status_id product_status.product_status_id%TYPE;
+    PROCEDURE expirer_catalogue_boutique IS
+        v_actif_status_id statut_produit.identifiant_statut_produit%TYPE;
+        v_expire_status_id statut_produit.identifiant_statut_produit%TYPE;
     BEGIN
-        SELECT product_status_id
-          INTO v_active_status_id
-          FROM product_status
-         WHERE status_code = 'active';
+        SELECT identifiant_statut_produit
+          INTO v_actif_status_id
+          FROM statut_produit
+         WHERE code_statut = 'actif';
 
-        SELECT product_status_id
-          INTO v_expired_status_id
-          FROM product_status
-         WHERE status_code = 'expired';
+        SELECT identifiant_statut_produit
+          INTO v_expire_status_id
+          FROM statut_produit
+         WHERE code_statut = 'expire';
 
-        UPDATE product
-           SET product_status_id = v_expired_status_id,
-               updated_at = SYSTIMESTAMP
-         WHERE product_status_id = v_active_status_id
-           AND available_until IS NOT NULL
-           AND available_until < SYSTIMESTAMP;
-    END expire_merch_catalog;
+        UPDATE produit
+           SET identifiant_statut_produit = v_expire_status_id,
+               mis_a_jour_le = SYSTIMESTAMP
+         WHERE identifiant_statut_produit = v_actif_status_id
+           AND disponible_jusqua IS NOT NULL
+           AND disponible_jusqua < SYSTIMESTAMP;
+    END expirer_catalogue_boutique;
 
-    PROCEDURE purge_old_visitor_consents(p_keep_months NUMBER DEFAULT 24) IS
+    PROCEDURE purger_anciens_consentements_visiteurs(p_mois_conservation NUMBER DEFAULT 24) IS
     BEGIN
-        DELETE FROM visitor_cookie_consent
-         WHERE accepted_at < ADD_MONTHS(SYSTIMESTAMP, -p_keep_months);
-    END purge_old_visitor_consents;
+        DELETE FROM consentement_cookie_visiteur
+         WHERE accepte_le < ADD_MONTHS(SYSTIMESTAMP, -p_mois_conservation);
+    END purger_anciens_consentements_visiteurs;
 
-    PROCEDURE run_daily_maintenance IS
+    PROCEDURE lancer_maintenance_quotidienne IS
     BEGIN
-        close_expired_media_rights;
-        archive_stale_pending_articles;
-        expire_merch_catalog;
-        purge_old_visitor_consents;
+        cloturer_droits_media_expires;
+        archiver_articles_en_attente_anciens;
+        expirer_catalogue_boutique;
+        purger_anciens_consentements_visiteurs;
         COMMIT;
-    END run_daily_maintenance;
-END pkg_site_maintenance;
+    END lancer_maintenance_quotidienne;
+END pkg_maintenance_site;
 /
 
 BEGIN
     BEGIN
         DBMS_SCHEDULER.DROP_JOB(
-            job_name => 'JOB_SITE_DAILY_MAINTENANCE',
+            job_name => 'JOB_MAINTENANCE_QUOTIDIENNE_SITE',
             force => TRUE
         );
     EXCEPTION
@@ -295,9 +295,9 @@ BEGIN
     END;
 
     DBMS_SCHEDULER.CREATE_JOB(
-        job_name => 'JOB_SITE_DAILY_MAINTENANCE',
+        job_name => 'JOB_MAINTENANCE_QUOTIDIENNE_SITE',
         job_type => 'PLSQL_BLOCK',
-        job_action => 'BEGIN pkg_site_maintenance.run_daily_maintenance; END;',
+        job_action => 'BEGIN pkg_maintenance_site.lancer_maintenance_quotidienne; END;',
         start_date => SYSTIMESTAMP,
         repeat_interval => 'FREQ=DAILY;BYHOUR=02;BYMINUTE=00;BYSECOND=00',
         enabled => TRUE,
@@ -305,3 +305,6 @@ BEGIN
     );
 END;
 /
+
+
+

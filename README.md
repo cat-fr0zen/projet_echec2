@@ -6,10 +6,10 @@ Prototype MVC en PHP pour un site d'association d'échecs avec espace membre loc
 
 - `index.php` comme front controller
 - `routeur.php` comme routeur unique pour toutes les URL
-- `controleurs/PageController.php` pour le routage des pages
-- `controleurs/ActionController.php` pour les actions `POST`
-- `modeles/SiteModel.php` pour les données éditoriales et juridiques du site
-- `modeles/UserRepository.php` et `modeles/ArticleRepository.php` pour le stockage JSON local
+- `controleurs/ControleurPages.php` pour le routage des pages
+- `controleurs/ControleurActions.php` pour les actions `POST`
+- `modeles/ModeleSite.php` pour les données éditoriales et juridiques du site
+- `modeles/DepotUtilisateurs.php` et `modeles/DepotArticles.php` pour le stockage JSON local
 - `base_de_donnees/oracle/` pour le schéma SQL Oracle et la maintenance PL/SQL
 - `vues/` pour le layout, les partiels et les pages
 - `ressources/styles/style.css` et `ressources/scripts/site.js` pour le design, le motion system et les interactions
@@ -30,43 +30,43 @@ Projet_echec2/
 |       |-- 003_maintenance.sql
 |       `-- data-model.md
 |-- controleurs/
-|   |-- ActionController.php
-|   `-- PageController.php
+|   |-- ControleurActions.php
+|   `-- ControleurPages.php
 |-- donnees/
 |   |-- articles.json
-|   `-- users.json
+|   `-- utilisateurs.json
 |-- journaux/
 |   |-- server-error.log
 |   `-- server-output.log
 |-- modeles/
-|   |-- ArticleRepository.php
-|   |-- JsonStore.php
-|   |-- SiteModel.php
-|   `-- UserRepository.php
+|   |-- DepotArticles.php
+|   |-- StockageJson.php
+|   |-- ModeleSite.php
+|   `-- DepotUtilisateurs.php
 |-- ressources/
 |   |-- scripts/
 |   |   `-- site.js
 |   `-- styles/
 |       `-- style.css
 `-- vues/
-    |-- layout.php
+    |-- mise-en-page.php
     |-- partiels/
-    |   |-- auth-modal.php
-    |   |-- consent.php
-    |   |-- footer.php
-    |   `-- header.php
+    |   |-- modale-authentification.php
+    |   |-- consentement.php
+    |   |-- pied-de-page.php
+    |   `-- entete.php
     `-- pages/
-        |-- activities.php
+        |-- activites.php
         |-- articles.php
         |-- club.php
         |-- contact.php
         |-- guide.php
-        |-- home.php
-        |-- media-library.php
-        |-- merch.php
-        |-- not-found.php
-        |-- profile.php
-        `-- settings.php
+        |-- accueil.php
+        |-- mediatheque.php
+        |-- boutique.php
+        |-- introuvable.php
+        |-- profil.php
+        `-- parametres.php
 ```
 
 ## Routes disponibles
@@ -75,7 +75,7 @@ Projet_echec2/
 - `/guide`
 - `/mediatheque`
 - `/articles`
-- `/merch`
+- `/boutique`
 - `/club`
 - `/activites`
 - `/contact`
@@ -110,7 +110,7 @@ Projet_echec2/
 - connexion et inscription dans une popup
 - champs d'inscription : nom, prénom, date de naissance facultative, email, mot de passe, description
 - profil éditable après connexion
-- articles créés par les membres avec statut `pending_review`
+- articles créés par les membres avec statut `en_attente_validation`
 - stockage local JSON pour le prototype
 
 ## Cookies et juridique
@@ -124,7 +124,7 @@ Projet_echec2/
 ## Base Oracle cible
 
 - schéma pensé au plus près de Boyce-Codd
-- prise en charge des comptes, profils, consentements, articles, médias, merch et commandes
+- prise en charge des comptes, profils, consentements, articles, médias, boutique et commandes
 - gestion des images et vidéos via métadonnées Oracle, droits de diffusion et stockage BLOB ou externe
 - maintenance automatique via triggers, package PL/SQL et job `DBMS_SCHEDULER`
 
@@ -132,11 +132,11 @@ Projet_echec2/
 
 Quand `composer` sera installé, le plus simple sera de migrer comme ceci :
 
-- `vues/layout.php` -> `resources/views/layouts/app.blade.php`
+- `vues/mise-en-page.php` -> `resources/views/layouts/app.blade.php`
 - `vues/partiels/*` -> `resources/views/partials/*`
 - `vues/pages/*` -> `resources/views/pages/*`
-- `modeles/SiteModel.php` -> service ou view model Laravel
-- `controleurs/PageController.php` -> `app/Http/Controllers/PageController.php`
+- `modeles/ModeleSite.php` -> service ou view model Laravel
+- `controleurs/ControleurPages.php` -> `app/Http/Controllers/ControleurPages.php`
 - `ressources/styles/style.css` -> `resources/css/app.css` ou Tailwind
 
 ## Stack cible conseillée
@@ -144,3 +144,4 @@ Quand `composer` sera installé, le plus simple sera de migrer comme ceci :
 - site public : Laravel + Blade + Tailwind + Alpine
 - zones riches : Vue 3 + Pinia seulement si un vrai état applicatif est utile
 - base : Oracle via `yajra/laravel-oci8` quand l'environnement sera prêt
+

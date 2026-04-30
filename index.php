@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-$sessionDirectory = __DIR__ . '/donnees/sessions';
-$useSecureCookies = (
+$dossierSessions = __DIR__ . '/donnees/sessions';
+$utiliserCookiesSecurises = (
     (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
     || (isset($_SERVER['SERVER_PORT']) && (string) $_SERVER['SERVER_PORT'] === '443')
 );
@@ -11,12 +11,12 @@ $useSecureCookies = (
 if (session_status() !== PHP_SESSION_ACTIVE) {
     ini_set('session.use_strict_mode', '1');
 
-    if (!is_dir($sessionDirectory)) {
-        mkdir($sessionDirectory, 0777, true);
+    if (!is_dir($dossierSessions)) {
+        mkdir($dossierSessions, 0777, true);
     }
 
-    if (is_dir($sessionDirectory) && is_writable($sessionDirectory)) {
-        session_save_path($sessionDirectory);
+    if (is_dir($dossierSessions) && is_writable($dossierSessions)) {
+        session_save_path($dossierSessions);
     }
 
     session_name('association_echecs_session');
@@ -25,123 +25,131 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
         'path' => '/',
         'httponly' => true,
         'samesite' => 'Lax',
-        'secure' => $useSecureCookies,
+        'secure' => $utiliserCookiesSecurises,
     ]);
 
     session_start();
 }
 
-require_once __DIR__ . '/modeles/SiteModel.php';
-require_once __DIR__ . '/modeles/JsonStore.php';
-require_once __DIR__ . '/modeles/UserRepository.php';
-require_once __DIR__ . '/modeles/ArticleRepository.php';
-require_once __DIR__ . '/modeles/ChessDotComService.php';
-require_once __DIR__ . '/controleurs/ActionController.php';
-require_once __DIR__ . '/controleurs/PageController.php';
+require_once __DIR__ . '/modeles/ModeleSite.php';
+require_once __DIR__ . '/modeles/StockageJson.php';
+require_once __DIR__ . '/modeles/DepotUtilisateurs.php';
+require_once __DIR__ . '/modeles/DepotArticles.php';
+require_once __DIR__ . '/modeles/ServiceChessCom.php';
+require_once __DIR__ . '/controleurs/ControleurActions.php';
+require_once __DIR__ . '/controleurs/ControleurPages.php';
 
-function e(?string $value): string
+function e(?string $valeur): string
 {
-    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars((string) $valeur, ENT_QUOTES, 'UTF-8');
 }
 
-function route_url(string $slug, array $query = []): string
+function url_route(string $segment, array $parametres = []): string
 {
-    $normalizedSlug = trim($slug, '/');
-    $path = $normalizedSlug === '' || $normalizedSlug === 'accueil'
+    $segmentNormalise = trim($segment, '/');
+    $chemin = $segmentNormalise === '' || $segmentNormalise === 'accueil'
         ? '/'
-        : '/' . rawurlencode($normalizedSlug);
+        : '/' . rawurlencode($segmentNormalise);
 
-    if ($query === []) {
-        return $path;
+    if ($parametres === []) {
+        return $chemin;
     }
 
-    return $path . '?' . http_build_query($query);
+    return $chemin . '?' . http_build_query($parametres);
 }
 
-function asset_url(string $path): string
+function url_ressource(string $chemin): string
 {
-    return '/' . ltrim(str_replace('\\', '/', $path), '/');
+    return '/' . ltrim(str_replace('\\', '/', $chemin), '/');
 }
 
-function redirect_to(string $url): never
+function rediriger_vers(string $url): never
 {
     header('Location: ' . $url);
     exit;
 }
 
-function current_theme(): string
+function theme_courant(): string
 {
     $theme = isset($_COOKIE['site_theme']) ? (string) $_COOKIE['site_theme'] : 'light';
 
     return $theme === 'dark' ? 'dark' : 'light';
 }
 
-function csrf_token(): string
+function jeton_csrf(): string
 {
-    if (!isset($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    if (!isset($_SESSION['jeton_csrf']) || !is_string($_SESSION['jeton_csrf'])) {
+        $_SESSION['jeton_csrf'] = bin2hex(random_bytes(32));
     }
 
-    return $_SESSION['csrf_token'];
+    return $_SESSION['jeton_csrf'];
 }
 
-function verify_csrf_token(mixed $token): bool
+function verifier_jeton_csrf(mixed $jeton): bool
 {
-    return is_string($token) && hash_equals(csrf_token(), $token);
+    return is_string($jeton) && hash_equals(jeton_csrf(), $jeton);
 }
 
-function push_flash(string $type, string $message): void
+function ajouter_message_flash(string $type, string $message): void
 {
-    $_SESSION['flash_messages'][] = [
+    $_SESSION['messages_flash'][] = [
         'type' => $type,
         'message' => $message,
     ];
 }
 
-function pull_flash_messages(): array
+function recuperer_messages_flash(): array
 {
-    $messages = $_SESSION['flash_messages'] ?? [];
-    unset($_SESSION['flash_messages']);
+    $messages = $_SESSION['messages_flash'] ?? [];
+    unset($_SESSION['messages_flash']);
 
     return is_array($messages) ? $messages : [];
 }
 
-function set_form_state(array $state): void
+function memoriser_etat_formulaire(array $etat): void
 {
-    $_SESSION['form_state'] = $state;
+    $_SESSION['etat_formulaire'] = $etat;
 }
 
-function pull_form_state(): array
+function recuperer_etat_formulaire(): array
 {
-    $state = $_SESSION['form_state'] ?? [];
-    unset($_SESSION['form_state']);
+    $etat = $_SESSION['etat_formulaire'] ?? [];
+    unset($_SESSION['etat_formulaire']);
 
-    return is_array($state) ? $state : [];
+    return is_array($etat) ? $etat : [];
 }
 
-$usersStore = new JsonStore(__DIR__ . '/donnees/users.json');
-$articlesStore = new JsonStore(__DIR__ . '/donnees/articles.json');
+$stockageUtilisateurs = new StockageJson(__DIR__ . '/donnees/utilisateurs.json');
+$stockageArticles = new StockageJson(__DIR__ . '/donnees/articles.json');
 
-$userRepository = new UserRepository($usersStore);
-$articleRepository = new ArticleRepository($articlesStore);
-$actionController = new ActionController($userRepository, $articleRepository);
-$actionController->handle();
+$depotUtilisateurs = new DepotUtilisateurs($stockageUtilisateurs);
+$depotArticles = new DepotArticles($stockageArticles);
+$controleurActions = new ControleurActions($depotUtilisateurs, $depotArticles);
+$controleurActions->traiter();
 
-$requestedPage = isset($_GET['page']) ? (string) $_GET['page'] : 'accueil';
-$flashMessages = pull_flash_messages();
-$formState = pull_form_state();
-$chessDotComService = new ChessDotComService(
+$pageDemandee = isset($_GET['page']) ? (string) $_GET['page'] : 'accueil';
+$aliasPages = [
+    'merch' => 'boutique',
+];
+
+if (isset($aliasPages[$pageDemandee])) {
+    $pageDemandee = $aliasPages[$pageDemandee];
+}
+
+$messagesFlash = recuperer_messages_flash();
+$etatFormulaire = recuperer_etat_formulaire();
+$serviceChessCom = new ServiceChessCom(
     __DIR__ . '/donnees/cache/chesscom',
     'association-echecs-site/1.0'
 );
 
-$controller = new PageController(
-    new SiteModel(),
-    $userRepository,
-    $articleRepository,
-    $chessDotComService,
-    $flashMessages,
-    $formState
+$controleurPages = new ControleurPages(
+    new ModeleSite(),
+    $depotUtilisateurs,
+    $depotArticles,
+    $serviceChessCom,
+    $messagesFlash,
+    $etatFormulaire
 );
 
-echo $controller->handle($requestedPage);
+echo $controleurPages->afficher($pageDemandee);

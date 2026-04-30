@@ -3,7 +3,7 @@ $stats = $siteData['stats'];
 $schedule = $siteData['schedule'];
 $compliancePoints = $siteData['compliance_points'];
 $pieceCarousel = $siteData['piece_carousel'];
-$authData = $siteData['auth'];
+$authData = $siteData['authentification'];
 ?>
 
 <section class="hero-grid">
@@ -15,9 +15,7 @@ $authData = $siteData['auth'];
         <div class="button-row">
             <a class="button button-primary" href="#legal-hub">Voir le cadre légal</a>
             <?php if ($authData['is_authenticated']): ?>
-                <a class="button button-secondary" href="<?= e(route_url('profil')) ?>">Voir mon profil</a>
-            <?php else: ?>
-                <button type="button" class="button button-secondary" data-auth-open data-auth-tab="register">Connexion / inscription</button>
+                <a class="button button-secondary" href="<?= e(url_route('profil')) ?>">Voir mon profil</a>
             <?php endif; ?>
         </div>
 
@@ -153,3 +151,5 @@ $authData = $siteData['auth'];
         <?php endforeach; ?>
     </div>
 </section>
+
+

@@ -1,139 +1,142 @@
-# Oracle Data Model
+# Modèle de données Oracle
 
-## Goal
+## Objectif
 
-This target schema is designed for the future `Laravel + Oracle` version of the chess association website.
-It is organized close to **Boyce-Codd Normal Form (BCNF)** so that:
+Ce schéma cible est conçu pour la future version `Laravel + Oracle` du site de l'association d'échecs.
+Il est organisé au plus près de la **forme normale de Boyce-Codd (BCNF)** afin que :
 
-- one business fact is stored in one place
-- lookup values are isolated
-- legal and editorial workflows stay traceable
-- media management stays maintainable after handover
+- un fait métier ne soit stocké qu'à un seul endroit
+- les valeurs de référence soient isolées
+- les workflows juridiques et éditoriaux restent traçables
+- la gestion des médias reste maintenable après transmission
 
-## Main domains
+## Domaines principaux
 
-### Accounts
+### Comptes
 
-- `member_account`
-- `member_profile`
-- `account_role`
-- `account_status`
+- `compte_membre`
+- `profil_membre`
+- `role_compte`
+- `statut_compte`
 
-The account stores authentication and lifecycle.
-The profile stores personal data that belongs to the member profile itself, not to authentication.
+Le compte stocke l'authentification et le cycle de vie.
+Le profil stocke les données personnelles propres au membre, et non à l'authentification.
 
-### Consent and compliance
+### Consentement et conformité
 
-- `visitor_cookie_consent`
-- `member_consent`
-- `consent_type`
+- `consentement_cookie_visiteur`
+- `consentement_membre`
+- `type_consentement`
 
-This separation allows the site to keep a proof of cookie consent for anonymous visitors and legal or publication consent for authenticated members.
+Cette séparation permet au site de conserver une preuve du consentement cookies pour les visiteurs anonymes et des consentements juridiques ou de publication pour les membres authentifiés.
 
-### Editorial workflow
+### Workflow éditorial
 
 - `article`
-- `article_review`
-- `publication_status`
-- `review_decision_type`
+- `revision_article`
+- `statut_publication`
+- `type_decision_revision`
 
-The publication state is not hard-coded in the article table as free text.
-It is normalized through lookup tables so moderation can evolve without schema drift.
+L'état de publication n'est pas codé en dur sous forme de texte libre dans la table des articles.
+Il est normalisé via des tables de référence afin que la modération puisse évoluer sans dérive de schéma.
 
-### Media and legal rights
+### Médias et droits
 
-- `media_asset`
-- `media_binary_payload`
-- `media_external_reference`
-- `media_rights_grant`
-- `media_type`
-- `media_usage_type`
-- `media_rights_status`
-- `media_storage_mode`
-- `media_album`
-- `media_album_item`
-- `article_media`
-- `product_media`
+- `ressource_media`
+- `charge_binaire_media`
+- `reference_externe_media`
+- `autorisation_droits_media`
+- `type_media`
+- `type_usage_media`
+- `statut_droits_media`
+- `mode_stockage_media`
+- `album_media`
+- `element_album_media`
+- `media_article`
+- `media_produit`
 
-The model deliberately separates:
+Le modèle sépare volontairement :
 
-- media metadata
-- binary payloads stored inside Oracle
-- external storage references
-- rights and publication authorizations
+- les métadonnées des médias
+- les charges binaires stockées dans Oracle
+- les références vers un stockage externe
+- les droits et autorisations de publication
 
-This is cleaner than mixing file storage, rights and usage context in one table.
+C'est plus propre que de mélanger stockage de fichier, droits et contexte d'usage dans une seule table.
 
-### Merch
+### Boutique
 
-- `product`
-- `product_category`
-- `product_status`
-- `product_price`
-- `customer_order`
-- `customer_order_item`
-- `order_status`
+- `produit`
+- `categorie_produit`
+- `statut_produit`
+- `prix_produit`
+- `commande_client`
+- `ligne_commande_client`
+- `statut_commande`
 
-Prices are historized separately from the product so you do not rewrite commercial history every time a price changes.
-Order totals are intentionally computed from `customer_order_item` through a view instead of being duplicated in the order tables.
+Les prix sont historisés séparément du produit afin de ne pas réécrire l'historique commercial à chaque changement.
+Les totaux de commande sont calculés volontairement à partir de `ligne_commande_client` via une vue, plutôt que dupliqués dans les tables de commande.
 
-## Why this is close to BCNF
+## Pourquoi ce modèle est proche de la BCNF
 
-### 1. Authentication is separated from identity
+### 1. L'authentification est séparée de l'identité
 
-`member_account` stores login facts.
-`member_profile` stores profile facts.
+`compte_membre` stocke les faits de connexion.
+`profil_membre` stocke les faits de profil.
 
-That avoids putting all user concerns in one table.
+Cela évite de mettre toutes les préoccupations utilisateur dans une seule table.
 
-### 2. Legal enumerations are normalized
+### 2. Les énumérations juridiques sont normalisées
 
-Roles, account statuses, publication statuses, review decisions, media types, storage modes and product statuses all live in separate tables.
+Les rôles, statuts de compte, statuts de publication, décisions de relecture, types de médias, modes de stockage et statuts de produit vivent tous dans des tables séparées.
 
-That avoids transitive dependencies like:
+Cela évite des dépendances transitives comme :
 
-- `status_code -> status_label`
-- `role_code -> role_label`
+- `code_statut -> libelle_statut`
+- `code_role -> libelle_role`
 
-inside operational tables.
+au sein des tables opérationnelles.
 
-### 3. Media storage is not overloaded
+### 3. Le stockage média n'est pas surchargé
 
-An image or video can be stored:
+Une image ou une vidéo peut être stockée :
 
-- inside Oracle as a BLOB
-- outside Oracle with a URI reference
+- dans Oracle sous forme de BLOB
+- hors Oracle via une URI référencée
 
-Instead of nullable columns for every storage strategy in one row, storage is split into dedicated tables.
+Au lieu d'empiler des colonnes nullables pour chaque stratégie de stockage dans une seule ligne, le stockage est réparti dans des tables dédiées.
 
-### 4. Rights are distinct from the file itself
+### 4. Les droits sont distincts du fichier lui-même
 
-The existence of a media file does not imply publication rights.
-`media_rights_grant` stores that legal layer separately.
+L'existence d'un fichier média n'implique pas le droit de le publier.
+`autorisation_droits_media` stocke cette couche juridique séparément.
 
-## Recommended migration path from the prototype
+## Chemin de migration recommandé depuis le prototype
 
-1. migrate `users.json` into:
-   - `member_account`
-   - `member_profile`
-2. migrate `articles.json` into:
+1. migrer `utilisateurs.json` vers :
+   - `compte_membre`
+   - `profil_membre`
+2. migrer `articles.json` vers :
    - `article`
-3. keep media uploads disabled until:
-   - rights workflow
-   - storage strategy
-   - admin moderation
-   are validated
-4. only then add:
-   - `media_asset`
-   - `media_rights_grant`
-   - `media_album`
-   - merch tables
+3. laisser les envois de médias désactivés tant que :
+   - le workflow de droits
+   - la stratégie de stockage
+   - la modération administrateur
+   ne sont pas validés
+4. puis seulement ajouter :
+   - `ressource_media`
+   - `autorisation_droits_media`
+   - `album_media`
+   - les tables de boutique
 
-## Storage recommendation for images and videos
+## Recommandation de stockage pour les images et vidéos
 
-The cleanest production approach is:
+L'approche la plus propre en production est :
 
-- Oracle stores metadata, rights and relationships
-- object storage or managed file storage stores the heavy binaries
+- Oracle stocke les métadonnées, les droits et les relations
+- un stockage objet ou un stockage de fichiers géré conserve les binaires lourds
 
-If you must store files directly in Oracle, `media_binary_payload` is ready for that.
+Si vous devez stocker directement les fichiers dans Oracle, `charge_binaire_media` est prêt pour cela.
+
+
+

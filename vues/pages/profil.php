@@ -1,5 +1,5 @@
 <?php
-$authData = $siteData['auth'];
+$authData = $siteData['authentification'];
 $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
 ?>
 
@@ -15,7 +15,7 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
             <p class="card-tag">Connexion requise</p>
             <h2>Connecte-toi pour accéder à ton profil.</h2>
             <p>Le profil membre, la description personnelle, les préférences du compte et la liaison Chess.com sont accessibles après connexion.</p>
-            <button type="button" class="button button-primary" data-auth-open data-auth-tab="login">Connexion / inscription</button>
+            <button type="button" class="button button-primary" data-auth-open data-auth-tab="login">Connexion</button>
         </div>
     </section>
 <?php else: ?>
@@ -34,9 +34,9 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
                 <p>La description de profil et la liaison Chess.com restent éditables à tout moment depuis cette page.</p>
             </div>
 
-            <form method="post" action="<?= e(route_url('profil')) ?>" class="article-form">
+            <form method="post" action="<?= e(url_route('profil')) ?>" class="article-form">
                 <input type="hidden" name="action" value="update_profile">
-                <input type="hidden" name="csrf_token" value="<?= e($siteData['csrf_token']) ?>">
+                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
 
                 <div class="auth-grid">
                     <label class="form-group">
@@ -240,3 +240,5 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
         <?php endif; ?>
     </section>
 <?php endif; ?>
+
+
