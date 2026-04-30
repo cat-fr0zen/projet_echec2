@@ -5,7 +5,7 @@ Prototype MVC en PHP pour un site d'association d'echecs avec espace membre loca
 ## Ce qui a ete mis en place
 
 - `index.php` comme front controller
-- `router.php` comme routeur unique pour toutes les URL
+- `routes.php` comme routeur unique pour toutes les URL
 - `controleurs/PageController.php` pour le routage simple
 - `controleurs/ActionController.php` pour les actions `POST`
 - `modeles/SiteModel.php` pour les donnees du site
@@ -18,7 +18,7 @@ Prototype MVC en PHP pour un site d'association d'echecs avec espace membre loca
 ```text
 Projet_echec2/
 |-- index.php
-|-- router.php
+|-- routes.php
 |-- start-server.ps1
 |-- journaux/
 |   |-- server-error.log
@@ -77,7 +77,7 @@ Projet_echec2/
 
 - lancer seulement `./start-server.ps1` depuis le dossier du projet
 - ouvrir `http://127.0.0.1:8000/`
-- le routeur unique est `router.php`
+- le routeur unique est `routes.php`
 - le point d'entree unique de l'application est `index.php`
 - les logs serveur sont ecrits dans `journaux/`
 
