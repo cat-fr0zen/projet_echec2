@@ -4,6 +4,19 @@ declare(strict_types=1);
 
 final class ActionController
 {
+    private const REDIRECTABLE_PAGES = [
+        'accueil',
+        'guide',
+        'mediatheque',
+        'articles',
+        'merch',
+        'club',
+        'activites',
+        'contact',
+        'profil',
+        'parametres',
+    ];
+
     public function __construct(
         private UserRepository $userRepository,
         private ArticleRepository $articleRepository
@@ -23,7 +36,7 @@ final class ActionController
         }
 
         if (!verify_csrf_token($_POST['csrf_token'] ?? null)) {
-            push_flash('error', 'Votre session a expire. Merci de recommencer.');
+            push_flash('error', 'Votre session a expiré. Merci de recommencer.');
             redirect_to(route_url('accueil'));
         }
 
@@ -68,7 +81,7 @@ final class ActionController
         }
 
         if ($payload['first_name'] === '' || mb_strlen($payload['first_name']) > 100) {
-            $errors[] = 'Le prenom est obligatoire et doit rester raisonnable.';
+            $errors[] = 'Le prénom est obligatoire et doit rester raisonnable.';
         }
 
         if ($payload['birth_date'] !== '' && !$this->isValidDate($payload['birth_date'])) {
@@ -80,15 +93,15 @@ final class ActionController
         }
 
         if (mb_strlen($payload['password']) < 8) {
-            $errors[] = 'Le mot de passe doit contenir au moins 8 caracteres.';
+            $errors[] = 'Le mot de passe doit contenir au moins 8 caractères.';
         }
 
         if (mb_strlen($payload['profile_description']) > 1200) {
-            $errors[] = 'La description de profil doit rester inferieure a 1200 caracteres.';
+            $errors[] = 'La description de profil doit rester inférieure à 1200 caractères.';
         }
 
         if ($this->userRepository->findByEmail($payload['email']) !== null) {
-            $errors[] = 'Un compte existe deja avec cet email.';
+            $errors[] = 'Un compte existe déjà avec cet email.';
         }
 
         if ($errors !== []) {
@@ -104,7 +117,7 @@ final class ActionController
         $user = $this->userRepository->create($payload);
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
-        push_flash('success', 'Votre compte a ete cree avec succes.');
+        push_flash('success', 'Votre compte a été créé avec succès.');
         redirect_to(route_url('profil'));
     }
 
@@ -127,7 +140,7 @@ final class ActionController
 
         session_regenerate_id(true);
         $_SESSION['user_id'] = $user['id'];
-        push_flash('success', 'Connexion reussie.');
+        push_flash('success', 'Connexion réussie.');
         redirect_to(route_url('profil'));
     }
 
@@ -135,7 +148,7 @@ final class ActionController
     {
         unset($_SESSION['user_id']);
         session_regenerate_id(true);
-        push_flash('success', 'Vous avez ete deconnecte.');
+        push_flash('success', 'Vous avez été déconnecté.');
         redirect_to(route_url('accueil'));
     }
 
@@ -144,7 +157,7 @@ final class ActionController
         $currentUser = $this->getCurrentUser();
 
         if ($currentUser === null) {
-            push_flash('error', 'Vous devez etre connecte pour modifier votre profil.');
+            push_flash('error', 'Vous devez être connecté pour modifier votre profil.');
             redirect_to(route_url('accueil'));
         }
 
@@ -162,7 +175,7 @@ final class ActionController
         }
 
         if ($payload['first_name'] === '' || mb_strlen($payload['first_name']) > 100) {
-            $errors[] = 'Le prenom est obligatoire et doit rester raisonnable.';
+            $errors[] = 'Le prénom est obligatoire et doit rester raisonnable.';
         }
 
         if ($payload['birth_date'] !== '' && !$this->isValidDate($payload['birth_date'])) {
@@ -170,7 +183,7 @@ final class ActionController
         }
 
         if (mb_strlen($payload['profile_description']) > 1200) {
-            $errors[] = 'La description de profil doit rester inferieure a 1200 caracteres.';
+            $errors[] = 'La description de profil doit rester inférieure à 1200 caractères.';
         }
 
         if ($errors !== []) {
@@ -179,7 +192,7 @@ final class ActionController
         }
 
         $this->userRepository->update((string) $currentUser['id'], $payload);
-        push_flash('success', 'Votre profil a ete mis a jour.');
+        push_flash('success', 'Votre profil a été mis à jour.');
         redirect_to(route_url('profil'));
     }
 
@@ -188,7 +201,7 @@ final class ActionController
         $currentUser = $this->getCurrentUser();
 
         if ($currentUser === null) {
-            push_flash('error', 'Vous devez etre connecte pour proposer un article.');
+            push_flash('error', 'Vous devez être connecté pour proposer un article.');
             redirect_to(route_url('articles'));
         }
 
@@ -199,15 +212,15 @@ final class ActionController
         $errors = [];
 
         if ($title === '' || mb_strlen($title) > 150) {
-            $errors[] = 'Le titre est obligatoire et doit rester inferieur a 150 caracteres.';
+            $errors[] = 'Le titre est obligatoire et doit rester inférieur à 150 caractères.';
         }
 
         if ($excerpt === '' || mb_strlen($excerpt) > 280) {
-            $errors[] = 'Le resume est obligatoire et doit rester inferieur a 280 caracteres.';
+            $errors[] = 'Le résumé est obligatoire et doit rester inférieur à 280 caractères.';
         }
 
         if (mb_strlen($content) < 80) {
-            $errors[] = 'Le contenu de l article doit contenir au moins 80 caracteres.';
+            $errors[] = "Le contenu de l'article doit contenir au moins 80 caractères.";
         }
 
         if ($errors !== []) {
@@ -225,7 +238,7 @@ final class ActionController
             'content' => $content,
         ]);
 
-        push_flash('success', 'Votre article a ete enregistre et attend maintenant une validation future.');
+        push_flash('success', 'Votre article a été enregistré et attend maintenant une validation future.');
         redirect_to(route_url('articles'));
     }
 
@@ -240,7 +253,11 @@ final class ActionController
     {
         $page = trim((string) ($_POST['redirect_page'] ?? ''));
 
-        return $page !== '' ? $page : $fallback;
+        if ($page === '' || !in_array($page, self::REDIRECTABLE_PAGES, true)) {
+            return $fallback;
+        }
+
+        return $page;
     }
 
     private function isValidDate(string $value): bool

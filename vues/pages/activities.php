@@ -1,7 +1,7 @@
 <?php $activities = $siteData['activities']; ?>
 
 <section class="page-banner reveal reveal-2">
-    <p class="eyebrow">Activites</p>
+    <p class="eyebrow">Activités</p>
     <h1><?= e($pageData['title']) ?></h1>
     <p><?= e($pageData['intro']) ?></p>
 </section>
@@ -9,10 +9,10 @@
 <section class="section-block reveal reveal-3">
     <div class="section-head">
         <p class="eyebrow">Organisation des contenus</p>
-        <h2>Des cartes pretes pour les activites a venir.</h2>
+        <h2>Des cartes prêtes pour les activités à venir.</h2>
         <p>
-            La page garde ses cadres, ses rythmes et sa hierarchie visuelle tout en
-            attendant la validation des informations officielles a publier.
+            La page garde ses cadres, ses rythmes et sa hiérarchie visuelle tout en
+            attendant la validation des informations officielles à publier.
         </p>
     </div>
 
@@ -31,21 +31,21 @@
     <article class="panel panel-contrast">
         <div class="section-head section-head--compact">
             <p class="eyebrow">Publication responsable</p>
-            <h2>Rien n est publie tant que ce n est pas valide.</h2>
+            <h2>Rien n'est publié tant que ce n'est pas validé.</h2>
             <p>
-                Cette page peut accueillir des activites reelles, des calendriers et des documents,
-                mais uniquement apres confirmation par les responsables de l association.
+                Cette page peut accueillir des activités réelles, des calendriers et des documents,
+                mais uniquement après confirmation par les responsables de l'association.
             </p>
         </div>
     </article>
 
     <article class="panel">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Documents et acces</p>
-            <h2>Le design reste pret pour les prochaines integrations.</h2>
+            <p class="eyebrow">Documents et accès</p>
+            <h2>Le design reste prêt pour les prochaines intégrations.</h2>
             <p>
-                Bulletins, reglements, planning, inscriptions ou actualites pourront etre ajoutes ici
-                sans remettre en cause la structure des cartes ni la lisibilite du parcours.
+                Bulletins, règlements, planning, inscriptions ou actualités pourront être ajoutés ici
+                sans remettre en cause la structure des cartes ni la lisibilité du parcours.
             </p>
         </div>
     </article>

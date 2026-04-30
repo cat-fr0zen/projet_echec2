@@ -11,11 +11,11 @@ $schedule = $siteData['schedule'];
 
 <section class="section-block reveal reveal-3">
     <div class="section-head">
-        <p class="eyebrow">Presentation institutionnelle</p>
-        <h2>Des blocs prets pour les informations officielles du club.</h2>
+        <p class="eyebrow">Présentation institutionnelle</p>
+        <h2>Des blocs prêts pour les informations officielles du club.</h2>
         <p>
-            Le contenu de cette page reste volontairement neutre tant que l association
-            n a pas valide son nom complet, son objet, ses horaires et ses responsables.
+            Le contenu de cette page reste volontairement neutre tant que l'association
+            n'a pas validé son nom complet, son objet, ses horaires et ses responsables.
         </p>
     </div>
 
@@ -32,9 +32,9 @@ $schedule = $siteData['schedule'];
 <section class="split-grid reveal reveal-4">
     <article class="panel">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Publication encadree</p>
-            <h2>Trois cadres pour les informations a confirmer.</h2>
-            <p>Chaque bloc peut recevoir plus tard les donnees officielles sans changer la structure du site.</p>
+            <p class="eyebrow">Publication encadrée</p>
+            <h2>Trois cadres pour les informations à confirmer.</h2>
+            <p>Chaque bloc peut recevoir plus tard les données officielles sans changer la structure du site.</p>
         </div>
 
         <div class="stack-list">
@@ -54,18 +54,18 @@ $schedule = $siteData['schedule'];
     <article class="panel">
         <div class="section-head section-head--compact">
             <p class="eyebrow">Cadre de pratique</p>
-            <h2>Ce que le site doit garantir des maintenant.</h2>
+            <h2>Ce que le site doit garantir dès maintenant.</h2>
             <p>
-                Meme sans contenu institutionnel finalise, le site peut deja poser un cadre clair
-                sur la fiabilite des informations, le respect du jeu et la responsabilite editoriale.
+                Même sans contenu institutionnel finalisé, le site peut déjà poser un cadre clair
+                sur la fiabilité des informations, le respect du jeu et la responsabilité éditoriale.
             </p>
         </div>
 
         <ul class="bullet-list bullet-list--dark">
-            <li>les informations publiques doivent etre verifiees avant diffusion</li>
-            <li>les coordonnees officielles doivent provenir de l association</li>
-            <li>la confidentialite et le consentement restent visibles sur tout le parcours</li>
-            <li>les contenus du site restent proteges par la propriete intellectuelle</li>
+            <li>les informations publiques doivent être vérifiées avant diffusion</li>
+            <li>les coordonnées officielles doivent provenir de l'association</li>
+            <li>la confidentialité et le consentement restent visibles sur tout le parcours</li>
+            <li>les contenus du site restent protégés par la propriété intellectuelle</li>
         </ul>
     </article>
 </section>

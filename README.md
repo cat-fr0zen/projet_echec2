@@ -1,15 +1,16 @@
-# Projet Echec 2
+# Projet Échec 2
 
-Prototype MVC en PHP pour un site d'association d'echecs avec espace membre local, cookies, theme clair/sombre et publication moderee.
+Prototype MVC en PHP pour un site d'association d'échecs avec espace membre local, cookies, thème clair/sombre, médiathèque encadrée et publication modérée.
 
-## Ce qui a ete mis en place
+## Ce qui a été mis en place
 
 - `index.php` comme front controller
-- `routes.php` comme routeur unique pour toutes les URL
-- `controleurs/PageController.php` pour le routage simple
+- `routeur.php` comme routeur unique pour toutes les URL
+- `controleurs/PageController.php` pour le routage des pages
 - `controleurs/ActionController.php` pour les actions `POST`
-- `modeles/SiteModel.php` pour les donnees du site
+- `modeles/SiteModel.php` pour les données éditoriales et juridiques du site
 - `modeles/UserRepository.php` et `modeles/ArticleRepository.php` pour le stockage JSON local
+- `base_de_donnees/oracle/` pour le schéma SQL Oracle et la maintenance PL/SQL
 - `vues/` pour le layout, les partiels et les pages
 - `ressources/styles/style.css` et `ressources/scripts/site.js` pour le design, le motion system et les interactions
 
@@ -17,18 +18,26 @@ Prototype MVC en PHP pour un site d'association d'echecs avec espace membre loca
 
 ```text
 Projet_echec2/
+|-- .gitignore
 |-- index.php
-|-- routes.php
+|-- routeur.php
 |-- start-server.ps1
-|-- journaux/
-|   |-- server-error.log
-|   `-- server-output.log
+|-- README.md
+|-- base_de_donnees/
+|   `-- oracle/
+|       |-- 001_schema.sql
+|       |-- 002_reference-data.sql
+|       |-- 003_maintenance.sql
+|       `-- data-model.md
 |-- controleurs/
 |   |-- ActionController.php
 |   `-- PageController.php
 |-- donnees/
 |   |-- articles.json
 |   `-- users.json
+|-- journaux/
+|   |-- server-error.log
+|   `-- server-output.log
 |-- modeles/
 |   |-- ArticleRepository.php
 |   |-- JsonStore.php
@@ -77,44 +86,51 @@ Projet_echec2/
 
 - lancer seulement `./start-server.ps1` depuis le dossier du projet
 - ouvrir `http://127.0.0.1:8000/`
-- le routeur unique est `routes.php`
-- le point d'entree unique de l'application est `index.php`
-- les logs serveur sont ecrits dans `journaux/`
+- le routeur unique est `routeur.php`
+- le point d'entrée unique de l'application est `index.php`
+- les logs serveur sont écrits dans `journaux/`
 
 ## Direction design
 
-- ambiance editorial / club historique
+- ambiance éditoriale / club historique
 - palette ivoire, vert profond, laiton
-- titres serif et corps tres lisible
-- animations legeres et utiles, sans effet gadget
+- titres serif et corps très lisible
+- animations légères et utiles, sans effet gadget
 
 ## Motion system
 
-- `fade-up` a l'entree des sections
-- `float` tres legere sur les badges du hero
+- `fade-up` à l'entrée des sections
+- `float` très légère sur les badges du hero
 - `hover-lift` sur les cartes et boutons
-- popup membre, menu burger et switch de theme en JS natif
+- popup membre, menu burger et switch de thème en JS natif
 - prise en charge de `prefers-reduced-motion`
 
 ## Espace membre
 
 - connexion et inscription dans une popup
-- champs inscription : nom, prenom, date de naissance facultative, email, mot de passe, description
-- profil editable apres connexion
-- articles crees par les membres avec statut `pending_review`
+- champs d'inscription : nom, prénom, date de naissance facultative, email, mot de passe, description
+- profil éditable après connexion
+- articles créés par les membres avec statut `pending_review`
 - stockage local JSON pour le prototype
 
-## Cookies et legal
+## Cookies et juridique
 
-- consentement obligatoire a l'entree du site
-- cookie de theme `site_theme`
+- consentement obligatoire à l'entrée du site
+- cookie de thème `site_theme`
 - cookie de consentement `site_consent`
-- cookie de session PHP pour les membres connectes
-- footer legal avec mentions legales, confidentialite et conditions d'utilisation
+- cookie de session PHP pour les membres connectés
+- footer légal avec mentions légales, confidentialité, droit à l'image et conditions d'utilisation
+
+## Base Oracle cible
+
+- schéma pensé au plus près de Boyce-Codd
+- prise en charge des comptes, profils, consentements, articles, médias, merch et commandes
+- gestion des images et vidéos via métadonnées Oracle, droits de diffusion et stockage BLOB ou externe
+- maintenance automatique via triggers, package PL/SQL et job `DBMS_SCHEDULER`
 
 ## Passage vers Laravel
 
-Quand `composer` sera installe, le plus simple sera de migrer comme ceci :
+Quand `composer` sera installé, le plus simple sera de migrer comme ceci :
 
 - `vues/layout.php` -> `resources/views/layouts/app.blade.php`
 - `vues/partiels/*` -> `resources/views/partials/*`
@@ -123,8 +139,8 @@ Quand `composer` sera installe, le plus simple sera de migrer comme ceci :
 - `controleurs/PageController.php` -> `app/Http/Controllers/PageController.php`
 - `ressources/styles/style.css` -> `resources/css/app.css` ou Tailwind
 
-## Stack cible conseillee
+## Stack cible conseillée
 
 - site public : Laravel + Blade + Tailwind + Alpine
-- zones riches : Vue 3 + Pinia seulement si un vrai etat applicatif est utile
-- base : Oracle via `yajra/laravel-oci8` quand l'environnement sera pret
+- zones riches : Vue 3 + Pinia seulement si un vrai état applicatif est utile
+- base : Oracle via `yajra/laravel-oci8` quand l'environnement sera prêt

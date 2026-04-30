@@ -13,7 +13,7 @@ Write-Host "Error log: $errorLog"
 
 Push-Location $projectRoot
 try {
-    php -S 127.0.0.1:8000 -t $projectRoot routes.php 2>> $errorLog | Tee-Object -FilePath $outputLog -Append
+    php -S 127.0.0.1:8000 -t $projectRoot routeur.php 2>> $errorLog | Tee-Object -FilePath $outputLog -Append
 }
 finally {
     Pop-Location

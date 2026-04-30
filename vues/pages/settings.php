@@ -4,7 +4,7 @@ $authData = $siteData['auth'];
 ?>
 
 <section class="page-banner reveal reveal-2">
-    <p class="eyebrow">Parametres</p>
+    <p class="eyebrow">Paramètres</p>
     <h1><?= e($pageData['title']) ?></h1>
     <p><?= e($pageData['intro']) ?></p>
 </section>
@@ -12,19 +12,19 @@ $authData = $siteData['auth'];
 <section class="split-grid reveal reveal-3">
     <article class="panel">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Theme et preferences</p>
-            <h2>Reglages de l interface.</h2>
-            <p>Le theme clair ou sombre peut etre change a tout moment depuis l interrupteur en haut a droite.</p>
+            <p class="eyebrow">Thème et préférences</p>
+            <h2>Réglages de l'interface.</h2>
+            <p>Le thème clair ou sombre peut être changé à tout moment depuis l'interrupteur en haut à droite.</p>
         </div>
 
         <div class="stack-list">
             <div class="schedule-item">
-                <h3>Theme visuel</h3>
-                <p>Le choix entre theme clair et theme sombre est memorise dans un cookie de preference.</p>
+                <h3>Thème visuel</h3>
+                <p>Le choix entre thème clair et thème sombre est mémorisé dans un cookie de préférence.</p>
             </div>
             <div class="schedule-item">
                 <h3>Consentement</h3>
-                <p>Le consentement obligatoire a l entree du site peut etre reinitialise si tu veux revoir la fenetre d information.</p>
+                <p>Le consentement obligatoire à l'entrée du site peut être réinitialisé si tu veux revoir la fenêtre d'information.</p>
                 <button type="button" class="button button-secondary" data-reset-consent>Revoir le consentement</button>
             </div>
         </div>
@@ -36,8 +36,8 @@ $authData = $siteData['auth'];
             <h2><?= $authData['is_authenticated'] ? 'Session active' : 'Connexion non active' ?></h2>
             <p>
                 <?= $authData['is_authenticated']
-                    ? 'Un cookie de session PHP maintient votre connexion et permet l acces au profil ainsi qu a la creation d articles.'
-                    : 'Aucune session membre active pour le moment. La connexion par email ouvre l acces au profil et a la redaction d articles.' ?>
+                    ? "Un cookie de session PHP maintient votre connexion et permet l'accès au profil ainsi qu'à la création d'articles."
+                    : "Aucune session membre active pour le moment. La connexion par email ouvre l'accès au profil et à la rédaction d'articles." ?>
             </p>
         </div>
     </article>
@@ -46,8 +46,8 @@ $authData = $siteData['auth'];
 <section class="section-block reveal reveal-4">
     <div class="section-head">
         <p class="eyebrow">Registre cookies</p>
-        <h2>Cookies et usages declares.</h2>
-        <p>Voici les usages actuellement prevus par le prototype.</p>
+        <h2>Cookies et usages déclarés.</h2>
+        <p>Voici les usages actuellement prévus par le prototype.</p>
     </div>
 
     <div class="card-grid card-grid--three">

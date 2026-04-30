@@ -13,11 +13,11 @@ $legalDocuments = $siteData['legal_documents'];
     aria-describedby="consent-description"
 >
     <div class="consent-panel">
-        <p class="eyebrow">Acces au site</p>
+        <p class="eyebrow">Accès au site</p>
         <h2 id="consent-title"><?= e($consentData['title']) ?></h2>
         <p id="consent-description" class="consent-text"><?= e($consentData['intro']) ?></p>
 
-        <div class="consent-docs" aria-label="Documents a consulter">
+        <div class="consent-docs" aria-label="Documents à consulter">
             <?php foreach ($legalDocuments as $document): ?>
                 <article class="consent-mini-card">
                     <h3><?= e($document['title']) ?></h3>

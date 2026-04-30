@@ -14,7 +14,7 @@ $cookieRegister = $siteData['cookie_register'];
         </section>
 
         <section>
-            <p class="eyebrow">Credits</p>
+            <p class="eyebrow">Crédits</p>
             <p class="footer-text"><strong>Auteur du site :</strong> <?= e($credits['site_author']) ?></p>
             <p class="footer-text"><strong>Publication associative :</strong> <?= e($credits['association_publisher']) ?></p>
         </section>
@@ -29,10 +29,10 @@ $cookieRegister = $siteData['cookie_register'];
     <section id="legal-hub" class="legal-hub">
         <div class="section-head section-head--compact">
             <p class="eyebrow">Documents obligatoires</p>
-            <h2 class="footer-title footer-title--legal">Mentions legales, confidentialite et conditions d utilisation</h2>
+            <h2 class="footer-title footer-title--legal">Mentions légales, confidentialité et conditions d'utilisation</h2>
             <p class="footer-text">
-                Ces informations encadrent la consultation du site, la gestion des donnees, les droits des utilisateurs
-                et la propriete intellectuelle des contenus.
+                Ces informations encadrent la consultation du site, la gestion des données, les droits des utilisateurs,
+                le droit à l'image et la propriété intellectuelle des contenus.
             </p>
         </div>
 
@@ -62,9 +62,9 @@ $cookieRegister = $siteData['cookie_register'];
 
         <div class="cookie-register">
             <div class="section-head section-head--compact">
-                <p class="eyebrow">Cookies declares</p>
-                <h3 class="footer-title footer-title--legal">Registre simplifie des cookies</h3>
-                <p class="footer-text">Ce tableau resume les cookies et preferences actuellement utilises dans le prototype.</p>
+                <p class="eyebrow">Cookies déclarés</p>
+                <h3 class="footer-title footer-title--legal">Registre simplifié des cookies</h3>
+                <p class="footer-text">Ce tableau résume les cookies et préférences actuellement utilisés dans le prototype.</p>
             </div>
 
             <div class="card-grid card-grid--three">
@@ -83,6 +83,6 @@ $cookieRegister = $siteData['cookie_register'];
         &copy; <?= e((string) $year) ?> <?= e($siteData['brand']) ?>.
         Conception du site : <?= e($credits['site_author']) ?>.
         Publication associative : <?= e($credits['association_publisher']) ?>.
-        Tous droits reserves.
+        Tous droits réservés.
     </p>
 </footer>

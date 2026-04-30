@@ -1,16 +1,16 @@
 <?php $mediaCards = $siteData['media_cards']; ?>
 
 <section class="page-banner reveal reveal-2">
-    <p class="eyebrow">Mediatheque</p>
+    <p class="eyebrow">Médiathèque</p>
     <h1><?= e($pageData['title']) ?></h1>
     <p><?= e($pageData['intro']) ?></p>
 </section>
 
 <section class="section-block reveal reveal-3">
     <div class="section-head">
-        <p class="eyebrow">Photos et videos</p>
-        <h2>Un cadre propre pour les futurs medias du club.</h2>
-        <p>La publication de photos et videos devra respecter les droits, les autorisations et la validation associative.</p>
+        <p class="eyebrow">Photos et vidéos</p>
+        <h2>Un cadre propre pour les futurs médias du club.</h2>
+        <p>La publication de photos et vidéos devra respecter les droits, les autorisations et la validation associative.</p>
     </div>
 
     <div class="card-grid card-grid--three">

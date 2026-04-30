@@ -8,9 +8,9 @@
 
 <section class="section-block reveal reveal-3">
     <div class="section-head">
-        <p class="eyebrow">Strategie</p>
+        <p class="eyebrow">Stratégie</p>
         <h2>Des cartes courtes pour progresser plus vite.</h2>
-        <p>Chaque carte resume un principe utile a memoriser dans la pratique du jeu d echecs.</p>
+        <p>Chaque carte résume un principe utile à mémoriser dans la pratique du jeu d'échecs.</p>
     </div>
 
     <div class="card-grid card-grid--three">

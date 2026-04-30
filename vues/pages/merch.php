@@ -9,8 +9,8 @@
 <section class="section-block reveal reveal-3">
     <div class="section-head">
         <p class="eyebrow">Catalogue</p>
-        <h2>Un espace de vente pret a etre publie.</h2>
-        <p>Le merchandising pourra s afficher ici une fois les produits, tarifs et conditions de vente confirmes.</p>
+        <h2>Un espace de vente prêt à être publié.</h2>
+        <p>Le merchandising pourra s'afficher ici une fois les produits, tarifs et conditions de vente confirmés.</p>
     </div>
 
     <div class="card-grid card-grid--three">

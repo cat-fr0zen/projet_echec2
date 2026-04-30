@@ -6,7 +6,7 @@ $authData = $siteData['auth'];
 
 <header class="site-header reveal reveal-1">
     <div class="brand-lockup">
-        <p class="eyebrow">Association d echecs de proximite</p>
+        <p class="eyebrow">Association d'échecs de proximité</p>
         <a class="brand" href="<?= e(route_url('accueil')) ?>"><?= e($siteData['brand']) ?></a>
         <p class="brand-caption"><?= e($siteData['city']) ?></p>
     </div>
@@ -31,7 +31,7 @@ $authData = $siteData['auth'];
             type="button"
             class="theme-toggle"
             data-theme-toggle
-            aria-label="<?= $siteData['theme'] === 'dark' ? 'Activer le theme clair' : 'Activer le theme sombre' ?>"
+            aria-label="<?= $siteData['theme'] === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre' ?>"
             aria-pressed="<?= $siteData['theme'] === 'dark' ? 'true' : 'false' ?>"
         >
             <span class="theme-icon theme-icon--sun" aria-hidden="true">☀</span>
@@ -81,15 +81,15 @@ $authData = $siteData['auth'];
                     </div>
                     <div class="burger-links">
                         <a class="burger-link" href="<?= e(route_url('profil')) ?>">Profil</a>
-                        <a class="burger-link" href="<?= e(route_url('parametres')) ?>">Parametres</a>
+                        <a class="burger-link" href="<?= e(route_url('parametres')) ?>">Paramètres</a>
                     </div>
                     <form method="post" action="<?= e(route_url($currentPage)) ?>" class="burger-logout-form">
                         <input type="hidden" name="action" value="logout">
                         <input type="hidden" name="csrf_token" value="<?= e($siteData['csrf_token']) ?>">
-                        <button type="submit" class="button button-secondary burger-logout-button">Deconnexion</button>
+                        <button type="submit" class="button button-secondary burger-logout-button">Déconnexion</button>
                     </form>
                 <?php else: ?>
-                    <p class="burger-helper">Connecte-toi pour acceder au profil, aux reglages et a la redaction d articles.</p>
+                    <p class="burger-helper">Connecte-toi pour accéder au profil, aux réglages et à la rédaction d'articles.</p>
                     <div class="burger-auth-actions">
                         <button type="button" class="button button-primary" data-auth-open data-auth-tab="login">Connexion</button>
                         <button type="button" class="button button-secondary" data-auth-open data-auth-tab="register">Inscription</button>

@@ -21,11 +21,11 @@ $formOld = $formState['old'] ?? [];
         aria-describedby="auth-modal-description"
     >
         <div class="auth-modal-panel">
-            <button type="button" class="auth-close" data-auth-close aria-label="Fermer la fenetre">×</button>
+            <button type="button" class="auth-close" data-auth-close aria-label="Fermer la fenêtre">×</button>
             <p class="eyebrow">Espace membre</p>
             <h2 id="auth-modal-title"><?= e($authModal['title']) ?></h2>
             <p id="auth-modal-description" class="auth-modal-description">
-                Connecte-toi avec ton email ou cree ton compte membre pour acceder au profil, aux articles et aux reglages.
+                Connecte-toi avec ton email ou crée ton compte membre pour accéder au profil, aux articles et aux réglages.
             </p>
 
             <div class="auth-tab-row" role="tablist" aria-label="Connexion ou inscription">
@@ -110,7 +110,7 @@ $formOld = $formState['old'] ?? [];
                         </label>
 
                         <label class="form-group">
-                            <span>Prenom</span>
+                            <span>Prénom</span>
                             <input type="text" name="first_name" required maxlength="100" autocomplete="given-name" value="<?= e((string) ($formOld['first_name'] ?? '')) ?>">
                         </label>
                     </div>
@@ -135,7 +135,7 @@ $formOld = $formState['old'] ?? [];
                         <textarea name="profile_description" rows="4" maxlength="1200"><?= e((string) ($formOld['profile_description'] ?? '')) ?></textarea>
                     </label>
 
-                    <button type="submit" class="button button-primary auth-submit">Creer le compte</button>
+                    <button type="submit" class="button button-primary auth-submit">Créer le compte</button>
                 </form>
             </div>
         </div>

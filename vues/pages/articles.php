@@ -15,20 +15,20 @@ $myArticles = $siteData['my_articles'];
         <div class="section-head section-head--compact">
             <p class="eyebrow">Publication publique</p>
             <h2>Articles visibles par tous.</h2>
-            <p>Seuls les articles valides par un futur role administrateur sont destines a la publication publique.</p>
+            <p>Seuls les articles validés par un futur rôle administrateur sont destinés à la publication publique.</p>
         </div>
 
         <?php if ($publishedArticles === []): ?>
             <div class="empty-state">
                 <p class="card-tag">Aucune publication</p>
                 <h3>Aucun article public pour le moment.</h3>
-                <p>Le cadre editorial est pret. Les publications apparaîtront ici une fois moderees et validees.</p>
+                <p>Le cadre éditorial est prêt. Les publications apparaîtront ici une fois modérées et validées.</p>
             </div>
         <?php else: ?>
             <div class="stack-list">
                 <?php foreach ($publishedArticles as $article): ?>
                     <article class="schedule-item">
-                        <p class="card-tag">Publie</p>
+                        <p class="card-tag">Publié</p>
                         <h3><?= e($article['title']) ?></h3>
                         <p><?= e($article['excerpt']) ?></p>
                     </article>
@@ -40,8 +40,8 @@ $myArticles = $siteData['my_articles'];
     <article class="panel panel-contrast">
         <div class="section-head section-head--compact">
             <p class="eyebrow">Soumission membre</p>
-            <h2>Rediger et proposer un article.</h2>
-            <p>Les membres connectes peuvent proposer un article. Il reste en attente de validation avant sa publication.</p>
+            <h2>Rédiger et proposer un article.</h2>
+            <p>Les membres connectés peuvent proposer un article. Il reste en attente de validation avant sa publication.</p>
         </div>
 
         <?php if ($authData['is_authenticated']): ?>
@@ -55,7 +55,7 @@ $myArticles = $siteData['my_articles'];
                 </label>
 
                 <label class="form-group">
-                    <span>Resume</span>
+                    <span>Résumé</span>
                     <textarea name="excerpt" rows="3" maxlength="280" required></textarea>
                 </label>
 
@@ -64,13 +64,13 @@ $myArticles = $siteData['my_articles'];
                     <textarea name="content" rows="8" required></textarea>
                 </label>
 
-                <button type="submit" class="button button-primary">Proposer l article</button>
+                <button type="submit" class="button button-primary">Proposer l'article</button>
             </form>
         <?php else: ?>
             <div class="empty-state empty-state--contrast">
                 <p class="card-tag">Connexion requise</p>
                 <h3>Connecte-toi pour proposer un article.</h3>
-                <p>La redaction est reservee aux membres inscrits avec un compte email.</p>
+                <p>La rédaction est réservée aux membres inscrits avec un compte email.</p>
                 <button type="button" class="button button-primary" data-auth-open data-auth-tab="login">Connexion / inscription</button>
             </div>
         <?php endif; ?>
@@ -81,21 +81,21 @@ $myArticles = $siteData['my_articles'];
     <section class="section-block reveal reveal-4">
         <div class="section-head">
             <p class="eyebrow">Mes soumissions</p>
-            <h2>Articles en attente ou deja enregistres.</h2>
-            <p>Cette liste est visible cote membre pour suivre les articles proposes depuis le compte connecte.</p>
+            <h2>Articles en attente ou déjà enregistrés.</h2>
+            <p>Cette liste est visible côté membre pour suivre les articles proposés depuis le compte connecté.</p>
         </div>
 
         <?php if ($myArticles === []): ?>
             <div class="empty-state">
                 <p class="card-tag">Aucune soumission</p>
-                <h3>Tu n as pas encore propose d article.</h3>
+                <h3>Tu n'as pas encore proposé d'article.</h3>
                 <p>Utilise le formulaire ci-dessus pour enregistrer ton premier contenu.</p>
             </div>
         <?php else: ?>
             <div class="card-grid card-grid--three">
                 <?php foreach ($myArticles as $article): ?>
                     <article class="info-card">
-                        <p class="card-tag"><?= e($article['status'] === 'approved' ? 'Publie' : 'En attente') ?></p>
+                        <p class="card-tag"><?= e($article['status'] === 'approved' ? 'Publié' : 'En attente') ?></p>
                         <h3><?= e($article['title']) ?></h3>
                         <p><?= e($article['excerpt']) ?></p>
                     </article>
