@@ -5,7 +5,6 @@
 Ce projet est un site web de club d'echecs.
 Il permet de presenter le club, de publier des contenus, de gerer des comptes membres et de poser une base solide pour une vraie exploitation (activites, adhesion, mediatheque, boutique, conformite).
 
-L'application actuelle est un projet PHP organise en MVC, avec une base Oracle preparee dans `base_de_donnees/oracle/BDD_echec_v1.sql`.
 
 ## Objectifs principaux
 
