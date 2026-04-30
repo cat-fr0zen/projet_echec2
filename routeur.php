@@ -8,6 +8,7 @@ $cheminDemande = parse_url($uriDemandee, PHP_URL_PATH);
 $cheminNormalise = '/' . ltrim(rawurldecode(is_string($cheminDemande) ? $cheminDemande : '/'), '/');
 
 $prefixesBloques = [
+    '/MVC/',
     '/controleurs/',
     '/donnees/',
     '/journaux/',

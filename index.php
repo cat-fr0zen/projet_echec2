@@ -31,13 +31,13 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
-require_once __DIR__ . '/modeles/ModeleSite.php';
-require_once __DIR__ . '/modeles/StockageJson.php';
-require_once __DIR__ . '/modeles/DepotUtilisateurs.php';
-require_once __DIR__ . '/modeles/DepotArticles.php';
-require_once __DIR__ . '/modeles/ServiceChessCom.php';
-require_once __DIR__ . '/controleurs/ControleurActions.php';
-require_once __DIR__ . '/controleurs/ControleurPages.php';
+require_once __DIR__ . '/MVC/modeles/ModeleSite.php';
+require_once __DIR__ . '/MVC/modeles/StockageJson.php';
+require_once __DIR__ . '/MVC/modeles/DepotUtilisateurs.php';
+require_once __DIR__ . '/MVC/modeles/DepotArticles.php';
+require_once __DIR__ . '/MVC/modeles/ServiceChessCom.php';
+require_once __DIR__ . '/MVC/controleurs/ControleurActions.php';
+require_once __DIR__ . '/MVC/controleurs/ControleurPages.php';
 
 function e(?string $valeur): string
 {
