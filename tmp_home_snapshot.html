@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Accueil, guide des pièces, connexion membre, cookies et cadre légal.">
+    <title>Accueil | Association d&#039;échecs</title>
+    <link rel="stylesheet" href="/ressources/styles/style.css?v=1778078844">
+</head>
+<body data-theme="light">
+    <a class="skip-link" href="#main-content">Aller au contenu</a>
+    <div class="page-noise" aria-hidden="true"></div>
+    <div class="site-shell">
+        
+<header class="site-header reveal reveal-1" data-site-header>
+    <div class="header-rail">
+        <div class="brand-lockup">
+            <a class="brand" href="/">Association d&#039;échecs</a>
+            <p class="brand-caption">Informations officielles en cours de validation</p>
+        </div>
+
+        <div class="header-main-nav">
+            <nav class="primary-nav" aria-label="Navigation principale">
+                                                        <a
+                        class="nav-link is-active"
+                        href="/"
+                        aria-current="page"                    >
+                        Accueil                    </a>
+                                                        <a
+                        class="nav-link"
+                        href="/mediatheque"
+                                            >
+                        Médiathèque                    </a>
+                                                        <a
+                        class="nav-link"
+                        href="/articles"
+                                            >
+                        Articles                    </a>
+                            </nav>
+        </div>
+
+        <div class="header-actions">
+                            <button type="button" class="header-cta" data-auth-open data-auth-tab="connexion">Connexion</button>
+            
+            <button
+                type="button"
+                class="theme-toggle"
+                data-theme-toggle
+                aria-label="Activer le thème sombre"
+                aria-pressed="false"
+            >
+                <span class="theme-icon theme-icon--sun" aria-hidden="true">
+                    <img class="theme-icon-image" src="/ressources/media/image/theme-soleil.svg" alt="">
+                </span>
+                <span class="theme-icon theme-icon--moon" aria-hidden="true">
+                    <img class="theme-icon-image" src="/ressources/media/image/theme-lune.svg" alt="">
+                </span>
+            </button>
+
+            <button
+                type="button"
+                class="burger-toggle"
+                data-burger-toggle
+                aria-expanded="false"
+                aria-controls="burger-panel"
+                aria-label="Ouvrir le menu"
+            >
+                <span class="burger-label">Menu</span>
+                <span class="burger-lines" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div id="burger-panel" class="burger-panel" data-burger-panel hidden aria-label="Menu secondaire">
+        <div class="burger-columns">
+            <section class="burger-group">
+                <p class="eyebrow">Navigation</p>
+                <div class="burger-links">
+                                            <a class="burger-link" href="/club">Le club</a>
+                                            <a class="burger-link" href="/activites">Activités</a>
+                                            <a class="burger-link" href="/contact">Contact</a>
+                                    </div>
+            </section>
+
+            <section class="burger-group">
+                <p class="eyebrow">Espace membre</p>
+                                    <p class="burger-helper">Connecte-toi pour accéder aux guides, à la boutique et à ton profil membre.</p>
+                    <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
+                            </section>
+        </div>
+    </div>
+</header>
+
+        
+        <main id="main-content" class="page-shell" tabindex="-1">
+            
+<section class="hero-grid">
+    <article class="panel hero-copy reveal reveal-2">
+        <p class="eyebrow">Site officiel</p>
+        <h1>Le jeu d&#039;échecs, pièce par pièce, membre par membre.</h1>
+        <p class="lead">Ce site combine un espace membre local, un cadre de publication responsable, une gestion des cookies et des contenus accessibles après consentement.</p>
+
+        <div class="button-row">
+            <a class="button button-primary" href="#legal-hub">Voir le cadre légal</a>
+                    </div>
+
+        <p class="quick-note">Connexion par email, thème clair ou sombre, menu burger et articles en attente de modération.</p>
+    </article>
+
+    <aside class="panel dammier_panel reveal reveal-3">
+        <div
+            class="dammier_widget"
+            data-dammier-root
+            data-dammier-is-authenticated="false"
+            data-dammier-submit-url="/"
+            data-dammier-csrf="65f4c3247b25a8d5bdf940c3e7fb86416d39f7791c3f442a03bde5842bda44f4"
+        >
+            <div class="dammier_header">
+                <div>
+                    <p class="eyebrow">Casse-tête hebdomadaire</p>
+                    <h2>Couloir en deux temps</h2>
+                </div>
+            </div>
+
+            <p class="dammier_intro">Les blancs jouent et forcent le mat en deux coups.</p>
+            <p class="dammier_hint">Résolvez le casse-tête directement sur le plateau. Les noirs répondent automatiquement, et le score compte vos tentatives.</p>
+
+            <div class="dammier_layout">
+                <div class="dammier_board_panel">
+                    <div class="dammier_board" data-dammier-board aria-label="Damier interactif"></div>
+                    <div class="dammier_meta">
+                        <span class="dammier_side">Trait: Blancs</span>
+                        <span class="dammier_timer" data-dammier-timer>00:00</span>
+                    </div>
+                </div>
+
+                <div class="dammier_play_panel">
+                    <p class="dammier_prompt" data-dammier-prompt>Clique sur une pièce, puis sur sa case d'arrivée.</p>
+                    <div class="dammier_status">
+                        <span class="dammier_status_chip" data-dammier-selection>Aucune pièce sélectionnée.</span>
+                    </div>
+                    <p class="dammier_feedback" data-dammier-feedback>Le score compte le nombre total de tentatives jusqu’à la résolution.</p>
+                    <p class="dammier_hint_text" data-dammier-hint-text hidden></p>
+
+                    <div class="dammier_actions">
+                        <button type="button" class="button button-secondary dammier_action" data-dammier-reset>Rejouer</button>
+                        <div class="dammier_side_actions">
+                            <button type="button" class="button button-secondary dammier_icon_action" data-dammier-hint-toggle aria-label="Afficher un indice">&#128161;</button>
+                            <details class="dammier_classement" data-dammier-locked="true">
+                                <summary>+ classement</summary>
+                                                                    <p class="dammier_ranking_locked">Connecte-toi pour voir le classement hebdomadaire.</p>
+                                                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script type="application/json" data-dammier-payload>{"dammier_puzzle":{"dammier_id":"dammier_couloir_deux_temps","dammier_title":"Couloir en deux temps","dammier_description":"Les blancs jouent et forcent le mat en deux coups.","dammier_instruction":"Résolvez le casse-tête directement sur le plateau. Les noirs répondent automatiquement, et le score compte vos tentatives.","dammier_fen":"8/8/8/8/2Q5/K7/8/1k6 w - - 0 1","dammier_side_to_move":"w","dammier_solution":["c4c7","c7c1"],"dammier_replies":["b1a1"],"dammier_hints":["Le premier coup n\u0027est pas un mat immédiat : il faut enfermer le roi noir encore davantage.","Après la réponse noire forcée, la même colonne devient le chemin du mat."],"dammier_source":"pool_local","dammier_week_key":"2026-W19","dammier_generated_at":"2026-05-06T14:47:35+00:00"},"dammier_classement":[],"dammier_submit_url":"/","dammier_is_authenticated":false}</script>
+        </div>
+    </aside>
+</section>
+
+<section class="section-block reveal reveal-4">
+    <div class="section-head">
+        <p class="eyebrow">Carrousel des pièces</p>
+        <h2>Chaque pièce, son mouvement et son utilité.</h2>
+        <p>
+            Le carrousel tourne automatiquement pour rappeler les fondamentaux du jeu d'échecs.
+            Les commandes restent accessibles si l'utilisateur veut reprendre la main.
+        </p>
+    </div>
+
+    <div
+        class="piece-carousel"
+        data-piece-carousel
+        data-autoplay-ms="6800"
+        style="--piece-turn-duration: 6800ms;"
+        tabindex="0"
+        aria-roledescription="carousel"
+        aria-label="Carrousel des pièces d'échecs"
+    >
+        <div class="piece-stage">
+                            <article
+                    class="piece-slide is-active"
+                    data-piece-slide
+                    aria-hidden="false"
+                >
+                    <div class="piece-visual">
+                        <div class="piece-stage-3d" data-piece-tilt>
+                            <span class="piece-aura" aria-hidden="true"></span>
+                            <span class="piece-shadow-disc" aria-hidden="true"></span>
+                            <span class="piece-glyph-stack" aria-hidden="true">
+                                <span class="piece-glyph piece-glyph--back">?</span>
+                                <span class="piece-glyph piece-glyph--mid">?</span>
+                                <span class="piece-glyph piece-glyph--front">?</span>
+                            </span>
+                            <span class="piece-plinth" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="piece-meta">
+                        <p class="card-tag">Pièce 1</p>
+                        <h3>Pion</h3>
+                        <p class="piece-role">Le pion avance case par case, capture en diagonale et peut se promouvoir en fin de course.</p>
+                    </div>
+                </article>
+                            <article
+                    class="piece-slide"
+                    data-piece-slide
+                    aria-hidden="true"
+                >
+                    <div class="piece-visual">
+                        <div class="piece-stage-3d" data-piece-tilt>
+                            <span class="piece-aura" aria-hidden="true"></span>
+                            <span class="piece-shadow-disc" aria-hidden="true"></span>
+                            <span class="piece-glyph-stack" aria-hidden="true">
+                                <span class="piece-glyph piece-glyph--back">?</span>
+                                <span class="piece-glyph piece-glyph--mid">?</span>
+                                <span class="piece-glyph piece-glyph--front">?</span>
+                            </span>
+                            <span class="piece-plinth" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="piece-meta">
+                        <p class="card-tag">Pièce 2</p>
+                        <h3>Tour</h3>
+                        <p class="piece-role">La tour se déplace en ligne droite sur les rangs et les colonnes et domine les couloirs ouverts.</p>
+                    </div>
+                </article>
+                            <article
+                    class="piece-slide"
+                    data-piece-slide
+                    aria-hidden="true"
+                >
+                    <div class="piece-visual">
+                        <div class="piece-stage-3d" data-piece-tilt>
+                            <span class="piece-aura" aria-hidden="true"></span>
+                            <span class="piece-shadow-disc" aria-hidden="true"></span>
+                            <span class="piece-glyph-stack" aria-hidden="true">
+                                <span class="piece-glyph piece-glyph--back">?</span>
+                                <span class="piece-glyph piece-glyph--mid">?</span>
+                                <span class="piece-glyph piece-glyph--front">?</span>
+                            </span>
+                            <span class="piece-plinth" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="piece-meta">
+                        <p class="card-tag">Pièce 3</p>
+                        <h3>Cavalier</h3>
+                        <p class="piece-role">Le cavalier se déplace en L et peut sauter par-dessus les autres pièces.</p>
+                    </div>
+                </article>
+                            <article
+                    class="piece-slide"
+                    data-piece-slide
+                    aria-hidden="true"
+                >
+                    <div class="piece-visual">
+                        <div class="piece-stage-3d" data-piece-tilt>
+                            <span class="piece-aura" aria-hidden="true"></span>
+                            <span class="piece-shadow-disc" aria-hidden="true"></span>
+                            <span class="piece-glyph-stack" aria-hidden="true">
+                                <span class="piece-glyph piece-glyph--back">?</span>
+                                <span class="piece-glyph piece-glyph--mid">?</span>
+                                <span class="piece-glyph piece-glyph--front">?</span>
+                            </span>
+                            <span class="piece-plinth" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="piece-meta">
+                        <p class="card-tag">Pièce 4</p>
+                        <h3>Fou</h3>
+                        <p class="piece-role">Le fou se déplace en diagonale et contrôle de longues trajectoires sur une seule couleur.</p>
+                    </div>
+                </article>
+                            <article
+                    class="piece-slide"
+                    data-piece-slide
+                    aria-hidden="true"
+                >
+                    <div class="piece-visual">
+                        <div class="piece-stage-3d" data-piece-tilt>
+                            <span class="piece-aura" aria-hidden="true"></span>
+                            <span class="piece-shadow-disc" aria-hidden="true"></span>
+                            <span class="piece-glyph-stack" aria-hidden="true">
+                                <span class="piece-glyph piece-glyph--back">?</span>
+                                <span class="piece-glyph piece-glyph--mid">?</span>
+                                <span class="piece-glyph piece-glyph--front">?</span>
+                            </span>
+                            <span class="piece-plinth" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="piece-meta">
+                        <p class="card-tag">Pièce 5</p>
+                        <h3>Reine</h3>
+                        <p class="piece-role">La reine combine les mouvements de la tour et du fou et reste la pièce la plus mobile.</p>
+                    </div>
+                </article>
+                            <article
+                    class="piece-slide"
+                    data-piece-slide
+                    aria-hidden="true"
+                >
+                    <div class="piece-visual">
+                        <div class="piece-stage-3d" data-piece-tilt>
+                            <span class="piece-aura" aria-hidden="true"></span>
+                            <span class="piece-shadow-disc" aria-hidden="true"></span>
+                            <span class="piece-glyph-stack" aria-hidden="true">
+                                <span class="piece-glyph piece-glyph--back">?</span>
+                                <span class="piece-glyph piece-glyph--mid">?</span>
+                                <span class="piece-glyph piece-glyph--front">?</span>
+                            </span>
+                            <span class="piece-plinth" aria-hidden="true"></span>
+                        </div>
+                    </div>
+                    <div class="piece-meta">
+                        <p class="card-tag">Pièce 6</p>
+                        <h3>Roi</h3>
+                        <p class="piece-role">Le roi avance d&#039;une case autour de lui et sa sécurité décide de toute la partie.</p>
+                    </div>
+                </article>
+                    </div>
+
+        <div class="piece-controls">
+            <button type="button" class="carousel-button" data-piece-prev aria-label="Voir la pièce précédente">Précédente</button>
+            <div class="piece-indicators" aria-label="Sélection des pièces">
+                                    <button
+                        type="button"
+                        class="piece-indicator is-active"
+                        data-piece-indicator="0"
+                        aria-label="Afficher Pion"
+                    ></button>
+                                    <button
+                        type="button"
+                        class="piece-indicator"
+                        data-piece-indicator="1"
+                        aria-label="Afficher Tour"
+                    ></button>
+                                    <button
+                        type="button"
+                        class="piece-indicator"
+                        data-piece-indicator="2"
+                        aria-label="Afficher Cavalier"
+                    ></button>
+                                    <button
+                        type="button"
+                        class="piece-indicator"
+                        data-piece-indicator="3"
+                        aria-label="Afficher Fou"
+                    ></button>
+                                    <button
+                        type="button"
+                        class="piece-indicator"
+                        data-piece-indicator="4"
+                        aria-label="Afficher Reine"
+                    ></button>
+                                    <button
+                        type="button"
+                        class="piece-indicator"
+                        data-piece-indicator="5"
+                        aria-label="Afficher Roi"
+                    ></button>
+                            </div>
+            <button type="button" class="carousel-button" data-piece-next aria-label="Voir la pièce suivante">Suivante</button>
+        </div>
+    </div>
+</section>
+
+<section class="split-grid reveal reveal-5">
+    <article class="panel">
+        <div class="section-head section-head--compact">
+            <p class="eyebrow">Fonctionnalités</p>
+            <h2>Des cadres prêts pour les informations et l'espace membre.</h2>
+            <p>Le design reste en place sans inventer de données tant que l'association n'a rien confirmé.</p>
+        </div>
+
+        <div class="stack-list">
+                            <div class="schedule-item">
+                    <div class="schedule-topline">
+                        <span class="schedule-day">Bloc 01</span>
+                        <span class="schedule-slot">À publier</span>
+                    </div>
+                    <h3>Identité associative</h3>
+                    <p>Le nom officiel, le siège, les responsables et les informations publiques seront affichés ici.</p>
+                </div>
+                            <div class="schedule-item">
+                    <div class="schedule-topline">
+                        <span class="schedule-day">Bloc 02</span>
+                        <span class="schedule-slot">À publier</span>
+                    </div>
+                    <h3>Organisation pratique</h3>
+                    <p>Les horaires, le lieu de jeu, les groupes et les modalités d&#039;accueil seront ajoutés ici.</p>
+                </div>
+                            <div class="schedule-item">
+                    <div class="schedule-topline">
+                        <span class="schedule-day">Bloc 03</span>
+                        <span class="schedule-slot">À publier</span>
+                    </div>
+                    <h3>Coordonnées et documents</h3>
+                    <p>Les contacts, les pièces utiles et les informations de communication seront centralisés ici.</p>
+                </div>
+                    </div>
+    </article>
+
+    <article class="panel panel-contrast">
+        <div class="section-head section-head--compact">
+            <p class="eyebrow">Cadre juridique</p>
+            <h2>Ce que le site rend visible dès la page d'accueil.</h2>
+            <p>Confidentialité, consentement, propriété intellectuelle, droit à l'image et publication responsable restent explicites.</p>
+        </div>
+
+        <ul class="bullet-list">
+                            <li>Le consentement cookies doit être accepté avant l&#039;entrée sur le site.</li>
+                            <li>Les comptes membres reposent sur une session PHP, un mot de passe haché et des formulaires protégés.</li>
+                            <li>Les articles, images et vidéos proposés par les membres ne sont jamais publiés automatiquement.</li>
+                            <li>Le design, les contenus, les médias et les publications du site relèvent de la propriété intellectuelle.</li>
+                    </ul>
+    </article>
+</section>
+
+<section class="section-block reveal reveal-6">
+    <div class="section-head">
+        <p class="eyebrow">Informations essentielles</p>
+        <h2>Trois blocs sans contenu fictif.</h2>
+        <p>Les cartes conservent le design du site tout en affichant uniquement un cadre générique et vérifiable.</p>
+    </div>
+
+    <div class="card-grid card-grid--three">
+                    <article class="info-card">
+                <p class="metric-value">01</p>
+                <h3>Espace membre</h3>
+                <p>Connexion locale par email, profil personnel et réglages enregistrés.</p>
+            </article>
+                    <article class="info-card">
+                <p class="metric-value">02</p>
+                <h3>Cookies encadrés</h3>
+                <p>Consentement obligatoire, préférence de thème et session membre.</p>
+            </article>
+                    <article class="info-card">
+                <p class="metric-value">03</p>
+                <h3>Publication modérée</h3>
+                <p>Les articles, photos et vidéos restent en attente de validation.</p>
+            </article>
+            </div>
+</section>
+        </main>
+    </div>
+    
+<footer id="legal-hub" class="site-footer reveal reveal-6">
+    <div class="site-footer__inner">
+        <section class="footer-compact">
+            <div class="footer-compact-bar">
+                <div class="footer-compact-brand">
+                    <p class="eyebrow">Cadre du site</p>
+                    <h2 class="footer-title">Association d&#039;échecs</h2>
+                    <p class="footer-text">Cadre légal, espace membre, publication responsable et contenus validés par l&#039;association.</p>
+                </div>
+
+                <div class="footer-compact-meta">
+                    <p class="footer-inline-line">
+                        <strong>Crédits :</strong>
+                        Matthéo Mullois                    </p>
+                    <p class="footer-inline-line">
+                        <strong>Publication associative :</strong>
+                        Jean Patrick JORON                    </p>
+                    <p class="footer-inline-line">
+                        <strong>Contact :</strong>
+                        Adresse de contact à publier                    </p>
+                    <p class="footer-inline-line">
+                        <strong>Adresse :</strong>
+                        Coordonnées postales à publier                    </p>
+                </div>
+            </div>
+
+            <nav class="footer-anchor-list" aria-label="Accès rapides aux documents obligatoires">
+                                    <button
+                        type="button"
+                        class="footer-anchor footer-anchor--button"
+                        data-legal-open="legal-notice"
+                    >
+                        Mentions légales                    </button>
+                                    <button
+                        type="button"
+                        class="footer-anchor footer-anchor--button"
+                        data-legal-open="privacy-policy"
+                    >
+                        Politique de confidentialité                    </button>
+                                    <button
+                        type="button"
+                        class="footer-anchor footer-anchor--button"
+                        data-legal-open="terms-of-use"
+                    >
+                        Conditions d&#039;utilisation                    </button>
+                                <button
+                    type="button"
+                    class="footer-anchor footer-anchor--button"
+                    data-legal-open="cookie-register"
+                >
+                    Cookies
+                </button>
+            </nav>
+        </section>
+
+        <div class="footer-meta-bar">
+            <p class="footer-meta">
+                &copy; 2026 Association d&#039;échecs.
+                Conception du site : Matthéo Mullois.
+                Publication associative : Jean Patrick JORON.
+                Tous droits réservés.
+            </p>
+        </div>
+    </div>
+
+            <div
+            class="legal-modal"
+            data-legal-modal="legal-notice"
+            hidden
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="legal-notice-title"
+        >
+            <div class="legal-modal-panel">
+                <button type="button" class="legal-modal-close" data-legal-close aria-label="Fermer la fenêtre">×</button>
+                <p class="eyebrow">Document obligatoire</p>
+                <h2 id="legal-notice-title" class="footer-title footer-title--legal">
+                    Mentions légales                </h2>
+                <p class="footer-text">Édition, publication, données, modération, propriété intellectuelle et responsabilités.</p>
+
+                <div class="legal-modal-body">
+                                            <section class="legal-section">
+                            <h3>Édition et publication</h3>
+                            <ul class="legal-list">
+                                                                    <li>Conception et développement du site : Matthéo Mullois.</li>
+                                                                    <li>Publication associative et validation institutionnelle : Jean Patrick JORON.</li>
+                                                                    <li>Les informations publiques de l&#039;association doivent être complétées et validées par les responsables habilités avant publication définitive.</li>
+                                                            </ul>
+                        </section>
+                                            <section class="legal-section">
+                            <h3>Espace membre et modération</h3>
+                            <ul class="legal-list">
+                                                                    <li>Les utilisateurs peuvent créer un compte membre via leur email et un mot de passe sécurisé.</li>
+                                                                    <li>Les articles, images et vidéos soumis depuis l&#039;espace membre restent en attente de validation par un futur rôle administrateur avant publication publique.</li>
+                                                            </ul>
+                        </section>
+                                            <section class="legal-section">
+                            <h3>Propriété intellectuelle et droits d&#039;exploitation</h3>
+                            <ul class="legal-list">
+                                                                    <li>La structure, le design, les textes, les médias, les scripts, les visuels, les logos et les documents sont protégés par le droit d&#039;auteur et, le cas échéant, par le droit des marques.</li>
+                                                                    <li>Toute reproduction, adaptation, republication ou diffusion sans autorisation écrite préalable est interdite, hors exceptions légales.</li>
+                                                            </ul>
+                        </section>
+                                            <section class="legal-section">
+                            <h3>Images, vidéos et droit à l&#039;image</h3>
+                            <ul class="legal-list">
+                                                                    <li>Toute photo ou vidéo destinée à la médiathèque doit disposer d&#039;un fondement de diffusion, d&#039;une autorisation adaptée ou d&#039;un droit d&#039;exploitation documenté.</li>
+                                                                    <li>L&#039;association se réserve le droit de retirer immédiatement tout média en cas de doute sur les droits, l&#039;autorisation ou la conformité juridique.</li>
+                                                            </ul>
+                        </section>
+                                            <section class="legal-section">
+                            <h3>Responsabilité</h3>
+                            <ul class="legal-list">
+                                                                    <li>Malgré le soin apporté à la publication, l&#039;association et l&#039;auteur du site ne garantissent pas l&#039;absence totale d&#039;erreur, d&#039;omission ou d&#039;interruption.</li>
+                                                                    <li>Les contenus externes accessibles par lien restent sous la responsabilité de leurs propres éditeurs.</li>
+                                                            </ul>
+                        </section>
+                                    </div>
+            </div>
+        </div>
+            <div
+            class="legal-modal"
+            data-legal-modal="privacy-policy"
+            hidden
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="privacy-policy-title"
+        >
+            <div class="legal-modal-panel">
+                <button type="button" class="legal-modal-close" data-legal-close aria-label="Fermer la fenêtre">×</button>
+                <p class="eyebrow">Document obligatoire</p>
+                <h2 id="privacy-policy-title" class="footer-title footer-title--legal">
+                    Politique de confidentialité                </h2>
+                <p class="footer-text">Données traitées, comptes membres, cookies, conservation et droits des personnes.</p>
+
+                <div class="legal-modal-body">
+                                            <section class="legal-section">
+                            <h3>Données potentiellement traitées</h3>
+                            <ul class="legal-list">
+                                                                    <li>Nom, prénom, date de naissance facultative, email, mot de passe haché, description de profil et pseudo Chess.com facultatif saisis lors de l&#039;inscription ou de la mise à jour du profil.</li>
+                                                                    <li>Métadonnées minimales nécessaires à la sécurité du service, au consentement, à la session membre, à la modération éditoriale et aux journaux serveurs.</li>
+                                                                    <li>Le cas échéant, informations liées aux médias, à leurs ayants droit, à leur durée de diffusion et aux autorisations de publication.</li>
+                                                            </ul>
+                        </section>
+                                            <section class="legal-section">
+                            <h3>Finalités du traitement</h3>
+                            <ul class="legal-list">
+                                                                    <li>Créer et maintenir un compte membre, permettre la connexion par email, l&#039;édition du profil, la liaison facultative à un pseudo Chess.com public et la création d&#039;articles en attente de modération.</li>
+                                                                    <li>Administrer le site, assurer la sécurité technique, la modération et conserver la preuve du consentement lorsque cela est nécessaire.</li>
+                                                                    <li>Préparer la gestion future d&#039;une médiathèque, d&#039;un espace boutique et d&#039;une base Oracle structurée pour la maintenance long terme.</li>
+                                                            </ul>
+                        </section>
+                                            <section class="legal-section">
+                            <h3>Cookies, stockage et conservation</h3>
+                            <ul class="legal-list">
+                                                                    <li>Un consentement obligatoire de première entrée est présenté avant l&#039;accès au contenu du site.</li>
+                                                                    <li>Le site utilise des cookies ou mécanismes similaires strictement limités à la session, au consentement et aux préférences d&#039;affichage.</li>
+                                                                    <li>Les durées de conservation définitives devront être validées et documentées par l&#039;association avant la mise en production finale.</li>
+                                                            </ul>
+                        </section>
+                                            <section class="legal-section">
+                            <h3>Droits des personnes</h3>
+                            <ul class="legal-list">
+                                                                    <li>Chaque personne dispose des droits d&#039;accès, de rectification, d&#039;effacement, de limitation, d&#039;opposition et, selon les cas, de portabilité.</li>
+                                                                    <li>Les demandes devront être traitées par le contact officiel de l&#039;association lorsqu&#039;il sera publié.</li>
+                                                            </ul>
+                        </section>
+                                    </div>
+            </div>
+        </div>
+            <div
+            class="legal-modal"
+            data-legal-modal="terms-of-use"
+            hidden
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="terms-of-use-title"
+        >
+            <div class="legal-modal-panel">
+                <button type="button" class="legal-modal-close" data-legal-close aria-label="Fermer la fenêtre">×</button>
+                <p class="eyebrow">Document obligatoire</p>
+                <h2 id="terms-of-use-title" class="footer-title footer-title--legal">
+                    Conditions d&#039;utilisation                </h2>
+                <p class="footer-text">Usage du site, espace membre, articles, médias, boutique et cadre associatif lié au jeu d&#039;échecs.</p>
+
+                <div class="legal-modal-body">
+                                            <section class="legal-section">
+                            <h3>Usage général</h3>
+                            <ul class="legal-list">
+                                                                    <li>L&#039;utilisateur s&#039;engage à consulter le site dans le respect de la loi, de l&#039;ordre public et de l&#039;objet associatif.</li>
+                                                                    <li>Toute tentative de détournement, extraction massive, nuisance technique, usurpation de compte ou publication malveillante est interdite.</li>
+                                                            </ul>
+                        </section>
+                                            <section class="legal-section">
+                            <h3>Comptes membres</h3>
+                            <ul class="legal-list">
+                                                                    <li>Chaque compte doit être créé avec un email valable et un mot de passe confidentiel choisi par l&#039;utilisateur.</li>
+                                                                    <li>L&#039;utilisateur reste responsable des informations qu&#039;il saisit dans son profil, y compris le pseudo Chess.com éventuellement renseigné, et dans les contenus qu&#039;il soumet.</li>
+                                                            </ul>
+                        </section>
+                                            <section class="legal-section">
+                            <h3>Articles, médias et boutique</h3>
+                            <ul class="legal-list">
+                                                                    <li>Les articles, médias du club, contenus de boutique et statistiques publiques liées à des services tiers peuvent être affichés, modifiés, refusés ou retirés selon les besoins de modération, de conformité ou de publication.</li>
+                                                                    <li>Aucune offre commerciale, publication ou diffusion de média ne vaut engagement définitif tant qu&#039;elle n&#039;a pas été publiée officiellement par l&#039;association.</li>
+                                                            </ul>
+                        </section>
+                                    </div>
+            </div>
+        </div>
+    
+    <div
+        class="legal-modal"
+        data-legal-modal="cookie-register"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cookie-register-title"
+    >
+        <div class="legal-modal-panel">
+            <button type="button" class="legal-modal-close" data-legal-close aria-label="Fermer la fenêtre">×</button>
+            <p class="eyebrow">Cookies déclarés</p>
+            <h2 id="cookie-register-title" class="footer-title footer-title--legal">Registre simplifié</h2>
+            <p class="footer-text">Cookies essentiels, consentement et préférences d'affichage.</p>
+
+            <div class="legal-modal-cookie-grid">
+                                    <article class="info-card">
+                        <p class="card-tag">Essentiel</p>
+                        <h3>PHPSESSID</h3>
+                        <p>Maintenir la session des membres connectés et sécuriser l&#039;accès au profil.</p>
+                    </article>
+                                    <article class="info-card">
+                        <p class="card-tag">Essentiel</p>
+                        <h3>site_consent</h3>
+                        <p>Conserver la preuve du consentement obligatoire à la confidentialité et aux cookies.</p>
+                    </article>
+                                    <article class="info-card">
+                        <p class="card-tag">Préférence</p>
+                        <h3>site_theme</h3>
+                        <p>Retenir le thème clair ou sombre choisi dans l&#039;interface.</p>
+                    </article>
+                            </div>
+        </div>
+    </div>
+</footer>
+    
+    <div
+        class="auth-modal"
+        data-auth-modal
+        data-auth-open-state="false"
+        data-auth-tab="connexion"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="auth-modal-title"
+        aria-describedby="auth-modal-description"
+    >
+        <div class="auth-modal-panel">
+            <button type="button" class="auth-close" data-auth-close aria-label="Fermer la fenêtre">×</button>
+            <p class="eyebrow">Espace membre</p>
+            <h2 id="auth-modal-title">Connexion et inscription</h2>
+            <p id="auth-modal-description" class="auth-modal-description">
+                Connexion rapide par email. La création de compte reste disponible dans la même fenêtre, sans surcharger les pages.
+            </p>
+
+            <div class="auth-tab-row" role="tablist" aria-label="Connexion ou création de compte">
+                <button
+                    type="button"
+                    class="auth-tab-button"
+                    data-auth-tab-trigger="connexion"
+                    role="tab"
+                    id="auth-tab-connexion"
+                    aria-controls="auth-panel-connexion"
+                    aria-selected="true"
+                >
+                    Connexion
+                </button>
+                <button
+                    type="button"
+                    class="auth-tab-button auth-tab-button--muted"
+                    data-auth-tab-trigger="inscription"
+                    role="tab"
+                    id="auth-tab-inscription"
+                    aria-controls="auth-panel-inscription"
+                    aria-selected="false"
+                >
+                    Créer un compte
+                </button>
+            </div>
+
+            
+            <div class="auth-panels">
+                <form
+                    method="post"
+                    action="/"
+                    class="auth-form"
+                    data-auth-panel="connexion"
+                    id="auth-panel-connexion"
+                    role="tabpanel"
+                    aria-labelledby="auth-tab-connexion"
+                                    >
+                    <input type="hidden" name="action" value="connexion">
+                    <input type="hidden" name="jeton_csrf" value="65f4c3247b25a8d5bdf940c3e7fb86416d39f7791c3f442a03bde5842bda44f4">
+                    <input type="hidden" name="page_redirection" value="accueil">
+
+                    <label class="form-group">
+                        <span>Email</span>
+                        <input type="email" name="courriel" required autocomplete="email" value="">
+                    </label>
+
+                    <label class="form-group">
+                        <span>Mot de passe</span>
+                        <input type="password" name="mot_de_passe" required minlength="8" autocomplete="current-password">
+                    </label>
+
+                    <button type="submit" class="button button-primary auth-submit">Se connecter</button>
+                </form>
+
+                <form
+                    method="post"
+                    action="/"
+                    class="auth-form auth-form--register"
+                    data-auth-panel="inscription"
+                    id="auth-panel-inscription"
+                    role="tabpanel"
+                    aria-labelledby="auth-tab-inscription"
+                    hidden                >
+                    <input type="hidden" name="action" value="inscription">
+                    <input type="hidden" name="jeton_csrf" value="65f4c3247b25a8d5bdf940c3e7fb86416d39f7791c3f442a03bde5842bda44f4">
+                    <input type="hidden" name="page_redirection" value="accueil">
+
+                    <div class="auth-grid">
+                        <label class="form-group">
+                            <span>Nom</span>
+                            <input type="text" name="nom" required maxlength="100" autocomplete="family-name" value="">
+                        </label>
+
+                        <label class="form-group">
+                            <span>Prénom</span>
+                            <input type="text" name="prenom" required maxlength="100" autocomplete="given-name" value="">
+                        </label>
+                    </div>
+
+                    <label class="form-group">
+                        <span>Date de naissance facultative</span>
+                        <input type="date" name="date_naissance" autocomplete="bday" value="">
+                    </label>
+
+                    <label class="form-group">
+                        <span>Email</span>
+                        <input type="email" name="courriel" required autocomplete="email" value="">
+                    </label>
+
+                    <label class="form-group">
+                        <span>Mot de passe</span>
+                        <input type="password" name="mot_de_passe" required minlength="8" autocomplete="new-password">
+                    </label>
+
+                    <label class="form-group">
+                        <span>Description du profil</span>
+                        <textarea name="description_profil" rows="4" maxlength="1200"></textarea>
+                    </label>
+
+                    <button type="submit" class="button button-primary auth-submit">Créer le compte</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    
+<div
+    class="consent-gate"
+    data-consent-root
+    data-consent-cookie="site_consent"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="consent-title"
+    aria-describedby="consent-description"
+>
+    <div class="consent-panel">
+        <p class="eyebrow">Accès au site</p>
+        <h2 id="consent-title">Validation obligatoire avant l&#039;entrée</h2>
+        <p id="consent-description" class="consent-text">Avant d&#039;accéder au site, vous devez accepter la politique de confidentialité, les conditions d&#039;utilisation et l&#039;usage des cookies essentiels et de préférence.</p>
+
+        <div class="consent-docs" aria-label="Documents à consulter">
+                            <article class="consent-mini-card">
+                    <h3>Mentions légales</h3>
+                    <p>Édition, publication, données, modération, propriété intellectuelle et responsabilités.</p>
+                </article>
+                            <article class="consent-mini-card">
+                    <h3>Politique de confidentialité</h3>
+                    <p>Données traitées, comptes membres, cookies, conservation et droits des personnes.</p>
+                </article>
+                            <article class="consent-mini-card">
+                    <h3>Conditions d&#039;utilisation</h3>
+                    <p>Usage du site, espace membre, articles, médias, boutique et cadre associatif lié au jeu d&#039;échecs.</p>
+                </article>
+                    </div>
+
+        <div class="consent-checks">
+                            <label class="consent-check">
+                    <input type="checkbox" data-consent-checkbox="0">
+                    <span>J&#039;ai lu la politique de confidentialité, y compris les informations sur les comptes membres, les images, les vidéos et la connexion par email.</span>
+                </label>
+                            <label class="consent-check">
+                    <input type="checkbox" data-consent-checkbox="1">
+                    <span>J&#039;accepte les cookies essentiels de session, de consentement et de préférence de thème.</span>
+                </label>
+                            <label class="consent-check">
+                    <input type="checkbox" data-consent-checkbox="2">
+                    <span>J&#039;ai pris connaissance des mentions légales, de la modération des articles, des médias et de la propriété intellectuelle.</span>
+                </label>
+                    </div>
+
+        <div class="button-row consent-actions">
+            <button type="button" class="button button-primary" data-consent-accept disabled>
+                Accepter et entrer sur le site            </button>
+        </div>
+        <p class="consent-text consent-note">Les documents complets restent accessibles en permanence dans le footer du site.</p>
+    </div>
+</div>
+    <script src="/ressources/scripts/site.js?v=1778078350" defer></script>
+    <script src="/ressources/scripts/dammier.js?v=1778078350" defer></script>
+</body>
+</html>
+
+
+

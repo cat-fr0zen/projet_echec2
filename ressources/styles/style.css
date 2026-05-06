@@ -449,7 +449,6 @@ p {
     font-size: clamp(1.5rem, 3vw, 2.2rem);
 }
 
-.dammier_badge,
 .dammier_side,
 .dammier_timer {
     padding: 0.45rem 0.7rem;
@@ -676,7 +675,6 @@ body[data-theme="dark"] .dammier_panel {
     background: linear-gradient(180deg, rgba(25, 35, 31, 0.98), rgba(34, 48, 43, 0.92));
 }
 
-body[data-theme="dark"] .dammier_badge,
 body[data-theme="dark"] .dammier_side,
 body[data-theme="dark"] .dammier_timer,
 body[data-theme="dark"] .dammier_feedback,

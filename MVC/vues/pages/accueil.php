@@ -56,7 +56,6 @@ $dammierPayload = [
                     <p class="eyebrow">Casse-tête hebdomadaire</p>
                     <h2><?= e((string) ($dammierPuzzle['dammier_title'] ?? 'Puzzle hebdomadaire')) ?></h2>
                 </div>
-                <span class="dammier_badge"><?= e((string) ($dammierPuzzle['dammier_week_key'] ?? 'Semaine')) ?></span>
             </div>
 
             <p class="dammier_intro"><?= e((string) ($dammierPuzzle['dammier_description'] ?? '')) ?></p>
