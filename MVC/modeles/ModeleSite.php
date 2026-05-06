@@ -326,8 +326,8 @@ final class ModeleSite
             'admin' => $this->page(
                 'Administration',
                 'admin.php',
-                'Tableau de bord de moderation, comptes, articles et mediatheque.',
-                intro: "Ce tableau de bord prive permet au president administrateur de gerer les comptes, les articles et les medias sans quitter le site."
+                'Tableau de bord de modération, comptes, articles et médiathèque.',
+                intro: "Ce tableau de bord privé permet au président administrateur de gérer les comptes, les articles et les médias sans quitter le site."
             ),
         ];
     }

@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Controleur de pages (GET).
  *
  * Responsabilites:
- * - determine l'utilisateur courant depuis la session
+ * - d?termin? l'utilisateur courant depuis la session
  * - applique les regles d'acces (visiteur/connecte/adherent/admin)
  * - assemble les donnees (site + depots JSON + service Chess.com)
  * - selectionne la vue (fichier PHP sous `MVC/vues/pages/`)
@@ -39,7 +39,7 @@ final class ControleurPages
 
         if ($utilisateurCourant !== null && ($utilisateurCourant['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF) {
             unset($_SESSION['identifiant_utilisateur']);
-            ajouter_message_flash('error', 'Votre compte n est plus actif. Merci de recontacter le club.');
+            ajouter_message_flash('error', "Votre compte n'est plus actif. Merci de recontacter le club.");
             rediriger_vers(url_route('accueil'));
         }
 
@@ -169,12 +169,12 @@ final class ControleurPages
         $estAdmin = $this->estAdmin($utilisateur);
 
         if (in_array($segment, ['guide', 'boutique', 'profil', 'parametres'], true) && !$estConnecte) {
-            ajouter_message_flash('error', 'Connecte-toi pour acceder a cette page.');
+            ajouter_message_flash('error', 'Connecte-toi pour accéder à cette page.');
             rediriger_vers(url_route('accueil'));
         }
 
         if ($segment === 'admin' && !$estAdmin) {
-            ajouter_message_flash('error', 'Acces reserve a l administrateur du site.');
+            ajouter_message_flash('error', "Accès réservé à l'administrateur du site.");
             rediriger_vers(url_route('accueil'));
         }
     }
@@ -285,8 +285,8 @@ final class ControleurPages
     {
         return match ($role) {
             DepotUtilisateurs::ROLE_ADMIN => 'Administrateur',
-            DepotUtilisateurs::ROLE_ADHERENT => 'Adherent',
-            DepotUtilisateurs::ROLE_CONNECTE => 'Compte connecte',
+            DepotUtilisateurs::ROLE_ADHERENT => 'Adhérent',
+            DepotUtilisateurs::ROLE_CONNECTE => 'Compte connecté',
             default => 'Visiteur',
         };
     }
@@ -294,8 +294,8 @@ final class ControleurPages
     private function libelleAdhesion(string $statutAdhesion): string
     {
         return match ($statutAdhesion) {
-            DepotUtilisateurs::STATUT_ADHESION_ACTIVE => 'Adhesion active',
-            default => 'Non adherent',
+            DepotUtilisateurs::STATUT_ADHESION_ACTIVE => 'Adhésion active',
+            default => 'Non adhérent',
         };
     }
 }

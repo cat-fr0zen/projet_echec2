@@ -24,8 +24,8 @@ $memberOrders = $siteData['member_orders'] ?? [];
     <article class="panel">
         <div class="section-head section-head--compact">
             <p class="eyebrow">Catalogue</p>
-            <h2>Commander depuis l espace membre.</h2>
-            <p>Les visiteurs ne voient pas cette page. Les comptes connectes et les adherents peuvent enregistrer une commande locale.</p>
+            <h2>Commander depuis l'espace membre.</h2>
+            <p>Les visiteurs ne voient pas cette page. Les comptes connectés et les adhérents peuvent enregistrer une commande locale.</p>
         </div>
 
         <div class="card-grid card-grid--three">
@@ -34,7 +34,7 @@ $memberOrders = $siteData['member_orders'] ?? [];
                     <p class="card-tag"><?= e((string) ($carteBoutique['type'] ?? 'Produit')) ?></p>
                     <h3><?= e((string) ($carteBoutique['titre'] ?? 'Produit')) ?></h3>
                     <p><?= e((string) ($carteBoutique['texte'] ?? '')) ?></p>
-                    <p class="status-pill"><?= e((string) ($carteBoutique['statut'] ?? 'Bientot')) ?></p>
+                    <p class="status-pill"><?= e((string) ($carteBoutique['statut'] ?? 'Bientôt')) ?></p>
 
                     <form method="post" action="<?= e(url_route('boutique')) ?>" class="article-form">
                         <input type="hidden" name="action" value="order_product">
@@ -52,14 +52,14 @@ $memberOrders = $siteData['member_orders'] ?? [];
         <div class="section-head section-head--compact">
             <p class="eyebrow">Mes commandes</p>
             <h2>Suivre le statut du merchandising.</h2>
-            <p>Chaque commande enregistree apparait ici avec son statut actuel.</p>
+            <p>Chaque commande enregistrée apparaît ici avec son statut actuel.</p>
         </div>
 
         <?php if ($memberOrders === []): ?>
             <div class="empty-state empty-state--contrast">
                 <p class="card-tag">Aucune commande</p>
-                <h3>Ton compte n a encore rien commande.</h3>
-                <p>Quand tu reserveras un produit, son suivi apparaitra ici.</p>
+                <h3>Ton compte n'a encore rien command?.</h3>
+                <p>Quand tu réserveras un produit, son suivi apparaîtra ici.</p>
             </div>
         <?php else: ?>
             <div class="stack-list">

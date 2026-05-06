@@ -34,7 +34,7 @@ $dammierPayload = [
         <p class="lead"><?= e($pageData['hero_text']) ?></p>
 
         <div class="button-row">
-            <a class="button button-primary" href="#legal-hub">Voir le cadre legal</a>
+            <a class="button button-primary" href="#legal-hub">Voir le cadre légal</a>
             <?php if ($authData['is_authenticated']): ?>
                 <a class="button button-secondary" href="<?= e(url_route('profil')) ?>">Voir mon profil</a>
             <?php endif; ?>
@@ -53,7 +53,7 @@ $dammierPayload = [
         >
             <div class="dammier_header">
                 <div>
-                    <p class="eyebrow">Casse-tete hebdomadaire</p>
+                    <p class="eyebrow">Casse-tête hebdomadaire</p>
                     <h2><?= e((string) ($dammierPuzzle['dammier_title'] ?? 'Puzzle hebdomadaire')) ?></h2>
                 </div>
                 <span class="dammier_badge"><?= e((string) ($dammierPuzzle['dammier_week_key'] ?? 'Semaine')) ?></span>
@@ -72,11 +72,11 @@ $dammierPayload = [
                 </div>
 
                 <div class="dammier_play_panel">
-                    <p class="dammier_prompt" data-dammier-prompt>Clique sur une piece, puis sur sa case d'arrivee.</p>
+                    <p class="dammier_prompt" data-dammier-prompt>Clique sur une pièce, puis sur sa case d'arrivée.</p>
                     <div class="dammier_status">
-                        <span class="dammier_status_chip" data-dammier-selection>Aucune piece selectionnee.</span>
+                        <span class="dammier_status_chip" data-dammier-selection>Aucune pièce sélectionnée.</span>
                     </div>
-                    <p class="dammier_feedback" data-dammier-feedback>Le score compte le nombre total de tentatives jusqu'a la resolution.</p>
+                    <p class="dammier_feedback" data-dammier-feedback>Le score compte le nombre total de tentatives jusqu’à la résolution.</p>
                     <p class="dammier_hint_text" data-dammier-hint-text hidden></p>
 
                     <div class="dammier_actions">
@@ -96,9 +96,9 @@ $dammierPayload = [
                                         <?php endforeach; ?>
                                     </ol>
                                     <?php if ($dammierClassement === []): ?>
-                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty>Aucun score enregistre cette semaine.</p>
+                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty>Aucun score enregistr? cette semaine.</p>
                                     <?php else: ?>
-                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty hidden>Aucun score enregistre cette semaine.</p>
+                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty hidden>Aucun score enregistr? cette semaine.</p>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <p class="dammier_ranking_locked">Connecte-toi pour voir le classement hebdomadaire.</p>
@@ -116,10 +116,10 @@ $dammierPayload = [
 
 <section class="section-block reveal reveal-4">
     <div class="section-head">
-        <p class="eyebrow">Carrousel des pieces</p>
-        <h2>Chaque piece, son mouvement et son utilite.</h2>
+        <p class="eyebrow">Carrousel des pièces</p>
+        <h2>Chaque pièce, son mouvement et son utilité.</h2>
         <p>
-            Le carrousel tourne automatiquement pour rappeler les fondamentaux du jeu d'echecs.
+            Le carrousel tourne automatiquement pour rappeler les fondamentaux du jeu d'échecs.
             Les commandes restent accessibles si l'utilisateur veut reprendre la main.
         </p>
     </div>
@@ -131,7 +131,7 @@ $dammierPayload = [
         style="--piece-turn-duration: 6800ms;"
         tabindex="0"
         aria-roledescription="carousel"
-        aria-label="Carrousel des pieces d'echecs"
+        aria-label="Carrousel des pièces d'échecs"
     >
         <div class="piece-stage">
             <?php foreach ($pieceCarousel as $index => $piece): ?>
@@ -153,7 +153,7 @@ $dammierPayload = [
                         </div>
                     </div>
                     <div class="piece-meta">
-                        <p class="card-tag">Piece <?= e((string) ($index + 1)) ?></p>
+                        <p class="card-tag">Pièce <?= e((string) ($index + 1)) ?></p>
                         <h3><?= e($piece['name']) ?></h3>
                         <p class="piece-role"><?= e($piece['role']) ?></p>
                     </div>
@@ -162,8 +162,8 @@ $dammierPayload = [
         </div>
 
         <div class="piece-controls">
-            <button type="button" class="carousel-button" data-piece-prev aria-label="Voir la piece precedente">Precedente</button>
-            <div class="piece-indicators" aria-label="Selection des pieces">
+            <button type="button" class="carousel-button" data-piece-prev aria-label="Voir la pièce précédente">Précédente</button>
+            <div class="piece-indicators" aria-label="Sélection des pièces">
                 <?php foreach ($pieceCarousel as $index => $piece): ?>
                     <button
                         type="button"
@@ -173,7 +173,7 @@ $dammierPayload = [
                     ></button>
                 <?php endforeach; ?>
             </div>
-            <button type="button" class="carousel-button" data-piece-next aria-label="Voir la piece suivante">Suivante</button>
+            <button type="button" class="carousel-button" data-piece-next aria-label="Voir la pièce suivante">Suivante</button>
         </div>
     </div>
 </section>
@@ -181,9 +181,9 @@ $dammierPayload = [
 <section class="split-grid reveal reveal-5">
     <article class="panel">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Fonctionnalites</p>
-            <h2>Des cadres prets pour les informations et l'espace membre.</h2>
-            <p>Le design reste en place sans inventer de donnees tant que l'association n'a rien confirme.</p>
+            <p class="eyebrow">Fonctionnalités</p>
+            <h2>Des cadres prêts pour les informations et l'espace membre.</h2>
+            <p>Le design reste en place sans inventer de données tant que l'association n'a rien confirmé.</p>
         </div>
 
         <div class="stack-list">
@@ -203,8 +203,8 @@ $dammierPayload = [
     <article class="panel panel-contrast">
         <div class="section-head section-head--compact">
             <p class="eyebrow">Cadre juridique</p>
-            <h2>Ce que le site rend visible des la page d'accueil.</h2>
-            <p>Confidentialite, consentement, propriete intellectuelle, droit a l'image et publication responsable restent explicites.</p>
+            <h2>Ce que le site rend visible dès la page d'accueil.</h2>
+            <p>Confidentialité, consentement, propriété intellectuelle, droit à l'image et publication responsable restent explicites.</p>
         </div>
 
         <ul class="bullet-list">
@@ -219,7 +219,7 @@ $dammierPayload = [
     <div class="section-head">
         <p class="eyebrow">Informations essentielles</p>
         <h2>Trois blocs sans contenu fictif.</h2>
-        <p>Les cartes conservent le design du site tout en affichant uniquement un cadre generique et verifiable.</p>
+        <p>Les cartes conservent le design du site tout en affichant uniquement un cadre générique et vérifiable.</p>
     </div>
 
     <div class="card-grid card-grid--three">

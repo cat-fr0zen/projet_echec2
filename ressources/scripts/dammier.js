@@ -1,7 +1,7 @@
 /**
  * dammier.js
  *
- * Moteur du casse-tete hebdomadaire:
+ * Moteur du casse-tête hebdomadaire:
  * - interaction directe sur le plateau
  * - clic piece puis case d'arrivee
  * - indice optionnel via bouton ampoule
@@ -370,7 +370,7 @@ function initDammierBoardGame() {
         }
 
         if (selectedSquare === "") {
-            selectionNode.textContent = "Aucune piece selectionnee.";
+            selectionNode.textContent = "Aucune pièce sélectionnée.";
             return;
         }
 
@@ -445,7 +445,7 @@ function initDammierBoardGame() {
         }
 
         const hints = Array.isArray(puzzle.dammier_hints) ? puzzle.dammier_hints : [];
-        hintTextNode.textContent = String(hints[stepIndex] || "Observe les lignes ouvertes, les echecs et les mats possibles.");
+        hintTextNode.textContent = String(hints[stepIndex] || "Observe les lignes ouvertes, les échecs et les mats possibles.");
         hintTextNode.hidden = !hintTextNode.hidden;
     }
 
@@ -502,18 +502,18 @@ function initDammierBoardGame() {
         }
 
         if (stepIndex >= puzzle.dammier_solution.length) {
-            promptNode.textContent = "Puzzle termine.";
+            promptNode.textContent = "Puzzle terminé.";
             return;
         }
 
         promptNode.textContent = puzzle.dammier_solution.length === 1
-            ? "Trouve le coup gagnant. Clique sur une piece, puis sur sa case d'arrivee."
-            : `Trouve le coup ${stepIndex + 1} sur ${puzzle.dammier_solution.length}. Clique sur une piece, puis sur sa case d'arrivee.`;
+            ? "Trouve le coup gagnant. Clique sur une pièce, puis sur sa case d'arrivée."
+            : `Trouve le coup ${stepIndex + 1} sur ${puzzle.dammier_solution.length}. Clique sur une pièce, puis sur sa case d'arrivée.`;
     }
 
     function submitScore() {
         if (!isAuthenticated) {
-            setFeedback("Puzzle resolu. Connecte-toi pour enregistrer ton score dans le classement.", "success");
+            setFeedback("Puzzle résolu. Connecte-toi pour enregistrer ton score dans le classement.", "success");
             return;
         }
 
@@ -536,15 +536,15 @@ function initDammierBoardGame() {
             .then((response) => response.json())
             .then((result) => {
                 if (!result?.success) {
-                    setFeedback(result?.message || "Score non enregistre.", "error");
+                    setFeedback(result?.message || "Score non enregistré.", "error");
                     return;
                 }
 
-                setFeedback(result?.message || "Puzzle resolu. Ton score est enregistre dans le classement.", "success");
+                setFeedback(result?.message || "Puzzle résolu. Ton score est enregistré dans le classement.", "success");
                 renderRanking(Array.isArray(result.dammier_classement) ? result.dammier_classement : []);
             })
             .catch(() => {
-                setFeedback("Le puzzle est resolu, mais l'enregistrement du score a echoue.", "error");
+                setFeedback("Le puzzle est résolu, mais l'enregistrement du score a échoué.", "error");
             });
     }
 
@@ -566,7 +566,7 @@ function initDammierBoardGame() {
                 renderBoard();
                 syncSelectionText();
                 stopTimer();
-                setFeedback("La reponse automatique du puzzle est invalide.", "error");
+                setFeedback("La réponse automatique du puzzle est invalide.", "error");
                 return;
             }
 
@@ -576,7 +576,7 @@ function initDammierBoardGame() {
             if (stepIndex >= puzzle.dammier_solution.length) {
                 isSolved = true;
                 stopTimer();
-                promptNode.textContent = "Bravo, le casse-tete est termine.";
+                promptNode.textContent = "Bravo, le casse-tête est terminé.";
                 clearHint();
                 submitScore();
                 return;
@@ -585,8 +585,8 @@ function initDammierBoardGame() {
             clearHint();
             setFeedback(
                 automaticReply !== ""
-                    ? `Bien joue. Reponse noire: ${formatMoveForDisplay(automaticReply)}. Trouve maintenant le coup suivant.`
-                    : "Bien joue. Cherche maintenant le coup suivant.",
+                    ? `Bien joué. Réponse noire : ${formatMoveForDisplay(automaticReply)}. Trouve maintenant le coup suivant.`
+                    : "Bien joué. Cherche maintenant le coup suivant.",
                 "success"
             );
             renderStep();
@@ -609,7 +609,7 @@ function initDammierBoardGame() {
 
         if (selectedSquare === "") {
             if (!isOwnPiece(pieceCode)) {
-                setFeedback("Selectionne d'abord une piece de ton camp.", "error");
+                setFeedback("Sélectionne d'abord une pièce de ton camp.", "error");
                 return;
             }
 
@@ -617,7 +617,7 @@ function initDammierBoardGame() {
             lastWrongTarget = "";
             renderBoard();
             syncSelectionText();
-            setFeedback("Piece selectionnee. Choisis maintenant sa destination.", "");
+            setFeedback("Pièce sélectionnée. Choisis maintenant sa destination.", "");
             return;
         }
 
@@ -626,7 +626,7 @@ function initDammierBoardGame() {
             lastWrongTarget = "";
             renderBoard();
             syncSelectionText();
-            setFeedback("Selection annulee.", "");
+            setFeedback("Sélection annulée.", "");
             return;
         }
 
@@ -635,7 +635,7 @@ function initDammierBoardGame() {
             lastWrongTarget = "";
             renderBoard();
             syncSelectionText();
-            setFeedback("Piece changee. Choisis sa destination.", "");
+            setFeedback("Pièce changée. Choisis sa destination.", "");
             return;
         }
 
@@ -644,7 +644,7 @@ function initDammierBoardGame() {
             selectedSquare = "";
             renderBoard();
             syncSelectionText();
-            setFeedback("Ce coup est illegal selon les regles des echecs.", "error");
+            setFeedback("Ce coup est illégal selon les règles des échecs.", "error");
             return;
         }
 
@@ -663,7 +663,7 @@ function initDammierBoardGame() {
         renderStep();
         syncSelectionText();
         clearHint();
-        setFeedback("Le score compte le nombre total de tentatives jusqu'a la resolution.", "");
+        setFeedback("Le score compte le nombre total de tentatives jusqu’à la résolution.", "");
         startTimer();
     }
 

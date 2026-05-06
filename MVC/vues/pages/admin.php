@@ -26,8 +26,8 @@ $allOrders = $siteData['all_orders'] ?? [];
 <section class="section-block reveal reveal-3">
     <div class="section-head">
         <p class="eyebrow">Tableau de bord</p>
-        <h2>Piloter les comptes, les articles et les medias.</h2>
-        <p>Cette page est reservee au president administrateur. Toutes les decisions se prennent ici sans quitter le site.</p>
+        <h2>Piloter les comptes, les articles et les médias.</h2>
+        <p>Cette page est réservée au président administrateur. Toutes les décisions se prennent ici sans quitter le site.</p>
     </div>
 
     <div class="admin-summary-grid">
@@ -42,9 +42,9 @@ $allOrders = $siteData['all_orders'] ?? [];
             <h3>Articles en base</h3>
         </article>
         <article class="info-card">
-            <p class="card-tag">Medias</p>
+            <p class="card-tag">Médias</p>
             <span class="metric-value"><?= e((string) count($allMedia)) ?></span>
-            <h3>Medias deposes</h3>
+            <h3>Médias déposés</h3>
         </article>
         <article class="info-card">
             <p class="card-tag">Commandes</p>
@@ -57,8 +57,8 @@ $allOrders = $siteData['all_orders'] ?? [];
 <section class="section-block reveal reveal-4">
     <div class="section-head">
         <p class="eyebrow">Comptes</p>
-        <h2>Gerer les roles et les statuts.</h2>
-        <p>Le role determine les droits, et le statut permet de suspendre un acces si besoin.</p>
+        <h2>Gérer les rôles et les statuts.</h2>
+        <p>Le rôle détermine les droits, et le statut permet de suspendre un accès si besoin.</p>
     </div>
 
     <div class="admin-list">
@@ -74,10 +74,10 @@ $allOrders = $siteData['all_orders'] ?? [];
                     <input type="hidden" name="identifiant_utilisateur_cible" value="<?= e((string) ($user['identifiant'] ?? '')) ?>">
 
                     <label class="form-group">
-                        <span>Role</span>
+                        <span>Rôle</span>
                         <select name="role_utilisateur">
-                            <option value="connecte"<?= ($user['role'] ?? '') === 'connecte' ? ' selected' : '' ?>>Connecte</option>
-                            <option value="adherent"<?= ($user['role'] ?? '') === 'adherent' ? ' selected' : '' ?>>Adherent</option>
+                            <option value="connecte"<?= ($user['role'] ?? '') === 'connecte' ? ' selected' : '' ?>>Connect?</option>
+                            <option value="adherent"<?= ($user['role'] ?? '') === 'adherent' ? ' selected' : '' ?>>Adhérent</option>
                             <option value="admin"<?= ($user['role'] ?? '') === 'admin' ? ' selected' : '' ?>>Admin</option>
                         </select>
                     </label>
@@ -91,14 +91,14 @@ $allOrders = $siteData['all_orders'] ?? [];
                     </label>
 
                     <label class="form-group">
-                        <span>Adhesion</span>
+                        <span>Adhésion</span>
                         <select name="statut_adhesion_utilisateur">
-                            <option value="aucune"<?= ($user['statut_adhesion'] ?? '') === 'aucune' ? ' selected' : '' ?>>Non adherent</option>
-                            <option value="active"<?= ($user['statut_adhesion'] ?? '') === 'active' ? ' selected' : '' ?>>Adherent actif</option>
+                            <option value="aucune"<?= ($user['statut_adhesion'] ?? '') === 'aucune' ? ' selected' : '' ?>>Non adhérent</option>
+                            <option value="active"<?= ($user['statut_adhesion'] ?? '') === 'active' ? ' selected' : '' ?>>Adhérent actif</option>
                         </select>
                     </label>
 
-                    <button type="submit" class="button button-primary">Mettre a jour</button>
+                    <button type="submit" class="button button-primary">Mettre ? jour</button>
                 </form>
             </article>
         <?php endforeach; ?>
@@ -108,9 +108,9 @@ $allOrders = $siteData['all_orders'] ?? [];
 <section class="split-grid reveal reveal-5">
     <article class="panel">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Moderation articles</p>
+            <p class="eyebrow">Modération articles</p>
             <h2>Valider ou refuser les articles.</h2>
-            <p>Chaque article soumis peut rester en attente, etre publie ou etre refuse.</p>
+            <p>Chaque article soumis peut rester en attente, être publié ou être refusé.</p>
         </div>
 
         <div class="admin-list">
@@ -144,16 +144,16 @@ $allOrders = $siteData['all_orders'] ?? [];
 
     <article class="panel panel-contrast">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Moderation medias</p>
-            <h2>Valider ou refuser les photos et videos.</h2>
-            <p>Le president choisit ici ce qui devient visible publiquement sur la mediatheque.</p>
+            <p class="eyebrow">Modération médias</p>
+            <h2>Valider ou refuser les photos et vidéos.</h2>
+            <p>Le président choisit ici ce qui devient visible publiquement sur la médiathèque.</p>
         </div>
 
         <div class="admin-list">
             <?php if ($allMedia === []): ?>
                 <div class="empty-state empty-state--contrast">
-                    <p class="card-tag">Aucun media</p>
-                    <h3>Aucun depot de media pour le moment.</h3>
+                    <p class="card-tag">Aucun média</p>
+                    <h3>Aucun dépôt de média pour le moment.</h3>
                 </div>
             <?php else: ?>
                 <?php foreach ($allMedia as $media): ?>
@@ -196,7 +196,7 @@ $allOrders = $siteData['all_orders'] ?? [];
     <div class="section-head">
         <p class="eyebrow">Commandes</p>
         <h2>Suivre le merchandising.</h2>
-        <p>Le president peut mettre a jour le statut des commandes creees depuis la boutique.</p>
+        <p>Le président peut mettre à jour le statut des commandes créées depuis la boutique.</p>
     </div>
 
     <div class="admin-list">

@@ -61,7 +61,7 @@ final class ControleurActions
         }
 
         if (!verifier_jeton_csrf($_POST['jeton_csrf'] ?? null)) {
-            ajouter_message_flash('error', 'Votre session a expire. Merci de recommencer.');
+            ajouter_message_flash('error', 'Votre session a expiré. Merci de recommencer.');
             rediriger_vers(url_route('accueil'));
         }
 
@@ -153,7 +153,7 @@ final class ControleurActions
         $utilisateur = $this->depotUtilisateurs->creer($donnees);
         session_regenerate_id(true);
         $_SESSION['identifiant_utilisateur'] = $utilisateur['identifiant'];
-        ajouter_message_flash('success', 'Votre compte a ete cree avec succes.');
+        ajouter_message_flash('success', 'Votre compte a été créé avec succès.');
         rediriger_vers(url_route('profil'));
     }
 
@@ -187,7 +187,7 @@ final class ControleurActions
 
         session_regenerate_id(true);
         $_SESSION['identifiant_utilisateur'] = $utilisateur['identifiant'];
-        ajouter_message_flash('success', 'Connexion reussie.');
+        ajouter_message_flash('success', 'Connexion réussie.');
         rediriger_vers(url_route('profil'));
     }
 
@@ -196,7 +196,7 @@ final class ControleurActions
     {
         unset($_SESSION['identifiant_utilisateur']);
         session_regenerate_id(true);
-        ajouter_message_flash('success', 'Vous avez ete deconnecte.');
+        ajouter_message_flash('success', 'Vous avez été déconnecté.');
         rediriger_vers(url_route('accueil'));
     }
 
@@ -206,7 +206,7 @@ final class ControleurActions
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
 
         if ($utilisateurCourant === null) {
-            ajouter_message_flash('error', 'Vous devez etre connecte pour modifier votre profil.');
+            ajouter_message_flash('error', 'Vous devez être connecté pour modifier votre profil.');
             rediriger_vers(url_route('accueil'));
         }
 
@@ -228,7 +228,7 @@ final class ControleurActions
         }
 
         $this->depotUtilisateurs->mettreAJour((string) $utilisateurCourant['identifiant'], $donnees);
-        ajouter_message_flash('success', 'Votre profil a ete mis a jour.');
+        ajouter_message_flash('success', 'Votre profil a été mis à jour.');
         rediriger_vers(url_route('profil'));
     }
 
@@ -238,12 +238,12 @@ final class ControleurActions
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
 
         if ($utilisateurCourant === null) {
-            ajouter_message_flash('error', 'Vous devez etre connecte pour proposer un article.');
+            ajouter_message_flash('error', 'Vous devez être connecté pour proposer un article.');
             rediriger_vers(url_route('articles'));
         }
 
         if (!$this->utilisateurPeutPublierContenu($utilisateurCourant)) {
-            ajouter_message_flash('error', 'Seuls les adherents du club peuvent proposer des articles.');
+            ajouter_message_flash('error', 'Seuls les adhérents du club peuvent proposer des articles.');
             rediriger_vers(url_route('articles'));
         }
 
@@ -280,7 +280,7 @@ final class ControleurActions
             'contenu' => $contenu,
         ]);
 
-        ajouter_message_flash('success', 'Votre article a ete enregistre et attend validation.');
+        ajouter_message_flash('success', 'Votre article a été enregistré et attend validation.');
         rediriger_vers(url_route('articles'));
     }
 
@@ -290,12 +290,12 @@ final class ControleurActions
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
 
         if ($utilisateurCourant === null) {
-            ajouter_message_flash('error', 'Vous devez etre connecte pour proposer un media.');
+            ajouter_message_flash('error', 'Vous devez être connecté pour proposer un média.');
             rediriger_vers(url_route('mediatheque'));
         }
 
         if (!$this->utilisateurPeutPublierContenu($utilisateurCourant)) {
-            ajouter_message_flash('error', 'Seuls les adherents du club peuvent proposer des photos ou des videos.');
+            ajouter_message_flash('error', 'Seuls les adhérents du club peuvent proposer des photos ou des vidéos.');
             rediriger_vers(url_route('mediatheque'));
         }
 
@@ -342,7 +342,7 @@ final class ControleurActions
         $cheminDestination = rtrim($this->dossierUploadMedias, '/\\') . DIRECTORY_SEPARATOR . $nomStocke;
 
         if (!move_uploaded_file((string) $fichier['tmp_name'], $cheminDestination)) {
-            ajouter_message_flash('error', "Le televersement du media a echoue.");
+            ajouter_message_flash('error', 'Le téléversement du média a échoué.');
             rediriger_vers(url_route('mediatheque'));
         }
 
@@ -361,7 +361,7 @@ final class ControleurActions
             'taille_octets' => (int) ($fichier['size'] ?? 0),
         ]);
 
-        ajouter_message_flash('success', 'Votre media a ete envoye et attend validation.');
+        ajouter_message_flash('success', 'Votre média a été envoyé et attend validation.');
         rediriger_vers(url_route('mediatheque'));
     }
 
@@ -374,11 +374,11 @@ final class ControleurActions
         $statut = trim((string) ($_POST['statut_article'] ?? ''));
 
         if ($identifiantArticle === '' || $this->depotArticles->changerStatut($identifiantArticle, $statut) === null) {
-            ajouter_message_flash('error', "Impossible de mettre a jour l'article.");
+            ajouter_message_flash('error', "Impossible de mettre à jour l'article.");
             rediriger_vers(url_route('admin'));
         }
 
-        ajouter_message_flash('success', "Le statut de l'article a ete mis a jour.");
+        ajouter_message_flash('success', "Le statut de l'article a été mis à jour.");
         rediriger_vers(url_route('admin'));
     }
 
@@ -391,11 +391,11 @@ final class ControleurActions
         $statut = trim((string) ($_POST['statut_media'] ?? ''));
 
         if ($identifiantMedia === '' || $this->depotMedias->changerStatut($identifiantMedia, $statut) === null) {
-            ajouter_message_flash('error', 'Impossible de mettre a jour le media.');
+            ajouter_message_flash('error', 'Impossible de mettre à jour le média.');
             rediriger_vers(url_route('admin'));
         }
 
-        ajouter_message_flash('success', 'Le statut du media a ete mis a jour.');
+        ajouter_message_flash('success', 'Le statut du média a été mis à jour.');
         rediriger_vers(url_route('admin'));
     }
 
@@ -405,7 +405,7 @@ final class ControleurActions
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
 
         if ($utilisateurCourant === null || ($utilisateurCourant['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF) {
-            ajouter_message_flash('error', 'Vous devez etre connecte pour commander un article.');
+            ajouter_message_flash('error', 'Vous devez être connecté pour commander un article.');
             rediriger_vers(url_route('accueil'));
         }
 
@@ -426,7 +426,7 @@ final class ControleurActions
             'categorie' => $categorie,
         ]);
 
-        ajouter_message_flash('success', 'La commande a ete enregistree avec le statut En attente.');
+        ajouter_message_flash('success', 'La commande a été enregistrée avec le statut En attente.');
         rediriger_vers(url_route('boutique'));
     }
 
@@ -439,11 +439,11 @@ final class ControleurActions
         $statut = trim((string) ($_POST['statut_commande'] ?? ''));
 
         if ($identifiantCommande === '' || $this->depotCommandes->changerStatut($identifiantCommande, $statut) === null) {
-            ajouter_message_flash('error', 'Impossible de mettre a jour la commande.');
+            ajouter_message_flash('error', 'Impossible de mettre à jour la commande.');
             rediriger_vers(url_route('admin'));
         }
 
-        ajouter_message_flash('success', 'Le statut de la commande a ete mis a jour.');
+        ajouter_message_flash('success', 'Le statut de la commande a été mis à jour.');
         rediriger_vers(url_route('admin'));
     }
 
@@ -464,18 +464,18 @@ final class ControleurActions
         }
 
         if ($administrateur !== null && $administrateur['identifiant'] === $identifiantUtilisateur && $role !== DepotUtilisateurs::ROLE_ADMIN) {
-            ajouter_message_flash('error', "L'administrateur principal ne peut pas retirer son propre role admin ici.");
+            ajouter_message_flash('error', "L'administrateur principal ne peut pas retirer son propre rôle admin ici.");
             rediriger_vers(url_route('admin'));
         }
 
         $utilisateur = $this->depotUtilisateurs->mettreAJourAcces($identifiantUtilisateur, $role, $statutCompte, $statutAdhesion);
 
         if ($utilisateur === null) {
-            ajouter_message_flash('error', "Impossible de mettre a jour les acces de l'utilisateur.");
+            ajouter_message_flash('error', "Impossible de mettre à jour les accès de l'utilisateur.");
             rediriger_vers(url_route('admin'));
         }
 
-        ajouter_message_flash('success', "Les acces de l'utilisateur ont ete mis a jour.");
+        ajouter_message_flash('success', "Les accès de l'utilisateur ont été mis à jour.");
         rediriger_vers(url_route('admin'));
     }
 
@@ -508,14 +508,14 @@ final class ControleurActions
         ) {
             $this->repondreJson([
                 'success' => false,
-                'message' => 'Les donnees du score dammier sont invalides.',
+                'message' => 'Les données du score dammier sont invalides.',
             ], 422);
         }
 
         if (!$this->depotDammier->verifierPuzzleHebdomadaire($weekKey, $puzzleId)) {
             $this->repondreJson([
                 'success' => false,
-                'message' => 'Le puzzle hebdomadaire a change. Recharge la page.',
+                'message' => 'Le puzzle hebdomadaire a changé. Recharge la page.',
             ], 409);
         }
 
@@ -526,7 +526,7 @@ final class ControleurActions
         $message = match ($statutScore) {
             'improved' => 'Ton score a ete ameliore dans le classement.',
             'unchanged' => 'Ton meilleur score etait deja meilleur. Le classement reste inchange.',
-            default => 'Score dammier enregistre.',
+            default => 'Score dammier enregistr?.',
         };
 
         $this->repondreJson([
@@ -550,7 +550,7 @@ final class ControleurActions
     }
 
     /**
-     * Determine une page de redirection sure (whitelist).
+     * D?termin? une page de redirection sure (whitelist).
      *
      * @param string $pageParDefaut Fallback.
      * @return string Page valide.
@@ -690,7 +690,7 @@ final class ControleurActions
             || ($utilisateurCourant['role'] ?? '') !== DepotUtilisateurs::ROLE_ADMIN
             || ($utilisateurCourant['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF
         ) {
-            ajouter_message_flash('error', 'Acces reserve a l administrateur du site.');
+            ajouter_message_flash('error', "Accès réservé à l'administrateur du site.");
             rediriger_vers(url_route('accueil'));
         }
     }

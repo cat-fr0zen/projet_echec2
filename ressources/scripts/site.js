@@ -9,7 +9,7 @@
  * - header sticky, menu burger
  * - modale d'authentification (tabs + focus trap)
  * - carrousel (pieces) et micro-interactions
- * - actions page Parametres (reset consentement)
+ * - actions page Paramètres (reset consentement)
  */
 
 /**
@@ -736,7 +736,7 @@ function initDammierPuzzle() {
         optionsNode.innerHTML = "";
 
         if (!currentStep) {
-            promptNode.textContent = "Puzzle termine.";
+            promptNode.textContent = "Puzzle terminé.";
             return;
         }
 
@@ -757,7 +757,7 @@ function initDammierPuzzle() {
 
     function submitScore() {
         if (!isAuthenticated) {
-            setFeedback("Puzzle resolu. Connecte-toi pour enregistrer ton score dans le classement.", "success");
+            setFeedback("Puzzle résolu. Connecte-toi pour enregistrer ton score dans le classement.", "success");
             return;
         }
 
@@ -780,15 +780,15 @@ function initDammierPuzzle() {
             .then((response) => response.json())
             .then((result) => {
                 if (!result?.success) {
-                    setFeedback(result?.message || "Score non enregistre.", "error");
+                    setFeedback(result?.message || "Score non enregistré.", "error");
                     return;
                 }
 
-                setFeedback("Puzzle resolu. Ton score est enregistre dans le classement.", "success");
+                setFeedback("Puzzle résolu. Ton score est enregistré dans le classement.", "success");
                 renderRanking(Array.isArray(result.dammier_classement) ? result.dammier_classement : []);
             })
             .catch(() => {
-                setFeedback("Le puzzle est resolu, mais l'enregistrement du score a echoue.", "error");
+                setFeedback("Le puzzle est résolu, mais l'enregistrement du score a échoué.", "error");
             });
     }
 
@@ -809,12 +809,12 @@ function initDammierPuzzle() {
                 isSolved = true;
                 stopTimer();
                 optionsNode.innerHTML = "";
-                promptNode.textContent = "Bravo, le casse-tete est termine.";
+                promptNode.textContent = "Bravo, le casse-tête est terminé.";
                 submitScore();
                 return;
             }
 
-            setFeedback("Bien joue. Passe a l'etape suivante.", "success");
+            setFeedback("Bien joué. Passe à l'étape suivante.", "success");
             window.setTimeout(() => {
                 renderStep();
             }, 250);
@@ -832,7 +832,7 @@ function initDammierPuzzle() {
         isSolved = false;
         renderBoard();
         renderStep();
-        setFeedback("Le score compte le nombre total de tentatives jusqu'a la resolution.", "");
+        setFeedback("Le score compte le nombre total de tentatives jusqu’à la résolution.", "");
         startTimer();
     }
 
@@ -847,7 +847,7 @@ function initDammierPuzzle() {
 }
 
 /**
- * Gere les actions de la page Parametres (ex: reset du consentement).
+ * Gere les actions de la page Paramètres (ex: reset du consentement).
  */
 function initSettingsActions() {
     const resetButtons = Array.from(document.querySelectorAll("[data-reset-consent]"));

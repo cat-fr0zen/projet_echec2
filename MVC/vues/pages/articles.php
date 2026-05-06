@@ -26,14 +26,14 @@ $myArticles = $siteData['my_articles'] ?? [];
         <div class="section-head section-head--compact">
             <p class="eyebrow">Publication publique</p>
             <h2>Articles visibles par tous.</h2>
-            <p>Les articles publies apparaissent ici apres validation par l administrateur du club.</p>
+            <p>Les articles publiés apparaissent ici après validation par l'administrateur du club.</p>
         </div>
 
         <?php if ($publishedArticles === []): ?>
             <div class="empty-state">
                 <p class="card-tag">Aucune publication</p>
                 <h3>Aucun article public pour le moment.</h3>
-                <p>Le cadre editorial est pret. Les publications apparaitront ici une fois moderees.</p>
+                <p>Le cadre éditorial est prêt. Les publications apparaîtront ici une fois modérées.</p>
             </div>
         <?php else: ?>
             <div class="stack-list">
@@ -52,13 +52,13 @@ $myArticles = $siteData['my_articles'] ?? [];
         <div class="section-head section-head--compact">
             <p class="eyebrow">Soumission membre</p>
             <h2>Proposer un article.</h2>
-            <p>Seuls les adherents du club peuvent soumettre un article a la moderation.</p>
+            <p>Seuls les adhérents du club peuvent soumettre un article à la modération.</p>
         </div>
 
         <?php if (!$authData['is_authenticated']): ?>
             <div class="empty-state empty-state--contrast">
                 <p class="card-tag">Connexion requise</p>
-                <h3>Connecte-toi pour acceder a l espace membre.</h3>
+                <h3>Connecte-toi pour accéder à l'espace membre.</h3>
                 <p>Les visiteurs peuvent lire les articles publics, mais pas soumettre de contenu.</p>
                 <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
             </div>
@@ -66,7 +66,7 @@ $myArticles = $siteData['my_articles'] ?? [];
             <div class="empty-state empty-state--contrast">
                 <p class="card-tag"><?= e((string) ($authData['role_label'] ?? 'Compte')) ?></p>
                 <h3>Ton compte peut consulter, mais pas publier.</h3>
-                <p>Le depot d articles est reserve aux adherents du club et a l administrateur.</p>
+                <p>Le dépôt d'articles est réservé aux adhérents du club et à l'administrateur.</p>
             </div>
         <?php else: ?>
             <form method="post" action="<?= e(url_route('articles')) ?>" class="article-form">
@@ -79,7 +79,7 @@ $myArticles = $siteData['my_articles'] ?? [];
                 </label>
 
                 <label class="form-group">
-                    <span>Resume</span>
+                    <span>Résumé</span>
                     <textarea name="excerpt" rows="3" maxlength="280" required></textarea>
                 </label>
 
@@ -88,7 +88,7 @@ $myArticles = $siteData['my_articles'] ?? [];
                     <textarea name="content" rows="8" required></textarea>
                 </label>
 
-                <button type="submit" class="button button-primary">Envoyer a la moderation</button>
+                <button type="submit" class="button button-primary">Envoyer à la modération</button>
             </form>
         <?php endif; ?>
     </article>
@@ -99,14 +99,14 @@ $myArticles = $siteData['my_articles'] ?? [];
         <div class="section-head">
             <p class="eyebrow">Mes soumissions</p>
             <h2>Suivi des articles de mon compte.</h2>
-            <p>Tu retrouves ici tes articles, leur statut de moderation et leur historique local.</p>
+            <p>Tu retrouves ici tes articles, leur statut de modération et leur historique local.</p>
         </div>
 
         <?php if ($myArticles === []): ?>
             <div class="empty-state">
                 <p class="card-tag">Aucune soumission</p>
-                <h3>Tu n as pas encore propose d article.</h3>
-                <p>Quand tu enverras un article, il apparaitra ici avec son statut.</p>
+                <h3>Tu n'as pas encore propos? d'article.</h3>
+                <p>Quand tu enverras un article, il apparaîtra ici avec son statut.</p>
             </div>
         <?php else: ?>
             <div class="card-grid card-grid--three">

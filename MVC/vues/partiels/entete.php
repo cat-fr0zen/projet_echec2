@@ -45,7 +45,7 @@ $themeMoonIconUrl = url_ressource('ressources/media/image/theme-lune.svg');
                 type="button"
                 class="theme-toggle"
                 data-theme-toggle
-                aria-label="<?= $donneesSite['theme'] === 'dark' ? 'Activer le theme clair' : 'Activer le theme sombre' ?>"
+                aria-label="<?= $donneesSite['theme'] === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre' ?>"
                 aria-pressed="<?= $donneesSite['theme'] === 'dark' ? 'true' : 'false' ?>"
             >
                 <span class="theme-icon theme-icon--sun" aria-hidden="true">
@@ -95,7 +95,7 @@ $themeMoonIconUrl = url_ressource('ressources/media/image/theme-lune.svg');
                     </div>
                     <div class="burger-links">
                         <a class="burger-link" href="<?= e(url_route('profil')) ?>">Profil</a>
-                        <a class="burger-link" href="<?= e(url_route('parametres')) ?>">Parametres</a>
+                        <a class="burger-link" href="<?= e(url_route('parametres')) ?>">Paramètres</a>
                         <?php if ($donneesAuthentification['est_admin'] ?? false): ?>
                             <a class="burger-link" href="<?= e(url_route('admin')) ?>">Administration</a>
                         <?php endif; ?>
@@ -106,7 +106,7 @@ $themeMoonIconUrl = url_ressource('ressources/media/image/theme-lune.svg');
                         <button type="submit" class="button button-secondary burger-logout-button">Deconnexion</button>
                     </form>
                 <?php else: ?>
-                    <p class="burger-helper">Connecte-toi pour acceder aux guides, a la boutique et a ton profil membre.</p>
+                    <p class="burger-helper">Connecte-toi pour accéder aux guides, à la boutique et à ton profil membre.</p>
                     <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
                 <?php endif; ?>
             </section>
