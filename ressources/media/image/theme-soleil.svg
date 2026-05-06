@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="sun-core" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE8A3"/>
+      <stop offset="100%" stop-color="#D99A27"/>
+    </linearGradient>
+  </defs>
+  <g fill="none" stroke="#9B6713" stroke-linecap="round" stroke-width="4">
+    <path d="M32 6v8"/>
+    <path d="M32 50v8"/>
+    <path d="M6 32h8"/>
+    <path d="M50 32h8"/>
+    <path d="M13.6 13.6l5.7 5.7"/>
+    <path d="M44.7 44.7l5.7 5.7"/>
+    <path d="M13.6 50.4l5.7-5.7"/>
+    <path d="M44.7 19.3l5.7-5.7"/>
+  </g>
+  <circle cx="32" cy="32" r="13" fill="url(#sun-core)" stroke="#9B6713" stroke-width="4"/>
+</svg>

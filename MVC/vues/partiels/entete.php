@@ -8,6 +8,8 @@
 $navigationPrincipale = $donneesSite['navigation_principale'] ?? $donneesSite['primary_nav'] ?? [];
 $navigationSecondaire = $donneesSite['navigation_secondaire'] ?? $donneesSite['secondary_nav'] ?? [];
 $donneesAuthentification = $donneesSite['authentification'];
+$themeSunIconUrl = url_ressource('ressources/media/image/theme-soleil.svg');
+$themeMoonIconUrl = url_ressource('ressources/media/image/theme-lune.svg');
 ?>
 
 <header class="site-header reveal reveal-1" data-site-header>
@@ -46,8 +48,12 @@ $donneesAuthentification = $donneesSite['authentification'];
                 aria-label="<?= $donneesSite['theme'] === 'dark' ? 'Activer le theme clair' : 'Activer le theme sombre' ?>"
                 aria-pressed="<?= $donneesSite['theme'] === 'dark' ? 'true' : 'false' ?>"
             >
-                <span class="theme-icon theme-icon--sun" aria-hidden="true">Soleil</span>
-                <span class="theme-icon theme-icon--moon" aria-hidden="true">Lune</span>
+                <span class="theme-icon theme-icon--sun" aria-hidden="true">
+                    <img class="theme-icon-image" src="<?= e($themeSunIconUrl) ?>" alt="">
+                </span>
+                <span class="theme-icon theme-icon--moon" aria-hidden="true">
+                    <img class="theme-icon-image" src="<?= e($themeMoonIconUrl) ?>" alt="">
+                </span>
             </button>
 
             <button
