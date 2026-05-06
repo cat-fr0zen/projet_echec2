@@ -4,7 +4,7 @@
  *
  * Page vitrine du club:
  * - hero + liens d'acces
- * - statistiques et planning
+ * - puzzle hebdomadaire "dammier"
  * - carrousel et blocs d'informations
  *
  * Donnees attendues:
@@ -16,6 +16,15 @@ $schedule = $siteData['schedule'];
 $compliancePoints = $siteData['compliance_points'];
 $pieceCarousel = $siteData['piece_carousel'];
 $authData = $siteData['authentification'];
+$dammierPuzzle = $siteData['dammier_puzzle'] ?? [];
+$dammierClassement = $siteData['dammier_classement'] ?? [];
+$dammierPeutVoirClassement = (bool) ($siteData['dammier_peut_voir_classement'] ?? false);
+$dammierPayload = [
+    'dammier_puzzle' => $dammierPuzzle,
+    'dammier_classement' => $dammierClassement,
+    'dammier_submit_url' => url_route('accueil'),
+    'dammier_is_authenticated' => (bool) ($authData['is_authenticated'] ?? false),
+];
 ?>
 
 <section class="hero-grid">
@@ -25,7 +34,7 @@ $authData = $siteData['authentification'];
         <p class="lead"><?= e($pageData['hero_text']) ?></p>
 
         <div class="button-row">
-            <a class="button button-primary" href="#legal-hub">Voir le cadre légal</a>
+            <a class="button button-primary" href="#legal-hub">Voir le cadre legal</a>
             <?php if ($authData['is_authenticated']): ?>
                 <a class="button button-secondary" href="<?= e(url_route('profil')) ?>">Voir mon profil</a>
             <?php endif; ?>
@@ -34,23 +43,83 @@ $authData = $siteData['authentification'];
         <p class="quick-note"><?= e($pageData['hero_note']) ?></p>
     </article>
 
-    <aside class="panel hero-board reveal reveal-3" aria-hidden="true">
-        <span class="hero-chip hero-chip--one">Connexion</span>
-        <span class="hero-chip hero-chip--two">Cookies</span>
-        <span class="hero-chip hero-chip--three">Articles</span>
-        <div class="board-surface"></div>
-        <div class="board-caption">
-            Le site accueille maintenant un espace membre, un consentement cookies et une zone de publication en attente de modération.
+    <aside class="panel dammier_panel reveal reveal-3">
+        <div
+            class="dammier_widget"
+            data-dammier-root
+            data-dammier-is-authenticated="<?= ($authData['is_authenticated'] ?? false) ? 'true' : 'false' ?>"
+            data-dammier-submit-url="<?= e(url_route('accueil')) ?>"
+            data-dammier-csrf="<?= e((string) ($siteData['jeton_csrf'] ?? '')) ?>"
+        >
+            <div class="dammier_header">
+                <div>
+                    <p class="eyebrow">Casse-tete hebdomadaire</p>
+                    <h2><?= e((string) ($dammierPuzzle['dammier_title'] ?? 'Puzzle hebdomadaire')) ?></h2>
+                </div>
+                <span class="dammier_badge"><?= e((string) ($dammierPuzzle['dammier_week_key'] ?? 'Semaine')) ?></span>
+            </div>
+
+            <p class="dammier_intro"><?= e((string) ($dammierPuzzle['dammier_description'] ?? '')) ?></p>
+            <p class="dammier_hint"><?= e((string) ($dammierPuzzle['dammier_instruction'] ?? '')) ?></p>
+
+            <div class="dammier_layout">
+                <div class="dammier_board_panel">
+                    <div class="dammier_board" data-dammier-board aria-label="Damier interactif"></div>
+                    <div class="dammier_meta">
+                        <span class="dammier_side">Trait: <?= (($dammierPuzzle['dammier_side_to_move'] ?? 'w') === 'w') ? 'Blancs' : 'Noirs' ?></span>
+                        <span class="dammier_timer" data-dammier-timer>00:00</span>
+                    </div>
+                </div>
+
+                <div class="dammier_play_panel">
+                    <p class="dammier_prompt" data-dammier-prompt>Clique sur une piece, puis sur sa case d'arrivee.</p>
+                    <div class="dammier_status">
+                        <span class="dammier_status_chip" data-dammier-selection>Aucune piece selectionnee.</span>
+                    </div>
+                    <p class="dammier_feedback" data-dammier-feedback>Le score compte le nombre total de tentatives jusqu'a la resolution.</p>
+                    <p class="dammier_hint_text" data-dammier-hint-text hidden></p>
+
+                    <div class="dammier_actions">
+                        <button type="button" class="button button-secondary dammier_action" data-dammier-reset>Rejouer</button>
+                        <div class="dammier_side_actions">
+                            <button type="button" class="button button-secondary dammier_icon_action" data-dammier-hint-toggle aria-label="Afficher un indice">&#128161;</button>
+                            <details class="dammier_classement"<?= $dammierPeutVoirClassement ? '' : ' data-dammier-locked="true"' ?>>
+                                <summary>+ classement</summary>
+                                <?php if ($dammierPeutVoirClassement): ?>
+                                    <ol class="dammier_ranking_list" data-dammier-ranking-list>
+                                        <?php foreach ($dammierClassement as $score): ?>
+                                            <li class="dammier_ranking_item">
+                                                <span><?= e((string) ($score['dammier_display_name'] ?? 'Membre')) ?></span>
+                                                <span><?= e((string) ($score['dammier_moves_count'] ?? 0)) ?> coups</span>
+                                                <span><?= e(gmdate('i:s', (int) ($score['dammier_elapsed_seconds'] ?? 0))) ?></span>
+                                            </li>
+                                        <?php endforeach; ?>
+                                    </ol>
+                                    <?php if ($dammierClassement === []): ?>
+                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty>Aucun score enregistre cette semaine.</p>
+                                    <?php else: ?>
+                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty hidden>Aucun score enregistre cette semaine.</p>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <p class="dammier_ranking_locked">Connecte-toi pour voir le classement hebdomadaire.</p>
+                                <?php endif; ?>
+                            </details>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <script type="application/json" data-dammier-payload><?= json_encode($dammierPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
         </div>
     </aside>
 </section>
 
 <section class="section-block reveal reveal-4">
     <div class="section-head">
-        <p class="eyebrow">Carrousel des pièces</p>
-        <h2>Chaque pièce, son mouvement et son utilité.</h2>
+        <p class="eyebrow">Carrousel des pieces</p>
+        <h2>Chaque piece, son mouvement et son utilite.</h2>
         <p>
-            Le carrousel tourne automatiquement pour rappeler les fondamentaux du jeu d'échecs.
+            Le carrousel tourne automatiquement pour rappeler les fondamentaux du jeu d'echecs.
             Les commandes restent accessibles si l'utilisateur veut reprendre la main.
         </p>
     </div>
@@ -62,7 +131,7 @@ $authData = $siteData['authentification'];
         style="--piece-turn-duration: 6800ms;"
         tabindex="0"
         aria-roledescription="carousel"
-        aria-label="Carrousel des pièces d'échecs"
+        aria-label="Carrousel des pieces d'echecs"
     >
         <div class="piece-stage">
             <?php foreach ($pieceCarousel as $index => $piece): ?>
@@ -84,7 +153,7 @@ $authData = $siteData['authentification'];
                         </div>
                     </div>
                     <div class="piece-meta">
-                        <p class="card-tag">Pièce <?= e((string) ($index + 1)) ?></p>
+                        <p class="card-tag">Piece <?= e((string) ($index + 1)) ?></p>
                         <h3><?= e($piece['name']) ?></h3>
                         <p class="piece-role"><?= e($piece['role']) ?></p>
                     </div>
@@ -93,8 +162,8 @@ $authData = $siteData['authentification'];
         </div>
 
         <div class="piece-controls">
-            <button type="button" class="carousel-button" data-piece-prev aria-label="Voir la pièce précédente">Précédente</button>
-            <div class="piece-indicators" aria-label="Sélection des pièces">
+            <button type="button" class="carousel-button" data-piece-prev aria-label="Voir la piece precedente">Precedente</button>
+            <div class="piece-indicators" aria-label="Selection des pieces">
                 <?php foreach ($pieceCarousel as $index => $piece): ?>
                     <button
                         type="button"
@@ -104,7 +173,7 @@ $authData = $siteData['authentification'];
                     ></button>
                 <?php endforeach; ?>
             </div>
-            <button type="button" class="carousel-button" data-piece-next aria-label="Voir la pièce suivante">Suivante</button>
+            <button type="button" class="carousel-button" data-piece-next aria-label="Voir la piece suivante">Suivante</button>
         </div>
     </div>
 </section>
@@ -112,9 +181,9 @@ $authData = $siteData['authentification'];
 <section class="split-grid reveal reveal-5">
     <article class="panel">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Fonctionnalités</p>
-            <h2>Des cadres prêts pour les informations et l'espace membre.</h2>
-            <p>Le design reste en place sans inventer de données tant que l'association n'a rien confirmé.</p>
+            <p class="eyebrow">Fonctionnalites</p>
+            <h2>Des cadres prets pour les informations et l'espace membre.</h2>
+            <p>Le design reste en place sans inventer de donnees tant que l'association n'a rien confirme.</p>
         </div>
 
         <div class="stack-list">
@@ -134,8 +203,8 @@ $authData = $siteData['authentification'];
     <article class="panel panel-contrast">
         <div class="section-head section-head--compact">
             <p class="eyebrow">Cadre juridique</p>
-            <h2>Ce que le site rend visible dès la page d'accueil.</h2>
-            <p>Confidentialité, consentement, propriété intellectuelle, droit à l'image et publication responsable restent explicites.</p>
+            <h2>Ce que le site rend visible des la page d'accueil.</h2>
+            <p>Confidentialite, consentement, propriete intellectuelle, droit a l'image et publication responsable restent explicites.</p>
         </div>
 
         <ul class="bullet-list">
@@ -150,7 +219,7 @@ $authData = $siteData['authentification'];
     <div class="section-head">
         <p class="eyebrow">Informations essentielles</p>
         <h2>Trois blocs sans contenu fictif.</h2>
-        <p>Les cartes conservent le design du site tout en affichant uniquement un cadre générique et vérifiable.</p>
+        <p>Les cartes conservent le design du site tout en affichant uniquement un cadre generique et verifiable.</p>
     </div>
 
     <div class="card-grid card-grid--three">
@@ -163,5 +232,3 @@ $authData = $siteData['authentification'];
         <?php endforeach; ?>
     </div>
 </section>
-
-

@@ -538,6 +538,315 @@ function initPieceCarousel() {
 }
 
 /**
+ * Gere le puzzle hebdomadaire "dammier":
+ * - rendu du damier a partir d'une FEN
+ * - sequence de coups a choix multiples
+ * - chrono local + envoi du score au classement si le membre est connecte
+ */
+function initDammierPuzzle() {
+    const dammierRoot = document.querySelector("[data-dammier-root]");
+
+    if (!(dammierRoot instanceof HTMLElement)) {
+        return;
+    }
+
+    const payloadNode = dammierRoot.querySelector("[data-dammier-payload]");
+    const boardNode = dammierRoot.querySelector("[data-dammier-board]");
+    const promptNode = dammierRoot.querySelector("[data-dammier-prompt]");
+    const optionsNode = dammierRoot.querySelector("[data-dammier-options]");
+    const feedbackNode = dammierRoot.querySelector("[data-dammier-feedback]");
+    const timerNode = dammierRoot.querySelector("[data-dammier-timer]");
+    const resetButton = dammierRoot.querySelector("[data-dammier-reset]");
+    const rankingListNode = dammierRoot.querySelector("[data-dammier-ranking-list]");
+    const rankingEmptyNode = dammierRoot.querySelector("[data-dammier-ranking-empty]");
+    const submitUrl = dammierRoot.getAttribute("data-dammier-submit-url") || window.location.pathname;
+    const csrfToken = dammierRoot.getAttribute("data-dammier-csrf") || "";
+    const isAuthenticated = dammierRoot.getAttribute("data-dammier-is-authenticated") === "true";
+
+    if (!(payloadNode instanceof HTMLScriptElement) || !(boardNode instanceof HTMLElement) || !(optionsNode instanceof HTMLElement)) {
+        return;
+    }
+
+    let payload = null;
+
+    try {
+        payload = JSON.parse(payloadNode.textContent || "{}");
+    } catch (error) {
+        return;
+    }
+
+    const puzzle = payload?.dammier_puzzle;
+
+    if (!puzzle || !Array.isArray(puzzle.dammier_steps)) {
+        return;
+    }
+
+    const unicodePieces = {
+        p: "♟",
+        r: "♜",
+        n: "♞",
+        b: "♝",
+        q: "♛",
+        k: "♚",
+        P: "♙",
+        R: "♖",
+        N: "♘",
+        B: "♗",
+        Q: "♕",
+        K: "♔",
+    };
+    const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    let stepIndex = 0;
+    let movesCount = 0;
+    let startedAt = Date.now();
+    let timerId = null;
+    let isSolved = false;
+
+    function formatElapsed(seconds) {
+        const safeSeconds = Math.max(0, seconds);
+        const minutes = String(Math.floor(safeSeconds / 60)).padStart(2, "0");
+        const remainder = String(safeSeconds % 60).padStart(2, "0");
+
+        return `${minutes}:${remainder}`;
+    }
+
+    function parseFenBoard(fen) {
+        const [boardPart] = String(fen || "").split(" ");
+        const ranks = boardPart.split("/");
+        const squares = [];
+
+        ranks.forEach((rank, rankIndex) => {
+            Array.from(rank).forEach((character) => {
+                const emptyCount = Number(character);
+
+                if (!Number.isNaN(emptyCount) && emptyCount > 0) {
+                    for (let index = 0; index < emptyCount; index += 1) {
+                        squares.push({
+                            piece: "",
+                            coordinate: `${files[squares.length % 8]}${8 - rankIndex}`,
+                        });
+                    }
+
+                    return;
+                }
+
+                squares.push({
+                    piece: unicodePieces[character] || "",
+                    coordinate: `${files[squares.length % 8]}${8 - rankIndex}`,
+                });
+            });
+        });
+
+        return squares;
+    }
+
+    function renderBoard() {
+        const squares = parseFenBoard(puzzle.dammier_fen);
+
+        boardNode.innerHTML = "";
+
+        squares.forEach((square, index) => {
+            const squareNode = document.createElement("div");
+            const row = Math.floor(index / 8);
+            const column = index % 8;
+            const isLight = (row + column) % 2 === 0;
+
+            squareNode.className = "dammier_square";
+            squareNode.setAttribute("data-dammier-color", isLight ? "light" : "dark");
+            squareNode.setAttribute("data-dammier-coordinate", square.coordinate);
+
+            if (square.piece !== "") {
+                const pieceNode = document.createElement("span");
+                pieceNode.className = "dammier_piece";
+                pieceNode.textContent = square.piece;
+                squareNode.appendChild(pieceNode);
+            }
+
+            boardNode.appendChild(squareNode);
+        });
+    }
+
+    function setFeedback(message, state) {
+        if (!(feedbackNode instanceof HTMLElement)) {
+            return;
+        }
+
+        feedbackNode.textContent = message;
+        feedbackNode.classList.remove("is-success", "is-error");
+
+        if (state === "success" || state === "error") {
+            feedbackNode.classList.add(`is-${state}`);
+        }
+    }
+
+    function renderRanking(scores) {
+        if (!(rankingListNode instanceof HTMLElement)) {
+            return;
+        }
+
+        rankingListNode.innerHTML = "";
+
+        scores.forEach((score) => {
+            const item = document.createElement("li");
+            const name = document.createElement("span");
+            const moves = document.createElement("span");
+            const elapsed = document.createElement("span");
+
+            item.className = "dammier_ranking_item";
+            name.textContent = String(score.dammier_display_name || "Membre");
+            moves.textContent = `${Number(score.dammier_moves_count || 0)} coups`;
+            elapsed.textContent = formatElapsed(Number(score.dammier_elapsed_seconds || 0));
+
+            item.append(name, moves, elapsed);
+            rankingListNode.appendChild(item);
+        });
+
+        if (rankingEmptyNode instanceof HTMLElement) {
+            rankingEmptyNode.hidden = scores.length > 0;
+        }
+    }
+
+    function stopTimer() {
+        if (timerId !== null) {
+            window.clearInterval(timerId);
+            timerId = null;
+        }
+    }
+
+    function startTimer() {
+        stopTimer();
+
+        const tick = () => {
+            if (timerNode instanceof HTMLElement) {
+                timerNode.textContent = formatElapsed(Math.floor((Date.now() - startedAt) / 1000));
+            }
+        };
+
+        tick();
+        timerId = window.setInterval(tick, 1000);
+    }
+
+    function renderStep() {
+        const currentStep = puzzle.dammier_steps[stepIndex];
+
+        if (!(promptNode instanceof HTMLElement)) {
+            return;
+        }
+
+        optionsNode.innerHTML = "";
+
+        if (!currentStep) {
+            promptNode.textContent = "Puzzle termine.";
+            return;
+        }
+
+        promptNode.textContent = currentStep.dammier_prompt || "Choisissez le meilleur coup.";
+
+        currentStep.dammier_options.forEach((option) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "button dammier_option";
+            button.textContent = option.dammier_label || option.dammier_move;
+            button.setAttribute("data-dammier-move", option.dammier_move || "");
+            button.addEventListener("click", () => {
+                handleMove(option, button);
+            });
+            optionsNode.appendChild(button);
+        });
+    }
+
+    function submitScore() {
+        if (!isAuthenticated) {
+            setFeedback("Puzzle resolu. Connecte-toi pour enregistrer ton score dans le classement.", "success");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("action", "soumettre_resultat_dammier");
+        formData.append("jeton_csrf", csrfToken);
+        formData.append("dammier_puzzle_id", String(puzzle.dammier_id || ""));
+        formData.append("dammier_week_key", String(puzzle.dammier_week_key || ""));
+        formData.append("dammier_moves_count", String(movesCount));
+        formData.append("dammier_elapsed_seconds", String(Math.max(1, Math.floor((Date.now() - startedAt) / 1000))));
+
+        window.fetch(submitUrl, {
+            method: "POST",
+            headers: {
+                Accept: "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            body: formData,
+        })
+            .then((response) => response.json())
+            .then((result) => {
+                if (!result?.success) {
+                    setFeedback(result?.message || "Score non enregistre.", "error");
+                    return;
+                }
+
+                setFeedback("Puzzle resolu. Ton score est enregistre dans le classement.", "success");
+                renderRanking(Array.isArray(result.dammier_classement) ? result.dammier_classement : []);
+            })
+            .catch(() => {
+                setFeedback("Le puzzle est resolu, mais l'enregistrement du score a echoue.", "error");
+            });
+    }
+
+    function handleMove(option, button) {
+        if (isSolved) {
+            return;
+        }
+
+        movesCount += 1;
+        const expectedMove = String(puzzle.dammier_solution[stepIndex] || "");
+        const isCorrect = String(option.dammier_move || "") === expectedMove;
+
+        if (isCorrect) {
+            button.classList.add("is-correct");
+            stepIndex += 1;
+
+            if (stepIndex >= puzzle.dammier_solution.length) {
+                isSolved = true;
+                stopTimer();
+                optionsNode.innerHTML = "";
+                promptNode.textContent = "Bravo, le casse-tete est termine.";
+                submitScore();
+                return;
+            }
+
+            setFeedback("Bien joue. Passe a l'etape suivante.", "success");
+            window.setTimeout(() => {
+                renderStep();
+            }, 250);
+            return;
+        }
+
+        button.classList.add("is-wrong");
+        setFeedback("Ce n'est pas le bon coup. Le score ajoute une tentative.", "error");
+    }
+
+    function resetPuzzle() {
+        stepIndex = 0;
+        movesCount = 0;
+        startedAt = Date.now();
+        isSolved = false;
+        renderBoard();
+        renderStep();
+        setFeedback("Le score compte le nombre total de tentatives jusqu'a la resolution.", "");
+        startTimer();
+    }
+
+    renderBoard();
+    renderRanking(Array.isArray(payload?.dammier_classement) ? payload.dammier_classement : []);
+    renderStep();
+    startTimer();
+
+    if (resetButton instanceof HTMLButtonElement) {
+        resetButton.addEventListener("click", resetPuzzle);
+    }
+}
+
+/**
  * Gere les actions de la page Parametres (ex: reset du consentement).
  */
 function initSettingsActions() {
@@ -560,5 +869,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initBurgerMenu();
     initAuthModal();
     initPieceCarousel();
+    initDammierPuzzle();
     initSettingsActions();
 });

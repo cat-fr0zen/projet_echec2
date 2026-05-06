@@ -52,6 +52,7 @@ require_once __DIR__ . '/MVC/modeles/DepotUtilisateurs.php';
 require_once __DIR__ . '/MVC/modeles/DepotArticles.php';
 require_once __DIR__ . '/MVC/modeles/DepotMedias.php';
 require_once __DIR__ . '/MVC/modeles/DepotCommandes.php';
+require_once __DIR__ . '/MVC/modeles/DepotDammier.php';
 require_once __DIR__ . '/MVC/modeles/ServiceChessCom.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurActions.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurPages.php';
@@ -211,12 +212,15 @@ $stockageUtilisateurs = new StockageJson(__DIR__ . '/donnees/utilisateurs.json')
 $stockageArticles = new StockageJson(__DIR__ . '/donnees/articles.json');
 $stockageMedias = new StockageJson(__DIR__ . '/donnees/medias.json');
 $stockageCommandes = new StockageJson(__DIR__ . '/donnees/commandes.json');
+$stockageDammierPuzzles = new StockageJson(__DIR__ . '/donnees/dammier_puzzles.json');
+$stockageDammierClassements = new StockageJson(__DIR__ . '/donnees/dammier_classements.json');
 
 $depotUtilisateurs = new DepotUtilisateurs($stockageUtilisateurs);
 $depotArticles = new DepotArticles($stockageArticles);
 $depotMedias = new DepotMedias($stockageMedias);
 $depotCommandes = new DepotCommandes($stockageCommandes);
-$controleurActions = new ControleurActions($depotUtilisateurs, $depotArticles, $depotMedias, $depotCommandes, __DIR__ . '/ressources/media/uploads');
+$depotDammier = new DepotDammier($stockageDammierPuzzles, $stockageDammierClassements);
+$controleurActions = new ControleurActions($depotUtilisateurs, $depotArticles, $depotMedias, $depotCommandes, $depotDammier, __DIR__ . '/ressources/media/uploads');
 $controleurActions->traiter();
 
 $pageDemandee = isset($_GET['page']) ? (string) $_GET['page'] : 'accueil';
@@ -241,6 +245,7 @@ $controleurPages = new ControleurPages(
     $depotArticles,
     $depotMedias,
     $depotCommandes,
+    $depotDammier,
     $serviceChessCom,
     $messagesFlash,
     $etatFormulaire

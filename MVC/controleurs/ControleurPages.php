@@ -24,6 +24,7 @@ final class ControleurPages
         private DepotArticles $depotArticles,
         private DepotMedias $depotMedias,
         private DepotCommandes $depotCommandes,
+        private DepotDammier $depotDammier,
         private ServiceChessCom $serviceChessCom,
         private array $messagesFlash,
         private array $etatFormulaire
@@ -97,6 +98,14 @@ final class ControleurPages
         $donneesSite['member_orders'] = $donneesSite['commandes_membre'];
         $donneesSite['toutes_commandes'] = $donneesAuthentification['est_admin'] ? $this->depotCommandes->listerToutes() : [];
         $donneesSite['all_orders'] = $donneesSite['toutes_commandes'];
+        $dammierPuzzle = $this->depotDammier->obtenirPuzzleHebdomadaire();
+        $dammierClassement = $this->depotDammier->listerClassementHebdomadaire(
+            (string) ($dammierPuzzle['dammier_week_key'] ?? ''),
+            (string) ($dammierPuzzle['dammier_id'] ?? '')
+        );
+        $donneesSite['dammier_puzzle'] = $dammierPuzzle;
+        $donneesSite['dammier_classement'] = $dammierClassement;
+        $donneesSite['dammier_peut_voir_classement'] = (bool) ($donneesAuthentification['est_connecte'] ?? false);
 
         $donneesSite['chess_com'] = [
             'statut' => 'absent',

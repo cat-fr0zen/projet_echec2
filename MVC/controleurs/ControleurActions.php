@@ -38,6 +38,7 @@ final class ControleurActions
         private DepotArticles $depotArticles,
         private DepotMedias $depotMedias,
         private DepotCommandes $depotCommandes,
+        private DepotDammier $depotDammier,
         private string $dossierUploadMedias
     ) {
     }
@@ -108,6 +109,10 @@ final class ControleurActions
             case 'mettre_a_jour_acces_utilisateur':
             case 'update_user_access':
                 $this->traiterMiseAJourAccesUtilisateur();
+                break;
+            case 'soumettre_resultat_dammier':
+            case 'submit_dammier_score':
+                $this->traiterSoumissionResultatDammier();
                 break;
             default:
                 ajouter_message_flash('error', 'Action non prise en charge.');
@@ -475,6 +480,58 @@ final class ControleurActions
     }
 
     /**
+     * Recoit un score du mini-jeu dammier et renvoie le classement mis a jour.
+     */
+    private function traiterSoumissionResultatDammier(): void
+    {
+        $utilisateurCourant = $this->obtenirUtilisateurCourant();
+
+        if ($utilisateurCourant === null) {
+            $this->repondreJson([
+                'success' => false,
+                'message' => 'Connexion requise pour enregistrer un score.',
+            ], 401);
+        }
+
+        $puzzleId = trim((string) ($_POST['dammier_puzzle_id'] ?? ''));
+        $weekKey = trim((string) ($_POST['dammier_week_key'] ?? ''));
+        $movesCount = (int) ($_POST['dammier_moves_count'] ?? 0);
+        $elapsedSeconds = (int) ($_POST['dammier_elapsed_seconds'] ?? 0);
+
+        if (
+            $puzzleId === ''
+            || $weekKey === ''
+            || $movesCount < 1
+            || $movesCount > 99
+            || $elapsedSeconds < 1
+            || $elapsedSeconds > 7200
+        ) {
+            $this->repondreJson([
+                'success' => false,
+                'message' => 'Les donnees du score dammier sont invalides.',
+            ], 422);
+        }
+
+        if (!$this->depotDammier->verifierPuzzleHebdomadaire($weekKey, $puzzleId)) {
+            $this->repondreJson([
+                'success' => false,
+                'message' => 'Le puzzle hebdomadaire a change. Recharge la page.',
+            ], 409);
+        }
+
+        $puzzle = $this->depotDammier->obtenirPuzzleHebdomadaire();
+        $score = $this->depotDammier->enregistrerScoreHebdomadaire($utilisateurCourant, $puzzle, $movesCount, $elapsedSeconds);
+        $classement = $this->depotDammier->listerClassementHebdomadaire($weekKey, $puzzleId);
+
+        $this->repondreJson([
+            'success' => true,
+            'message' => 'Score dammier enregistre.',
+            'dammier_score' => $score,
+            'dammier_classement' => $classement,
+        ]);
+    }
+
+    /**
      * Recupere l'utilisateur courant depuis la session.
      *
      * @return array|null Utilisateur normalise, ou null si non connecte.
@@ -648,5 +705,18 @@ final class ControleurActions
         }
 
         return mb_strlen($valeur) <= 50 && preg_match('/^[A-Za-z0-9_-]+$/', $valeur) === 1;
+    }
+
+    /**
+     * Termine la requete avec une reponse JSON.
+     *
+     * @return never
+     */
+    private function repondreJson(array $payload, int $statusCode = 200): never
+    {
+        http_response_code($statusCode);
+        header('Content-Type: application/json; charset=UTF-8');
+        echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
     }
 }
