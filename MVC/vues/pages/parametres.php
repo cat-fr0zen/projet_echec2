@@ -1,4 +1,15 @@
 <?php
+/**
+ * Vue: Parametres.
+ *
+ * Page "preferences" et informations RGPD:
+ * - recap cookies/consentement
+ * - actions utilisateur (reset consentement, etc.)
+ *
+ * Variables attendues:
+ * - $donneesSite['registre_cookies']
+ * - $donneesSite['authentification']
+ */
 $registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_register'] ?? [];
 $donneesAuthentification = $donneesSite['authentification'];
 ?>

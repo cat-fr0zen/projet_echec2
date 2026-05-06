@@ -1,4 +1,15 @@
 :root {
+    /*
+     * style.css
+     *
+     * Feuille de style principale du site (design "club de sport").
+     * Contient:
+     * - variables CSS (themes clair/sombre)
+     * - layout (header, sections, grilles)
+     * - composants (boutons, cartes, modales, tableaux admin)
+     * - animations (reveal, transitions)
+     */
+
     --bg: #f4ede1;
     --bg-soft: #fcf7ef;
     --surface: rgba(255, 250, 243, 0.84);

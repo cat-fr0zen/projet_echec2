@@ -2,6 +2,14 @@
 
 declare(strict_types=1);
 
+/**
+ * Depot commandes (stockage JSON).
+ *
+ * Role:
+ * - enregistrer des commandes "merch" en prototype (sans paiement)
+ * - lister les commandes d'un membre
+ * - permettre a l'admin de modifier le statut (en attente/validee/annulee)
+ */
 final class DepotCommandes
 {
     public const STATUT_EN_ATTENTE = 'en_attente';
@@ -12,6 +20,9 @@ final class DepotCommandes
     {
     }
 
+    /**
+     * @return array Toutes les commandes, triees recents -> anciens.
+     */
     public function listerToutes(): array
     {
         $commandes = array_map(
@@ -30,6 +41,10 @@ final class DepotCommandes
         return $commandes;
     }
 
+    /**
+     * @param string $identifiantUtilisateur Identifiant membre.
+     * @return array Commandes du membre.
+     */
     public function listerParIdentifiantUtilisateur(string $identifiantUtilisateur): array
     {
         return array_values(
@@ -40,6 +55,12 @@ final class DepotCommandes
         );
     }
 
+    /**
+     * Cree une commande au statut "en attente".
+     *
+     * @param array $donnees Donnees commande (membre + produit/categorie).
+     * @return array Commande creee (normalisee).
+     */
     public function creer(array $donnees): array
     {
         $commandes = $this->stockage->lire();
@@ -60,6 +81,13 @@ final class DepotCommandes
         return $this->normaliserCommande($commande);
     }
 
+    /**
+     * Change le statut d'une commande (admin).
+     *
+     * @param string $identifiant Identifiant commande.
+     * @param string $statut Nouveau statut.
+     * @return array|null Commande mise a jour, ou null si echec.
+     */
     public function changerStatut(string $identifiant, string $statut): ?array
     {
         if (!in_array($statut, [self::STATUT_EN_ATTENTE, self::STATUT_VALIDEE, self::STATUT_ANNULEE], true)) {
@@ -94,6 +122,12 @@ final class DepotCommandes
         return null;
     }
 
+    /**
+     * Normalise une commande brute JSON en structure stable.
+     *
+     * @param array $enregistrement Enregistrement brut.
+     * @return array Commande normalisee.
+     */
     private function normaliserCommande(array $enregistrement): array
     {
         $statut = (string) ($enregistrement['statut'] ?? $enregistrement['status'] ?? self::STATUT_EN_ATTENTE);

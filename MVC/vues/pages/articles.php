@@ -1,4 +1,15 @@
 <?php
+/**
+ * Vue: Articles.
+ *
+ * Affiche:
+ * - la liste publique des articles publies
+ * - l'espace "mes articles" pour un adherent (si connecte)
+ *
+ * Variables attendues:
+ * - $siteData['authentification']
+ * - $siteData['published_articles'], $siteData['my_articles']
+ */
 $authData = $siteData['authentification'];
 $publishedArticles = $siteData['published_articles'] ?? [];
 $myArticles = $siteData['my_articles'] ?? [];

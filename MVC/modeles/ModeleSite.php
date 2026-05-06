@@ -2,8 +2,26 @@
 
 declare(strict_types=1);
 
+/**
+ * ModeleSite
+ *
+ * "Contenu" du site et configuration d'affichage.
+ *
+ * Role:
+ * - definir les pages disponibles (slug -> vue)
+ * - fournir les donnees statiques (navigation, textes, cartes, legal, etc.)
+ *
+ * Note:
+ * - ce fichier ne fait pas de logique de droits: c'est le controleur qui filtre l'acces.
+ * - les cles FR/EN sont dupliquees pour faciliter la transition/compat.
+ */
 final class ModeleSite
 {
+    /**
+     * Donnees globales du site (branding, navigation, sections, legal, etc.).
+     *
+     * @return array Donnees pour `ControleurPages` et les vues.
+     */
     public function obtenirDonneesSite(): array
     {
         $navigationPrincipale = [
@@ -229,6 +247,11 @@ final class ModeleSite
         ];
     }
 
+    /**
+     * Catalogue des pages routables.
+     *
+     * @return array slug => configuration (titre, vue, meta, hero, intro).
+     */
     public function obtenirPages(): array
     {
         return [

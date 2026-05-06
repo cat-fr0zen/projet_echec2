@@ -1,4 +1,15 @@
 <?php
+/**
+ * Vue: Mediatheque.
+ *
+ * Affiche:
+ * - galerie publique des medias valides
+ * - espace "mes medias" pour adherents (depots + suivi)
+ *
+ * Variables attendues:
+ * - $donneesSite['cartes_mediatheque']
+ * - $siteData['authentification'], listes publiees + personnelles
+ */
 $cartesMediatheque = $donneesSite['cartes_mediatheque'] ?? [];
 $authData = $siteData['authentification'];
 $publishedMedia = $siteData['published_media'] ?? [];

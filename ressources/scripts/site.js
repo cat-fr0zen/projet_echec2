@@ -1,3 +1,23 @@
+/**
+ * site.js
+ *
+ * JavaScript "vanilla" du site.
+ *
+ * Responsabilites:
+ * - consentement cookies (blocage du site tant que non accepte)
+ * - theme clair/sombre (cookie `site_theme`)
+ * - header sticky, menu burger
+ * - modale d'authentification (tabs + focus trap)
+ * - carrousel (pieces) et micro-interactions
+ * - actions page Parametres (reset consentement)
+ */
+
+/**
+ * Lit un cookie par nom (decode URL).
+ *
+ * @param {string} name Nom du cookie.
+ * @returns {string} Valeur, ou chaine vide.
+ */
 function getCookieValue(name) {
     const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
@@ -5,11 +25,24 @@ function getCookieValue(name) {
     return match ? decodeURIComponent(match[1]) : "";
 }
 
+/**
+ * Ecrit un cookie simple (SameSite=Lax).
+ *
+ * @param {string} name Nom du cookie.
+ * @param {string} value Valeur a stocker.
+ * @param {number} days Duree de vie en jours (defaut 365).
+ */
 function setCookieValue(name, value, days = 365) {
     const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
     document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expiresAt}; path=/; SameSite=Lax`;
 }
 
+/**
+ * Retourne la liste des elements focusables dans un conteneur (accessibilite).
+ *
+ * @param {HTMLElement} root Conteneur.
+ * @returns {HTMLElement[]} Elements focusables.
+ */
 function getFocusableElements(root) {
     if (!(root instanceof HTMLElement)) {
         return [];
@@ -28,6 +61,12 @@ function getFocusableElements(root) {
     });
 }
 
+/**
+ * Empeche le focus de sortir d'une modale (Tab / Shift+Tab).
+ *
+ * @param {KeyboardEvent} event Evenement clavier.
+ * @param {HTMLElement} root Conteneur de la modale.
+ */
 function trapFocus(event, root) {
     if (event.key !== "Tab") {
         return;
@@ -53,6 +92,13 @@ function trapFocus(event, root) {
     }
 }
 
+/**
+ * Gere l'ecran de consentement cookies.
+ *
+ * Flux:
+ * - si cookie `site_consent=accepted`: on debloque le site
+ * - sinon on affiche la modale, on lock le body, et on active le focus trap
+ */
 function initConsentGate() {
     const consentRoot = document.querySelector("[data-consent-root]");
 
@@ -113,6 +159,9 @@ function initConsentGate() {
     }
 }
 
+/**
+ * Gere le bouton de theme (clair/sombre) via cookie `site_theme`.
+ */
 function initThemeToggle() {
     const themeToggle = document.querySelector("[data-theme-toggle]");
 
@@ -140,6 +189,9 @@ function initThemeToggle() {
     });
 }
 
+/**
+ * Reduit visuellement le header quand on scrolle (classe CSS `is-condensed`).
+ */
 function initStickyHeader() {
     const siteHeader = document.querySelector("[data-site-header]");
 
@@ -168,6 +220,9 @@ function initStickyHeader() {
     window.addEventListener("resize", requestSync);
 }
 
+/**
+ * Gere l'affichage des messages flash (success/error) et leur disparition.
+ */
 function initFlashMessages() {
     const flashMessages = Array.from(document.querySelectorAll(".flash-message"));
 
@@ -189,6 +244,9 @@ function initFlashMessages() {
     });
 }
 
+/**
+ * Gere le menu burger (mobile).
+ */
 function initBurgerMenu() {
     const burgerToggle = document.querySelector("[data-burger-toggle]");
     const burgerPanel = document.querySelector("[data-burger-panel]");
@@ -246,6 +304,9 @@ function initBurgerMenu() {
     });
 }
 
+/**
+ * Gere la modale d'authentification (ouverture, onglets, focus trap).
+ */
 function initAuthModal() {
     const modalRoot = document.querySelector("[data-auth-modal]");
 
@@ -342,6 +403,9 @@ function initAuthModal() {
     }
 }
 
+/**
+ * Gere le carrousel des pieces (navigation, autoplay, acces clavier).
+ */
 function initPieceCarousel() {
     const carouselRoot = document.querySelector("[data-piece-carousel]");
 
@@ -473,6 +537,9 @@ function initPieceCarousel() {
     startAutoPlay();
 }
 
+/**
+ * Gere les actions de la page Parametres (ex: reset du consentement).
+ */
 function initSettingsActions() {
     const resetButtons = Array.from(document.querySelectorAll("[data-reset-consent]"));
 

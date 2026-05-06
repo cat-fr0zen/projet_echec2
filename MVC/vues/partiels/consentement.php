@@ -1,4 +1,10 @@
 <?php
+/**
+ * Partiel: Consentement cookies.
+ *
+ * Affiche une "gate" tant que l'utilisateur n'a pas accepte les cookies essentiels
+ * et preferences. Le comportement (focus trap, lock body) est gere cote JS (site.js).
+ */
 $donneesConsentement = $donneesSite['consentement'] ?? $donneesSite['consent'];
 $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_documents'] ?? [];
 ?>

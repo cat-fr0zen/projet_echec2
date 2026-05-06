@@ -2,6 +2,21 @@
 
 declare(strict_types=1);
 
+/**
+ * Point d'entree unique (Front Controller).
+ *
+ * Role:
+ * - initialise la session PHP et les cookies de session
+ * - charge les classes (modeles/depots/services/controleurs)
+ * - expose quelques helpers globaux (echappement, URLs, CSRF, flash)
+ * - instancie les depots (stockage JSON), puis execute:
+ *   1) le controleur d'actions (POST)
+ *   2) le controleur de pages (GET) pour produire le HTML
+ *
+ * Donnees:
+ * - ce prototype utilise des fichiers JSON dans `donnees/` (pas de base Oracle en runtime)
+ */
+
 $dossierSessions = __DIR__ . '/donnees/sessions';
 $utiliserCookiesSecurises = (
     (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
@@ -41,11 +56,29 @@ require_once __DIR__ . '/MVC/modeles/ServiceChessCom.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurActions.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurPages.php';
 
+/**
+ * Echappe une chaine pour un affichage HTML sur (XSS prevention).
+ *
+ * @param ?string $valeur Valeur a afficher.
+ * @return string Valeur echappee en UTF-8.
+ */
 function e(?string $valeur): string
 {
     return htmlspecialchars((string) $valeur, ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * Construit une URL "propre" basee sur un segment de page (routeur unique).
+ *
+ * Exemple:
+ * - url_route('accueil') => '/'
+ * - url_route('articles') => '/articles'
+ * - url_route('articles', ['q' => 'x']) => '/articles?q=x'
+ *
+ * @param string $segment Segment de page (slug).
+ * @param array $parametres Parametres querystring.
+ * @return string URL relative.
+ */
 function url_route(string $segment, array $parametres = []): string
 {
     $segmentNormalise = trim($segment, '/');
@@ -60,17 +93,34 @@ function url_route(string $segment, array $parametres = []): string
     return $chemin . '?' . http_build_query($parametres);
 }
 
+/**
+ * Construit une URL publique vers une ressource statique (CSS/JS/uploads).
+ *
+ * @param string $chemin Chemin relatif a la racine du projet.
+ * @return string URL relative web (slash normalise).
+ */
 function url_ressource(string $chemin): string
 {
     return '/' . ltrim(str_replace('\\', '/', $chemin), '/');
 }
 
+/**
+ * Redirige le navigateur et stoppe l'execution.
+ *
+ * @param string $url URL cible.
+ * @return never
+ */
 function rediriger_vers(string $url): never
 {
     header('Location: ' . $url);
     exit;
 }
 
+/**
+ * Lit le theme courant a partir du cookie `site_theme`.
+ *
+ * @return string 'light' ou 'dark'
+ */
 function theme_courant(): string
 {
     $theme = isset($_COOKIE['site_theme']) ? (string) $_COOKIE['site_theme'] : 'light';
@@ -78,6 +128,15 @@ function theme_courant(): string
     return $theme === 'dark' ? 'dark' : 'light';
 }
 
+/**
+ * Retourne (et cree si besoin) un jeton CSRF en session.
+ *
+ * Utilisation:
+ * - injecter `jeton_csrf()` dans les formulaires
+ * - verifier via `verifier_jeton_csrf(...)` dans les actions POST
+ *
+ * @return string Jeton aleatoire hex.
+ */
 function jeton_csrf(): string
 {
     if (!isset($_SESSION['jeton_csrf']) || !is_string($_SESSION['jeton_csrf'])) {
@@ -87,11 +146,23 @@ function jeton_csrf(): string
     return $_SESSION['jeton_csrf'];
 }
 
+/**
+ * Verifie qu'un jeton fourni correspond au jeton de session.
+ *
+ * @param mixed $jeton Jeton fourni par le formulaire.
+ * @return bool True si valide.
+ */
 function verifier_jeton_csrf(mixed $jeton): bool
 {
     return is_string($jeton) && hash_equals(jeton_csrf(), $jeton);
 }
 
+/**
+ * Ajoute un message "flash" (1 affichage) en session.
+ *
+ * @param string $type 'success' | 'error' | 'info'
+ * @param string $message Texte a afficher.
+ */
 function ajouter_message_flash(string $type, string $message): void
 {
     $_SESSION['messages_flash'][] = [
@@ -100,6 +171,11 @@ function ajouter_message_flash(string $type, string $message): void
     ];
 }
 
+/**
+ * Recupere les messages flash, puis les efface.
+ *
+ * @return array Liste de messages.
+ */
 function recuperer_messages_flash(): array
 {
     $messages = $_SESSION['messages_flash'] ?? [];
@@ -108,11 +184,21 @@ function recuperer_messages_flash(): array
     return is_array($messages) ? $messages : [];
 }
 
+/**
+ * Memorise l'etat d'un formulaire (ex: erreurs, valeurs) dans la session.
+ *
+ * @param array $etat Etat serialisable.
+ */
 function memoriser_etat_formulaire(array $etat): void
 {
     $_SESSION['etat_formulaire'] = $etat;
 }
 
+/**
+ * Recupere l'etat du formulaire memorise, puis le supprime.
+ *
+ * @return array Etat serialisable.
+ */
 function recuperer_etat_formulaire(): array
 {
     $etat = $_SESSION['etat_formulaire'] ?? [];

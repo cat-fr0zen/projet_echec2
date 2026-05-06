@@ -2,8 +2,22 @@
 
 declare(strict_types=1);
 
+/**
+ * Stockage JSON "bas niveau".
+ *
+ * But:
+ * - fournir un mini mecanisme de persistance pour le prototype (sans BDD)
+ * - garantir l'existence du dossier et du fichier JSON
+ * - lire/ecrire des tableaux PHP de maniere atomique (LOCK_EX)
+ *
+ * Utilise par:
+ * - DepotUtilisateurs / DepotArticles / DepotMedias / DepotCommandes
+ */
 final class StockageJson
 {
+    /**
+     * @param string $cheminFichier Chemin complet vers le fichier JSON.
+     */
     public function __construct(private string $cheminFichier)
     {
         $dossier = dirname($this->cheminFichier);
@@ -17,6 +31,11 @@ final class StockageJson
         }
     }
 
+    /**
+     * Lit le JSON et retourne un tableau.
+     *
+     * @return array Liste d'enregistrements (ou [] si vide/invalide).
+     */
     public function lire(): array
     {
         $contenu = file_get_contents($this->cheminFichier);
@@ -30,6 +49,11 @@ final class StockageJson
         return is_array($donnees) ? $donnees : [];
     }
 
+    /**
+     * Ecrit un tableau d'enregistrements en JSON.
+     *
+     * @param array $enregistrements Donnees a persister.
+     */
     public function ecrire(array $enregistrements): void
     {
         file_put_contents(

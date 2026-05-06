@@ -1,4 +1,10 @@
 <?php
+/**
+ * Vue: Contact.
+ *
+ * Affiche les coordonnees du club (email, telephone, adresse) et un formulaire
+ * de contact "prototype" (sans envoi reel).
+ */
 $email = (string) ($siteData['email'] ?? '');
 $address = (string) ($siteData['address'] ?? '');
 $phone = (string) ($siteData['phone'] ?? '');

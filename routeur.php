@@ -2,6 +2,18 @@
 
 declare(strict_types=1);
 
+/**
+ * Routeur unique pour le serveur PHP integre (`php -S`).
+ *
+ * But:
+ * - autoriser uniquement les fichiers statiques sous `ressources/`
+ * - interdire l'acces direct aux sources (MVC/, modeles/, controleurs/, vues/, donnees/, etc.)
+ * - convertir les URLs "propres" (`/articles`) en `index.php` avec `$_GET['page']`
+ *
+ * Utilisation:
+ * - `php -S 127.0.0.1:8000 -t Projet_echec2 Projet_echec2/routeur.php`
+ */
+
 $racineProjet = __DIR__;
 $uriDemandee = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '/';
 $cheminDemande = parse_url($uriDemandee, PHP_URL_PATH);

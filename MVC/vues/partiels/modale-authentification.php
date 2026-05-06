@@ -1,4 +1,14 @@
 <?php
+/**
+ * Partiel: Modale d'authentification.
+ *
+ * Gere les formulaires:
+ * - connexion
+ * - inscription
+ *
+ * Les erreurs/valeurs precedentes sont stockees en session via `etat_formulaire`
+ * (helpers dans index.php).
+ */
 $donneesAuthentification = $donneesSite['authentification'];
 $etatFormulaire = $donneesSite['etat_formulaire'] ?? [];
 $modaleAuthentification = $donneesSite['modale_authentification'] ?? $donneesSite['auth_modal'];

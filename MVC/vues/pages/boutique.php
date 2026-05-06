@@ -1,4 +1,14 @@
 <?php
+/**
+ * Vue: Boutique (merch).
+ *
+ * Affiche le catalogue (cartes) et, pour les utilisateurs connectes,
+ * le suivi des commandes.
+ *
+ * Donnees attendues:
+ * - $donneesSite['cartes_boutique']: contenu "vitrine" de la boutique
+ * - $siteData['authentification'], $siteData['member_orders']
+ */
 $cartesBoutique = $donneesSite['cartes_boutique'] ?? [];
 $authData = $siteData['authentification'];
 $memberOrders = $siteData['member_orders'] ?? [];

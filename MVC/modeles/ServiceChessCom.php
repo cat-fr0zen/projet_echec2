@@ -2,6 +2,21 @@
 
 declare(strict_types=1);
 
+/**
+ * ServiceChessCom
+ *
+ * Service d'integration "lecture seule" avec l'API publique Chess.com.
+ *
+ * Role:
+ * - recuperer le profil public et les statistiques (ratings) d'un pseudo Chess.com
+ * - mettre en cache localement les reponses JSON dans `donnees/cache/chesscom/`
+ * - retourner un "instantane" normalise consomme par la page Profil
+ *
+ * Important:
+ * - aucune authentification OAuth
+ * - uniquement des donnees publiques
+ * - en cas d'erreur (429/404/etc.), on cache peu de temps pour eviter de spammer l'API
+ */
 final class ServiceChessCom
 {
     private const URL_PROFIL = 'https://api.chess.com/pub/player/%s';
@@ -18,6 +33,12 @@ final class ServiceChessCom
         }
     }
 
+    /**
+     * Retourne un instantane (profil + stats) pour un pseudo Chess.com.
+     *
+     * @param string $pseudo Pseudo saisi par l'utilisateur dans son profil.
+     * @return array Instantane normalise + alias de compatibilite.
+     */
     public function recupererInstantaneJoueur(string $pseudo): array
     {
         $pseudoNormalise = $this->normaliserPseudo($pseudo);
@@ -66,6 +87,12 @@ final class ServiceChessCom
         return $this->ajouterAliasCompatibilite($instantane);
     }
 
+    /**
+     * Normalise un pseudo (lowercase + trim).
+     *
+     * @param ?string $pseudo Valeur brute.
+     * @return string Valeur normalisee.
+     */
     public function normaliserPseudo(?string $pseudo): string
     {
         return mb_strtolower(trim((string) $pseudo));
@@ -98,6 +125,7 @@ final class ServiceChessCom
         ];
     }
 
+    /** Construit un instantane d'erreur (pseudo introuvable, rate limit, etc.). */
     private function construireInstantaneErreur(string $pseudo, int $codeStatut): array
     {
         $message = match ($codeStatut) {
@@ -130,6 +158,7 @@ final class ServiceChessCom
         ];
     }
 
+    /** Extrait et normalise les classements (rapid/blitz/bullet...) depuis les stats Chess.com. */
     private function extraireClassements(array $donneesStatistiques): array
     {
         $correspondances = [
@@ -178,6 +207,12 @@ final class ServiceChessCom
         return $classements;
     }
 
+    /**
+     * Requete HTTP GET JSON (curl) avec User-Agent.
+     *
+     * @param string $url URL cible.
+     * @return array {code_statut, donnees}
+     */
     private function effectuerRequeteJson(string $url): array
     {
         $enTetes = [
@@ -214,6 +249,7 @@ final class ServiceChessCom
         ];
     }
 
+    /** Parse le code HTTP a partir des entetes de reponse. */
     private function extraireCodeStatut(array $enTetesReponse): int
     {
         if ($enTetesReponse === []) {
@@ -229,6 +265,7 @@ final class ServiceChessCom
         return 0;
     }
 
+    /** Extrait un code pays (ex: FR) depuis l'URL `.../country/FR`. */
     private function extrairePays(string $urlPays): string
     {
         if ($urlPays === '') {
@@ -241,11 +278,13 @@ final class ServiceChessCom
         return $codePays !== '' ? $codePays : '';
     }
 
+    /** Formatte un timestamp unix "last_online" en libelle lisible. */
     private function formatterDernierePresence(mixed $valeur): string
     {
         return $this->formatterDateHeureUnix($valeur, 'Dernière présence : %s');
     }
 
+    /** Formatte la date de recuperation en timezone Europe/Paris. */
     private function formatterDateRecuperation(string $valeur): string
     {
         try {
@@ -257,6 +296,7 @@ final class ServiceChessCom
         return 'Données récupérées le ' . $date->setTimezone(new DateTimeZone('Europe/Paris'))->format('d/m/Y à H:i');
     }
 
+    /** Formatte un timestamp unix (date uniquement). */
     private function formatterDateUnix(mixed $valeur): string
     {
         $horodatage = $this->versEntierNullable($valeur);
@@ -274,6 +314,7 @@ final class ServiceChessCom
         }
     }
 
+    /** Formatte un timestamp unix (date + heure) avec un modele. */
     private function formatterDateHeureUnix(mixed $valeur, string $modele): string
     {
         $horodatage = $this->versEntierNullable($valeur);
@@ -293,6 +334,7 @@ final class ServiceChessCom
         }
     }
 
+    /** Convertit une valeur numerique en int ou null si invalide. */
     private function versEntierNullable(mixed $valeur): ?int
     {
         if ($valeur === null || $valeur === '') {
@@ -306,6 +348,7 @@ final class ServiceChessCom
         return (int) $valeur;
     }
 
+    /** Calcule le chemin de cache (fichier JSON) pour un pseudo. */
     private function cheminCache(string $pseudo): string
     {
         $nomSecurise = preg_replace('/[^a-z0-9_-]+/i', '-', $pseudo) ?: 'joueur';
@@ -313,6 +356,11 @@ final class ServiceChessCom
         return rtrim($this->dossierCache, '/\\') . DIRECTORY_SEPARATOR . $nomSecurise . '.json';
     }
 
+    /**
+     * Lit le cache si encore valide.
+     *
+     * @return array|null Instantane mis en cache, ou null si absent/expire/invalide.
+     */
     private function lireCache(string $pseudo): ?array
     {
         $cheminCache = $this->cheminCache($pseudo);
@@ -345,6 +393,7 @@ final class ServiceChessCom
         return $instantane;
     }
 
+    /** Ecrit un cache avec une date d'expiration (TTL). */
     private function ecrireCache(string $pseudo, array $instantane, int $dureeSecondes): void
     {
         $cheminCache = $this->cheminCache($pseudo);
@@ -360,6 +409,12 @@ final class ServiceChessCom
         );
     }
 
+    /**
+     * Ajoute des alias de cles (anglais) pour la compatibilite UI.
+     *
+     * @param array $instantane Instantane FR.
+     * @return array Instantane enrichi.
+     */
     private function ajouterAliasCompatibilite(array $instantane): array
     {
         $joueur = is_array($instantane['joueur'] ?? null) ? $instantane['joueur'] : [];

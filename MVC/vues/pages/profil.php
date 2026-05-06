@@ -1,4 +1,15 @@
 <?php
+/**
+ * Vue: Profil.
+ *
+ * Page du compte:
+ * - infos de profil (consultation)
+ * - statistiques Chess.com (si pseudo renseigne) via ServiceChessCom
+ *
+ * Variables attendues:
+ * - $siteData['authentification']
+ * - $siteData['chess_com']
+ */
 $authData = $siteData['authentification'];
 $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
 ?>

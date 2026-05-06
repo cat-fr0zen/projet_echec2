@@ -2,6 +2,14 @@
 
 declare(strict_types=1);
 
+/**
+ * Depot utilisateurs (stockage JSON).
+ *
+ * Sert de couche d'acces aux donnees pour le prototype:
+ * - lit/ecrit `donnees/utilisateurs.json` via StockageJson
+ * - normalise les champs (compatibilite anciennes cles)
+ * - maintient roles/statuts (connecte/adherent/admin)
+ */
 final class DepotUtilisateurs
 {
     public const ROLE_CONNECTE = 'connecte';
@@ -19,6 +27,12 @@ final class DepotUtilisateurs
         $this->migrerDonneesExistantes();
     }
 
+    /**
+     * Trouve un utilisateur par identifiant (id stocke en session).
+     *
+     * @param ?string $identifiant Identifiant utilisateur.
+     * @return array|null Utilisateur normalise, ou null si introuvable.
+     */
     public function trouverParIdentifiant(?string $identifiant): ?array
     {
         if ($identifiant === null || $identifiant === '') {
@@ -36,6 +50,14 @@ final class DepotUtilisateurs
         return null;
     }
 
+    /**
+     * Liste tous les utilisateurs.
+     *
+     * Usage:
+     * - dashboard admin (gestion des comptes)
+     *
+     * @return array Liste d'utilisateurs normalises.
+     */
     public function listerTous(): array
     {
         return array_map(
@@ -44,6 +66,12 @@ final class DepotUtilisateurs
         );
     }
 
+    /**
+     * Trouve un utilisateur par email (login).
+     *
+     * @param string $courriel Email fourni.
+     * @return array|null Utilisateur normalise, ou null.
+     */
     public function trouverParCourriel(string $courriel): ?array
     {
         $courrielNormalise = mb_strtolower(trim($courriel));
@@ -59,6 +87,15 @@ final class DepotUtilisateurs
         return null;
     }
 
+    /**
+     * Cree un compte utilisateur (inscription).
+     *
+     * Regles:
+     * - le premier compte cree peut etre promu admin (prototype)
+     *
+     * @param array $donnees Donnees formulaire.
+     * @return array Utilisateur cree (normalise).
+     */
     public function creer(array $donnees): array
     {
         $utilisateurs = $this->stockage->lire();
@@ -85,6 +122,13 @@ final class DepotUtilisateurs
         return $utilisateur;
     }
 
+    /**
+     * Met a jour le profil de base d'un utilisateur (nom/prenom/description/pseudo chess).
+     *
+     * @param string $identifiant Identifiant cible.
+     * @param array $donnees Donnees de profil.
+     * @return array|null Utilisateur mis a jour, ou null si introuvable.
+     */
     public function mettreAJour(string $identifiant, array $donnees): ?array
     {
         $utilisateurs = $this->stockage->lire();
@@ -120,6 +164,14 @@ final class DepotUtilisateurs
         return null;
     }
 
+    /**
+     * Met a jour les acces (role/statuts) d'un utilisateur.
+     *
+     * Usage:
+     * - dashboard admin (president)
+     *
+     * @return array|null Utilisateur mis a jour, ou null si validation refusee.
+     */
     public function mettreAJourAcces(string $identifiant, string $role, string $statutCompte, string $statutAdhesion): ?array
     {
         if (!in_array($role, [self::ROLE_CONNECTE, self::ROLE_ADHERENT, self::ROLE_ADMIN], true)) {
@@ -175,6 +227,12 @@ final class DepotUtilisateurs
         return null;
     }
 
+    /**
+     * Normalise un enregistrement brut JSON en structure utilisateur stable.
+     *
+     * @param array $enregistrement Enregistrement brut.
+     * @return array Structure normalisee (cles internes du site).
+     */
     private function normaliserUtilisateur(array $enregistrement): array
     {
         $role = (string) ($enregistrement['role'] ?? $enregistrement['code_role'] ?? self::ROLE_CONNECTE);
@@ -215,6 +273,11 @@ final class DepotUtilisateurs
         return mb_strtolower(trim((string) $valeur));
     }
 
+    /**
+     * Compte le nombre d'utilisateurs admin.
+     *
+     * @return int Nombre d'admins.
+     */
     private function compterAdministrateurs(): int
     {
         $compteur = 0;
@@ -230,6 +293,12 @@ final class DepotUtilisateurs
         return $compteur;
     }
 
+    /**
+     * Migration "douce" des donnees historiques au demarrage.
+     *
+     * Effet:
+     * - peut reecrire le JSON si des champs manquent.
+     */
     private function migrerDonneesExistantes(): void
     {
         $utilisateurs = $this->stockage->lire();

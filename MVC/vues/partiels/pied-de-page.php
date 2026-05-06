@@ -1,4 +1,12 @@
 <?php
+/**
+ * Partiel: Pied de page.
+ *
+ * Affiche:
+ * - credits
+ * - documents legaux (liens)
+ * - recap cookies (trace/registre)
+ */
 $anneeCourante = date('Y');
 $credits = $donneesSite['credits'];
 $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_documents'] ?? [];

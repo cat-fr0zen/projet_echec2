@@ -1,4 +1,13 @@
 <?php
+/**
+ * Vue: Le club.
+ *
+ * Presentation de l'association (valeurs) et horaires.
+ *
+ * Variables attendues:
+ * - $siteData['values']
+ * - $siteData['schedule']
+ */
 $values = $siteData['values'];
 $schedule = $siteData['schedule'];
 ?>

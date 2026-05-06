@@ -2,6 +2,19 @@
 
 declare(strict_types=1);
 
+/**
+ * Depot medias (stockage JSON).
+ *
+ * Role:
+ * - enregistrer les uploads (photos/videos) avec un statut
+ * - lister les medias publies (public)
+ * - lister les medias d'un membre (suivi)
+ * - permettre la moderation admin (publie/refuse/en attente)
+ *
+ * Stockage fichier:
+ * - le fichier binaire est stocke sous `ressources/media/uploads/`
+ * - le depot conserve uniquement les metadonnees et le chemin public
+ */
 final class DepotMedias
 {
     public const TYPE_PHOTO = 'photo';
@@ -15,6 +28,9 @@ final class DepotMedias
     {
     }
 
+    /**
+     * @return array Tous les medias, tries recents -> anciens.
+     */
     public function listerTous(): array
     {
         $medias = array_map(
@@ -33,6 +49,9 @@ final class DepotMedias
         return $medias;
     }
 
+    /**
+     * @return array Medias publies (visibles).
+     */
     public function trouverPublies(): array
     {
         return array_values(
@@ -43,6 +62,10 @@ final class DepotMedias
         );
     }
 
+    /**
+     * @param string $identifiantAuteur Identifiant utilisateur.
+     * @return array Medias de cet auteur.
+     */
     public function trouverParIdentifiantAuteur(string $identifiantAuteur): array
     {
         return array_values(
@@ -53,6 +76,12 @@ final class DepotMedias
         );
     }
 
+    /**
+     * Cree un media en attente de validation.
+     *
+     * @param array $donnees Metadonnees (type, titre, chemin, mime, taille...).
+     * @return array Media cree (normalise).
+     */
     public function creer(array $donnees): array
     {
         $medias = $this->stockage->lire();
@@ -79,6 +108,13 @@ final class DepotMedias
         return $this->normaliserMedia($media);
     }
 
+    /**
+     * Change le statut d'un media (moderation admin).
+     *
+     * @param string $identifiant Identifiant media.
+     * @param string $statut Nouveau statut.
+     * @return array|null Media mis a jour ou null si echec.
+     */
     public function changerStatut(string $identifiant, string $statut): ?array
     {
         if (!in_array($statut, [self::STATUT_EN_ATTENTE, self::STATUT_PUBLIE, self::STATUT_REFUSE], true)) {
@@ -119,6 +155,12 @@ final class DepotMedias
         return null;
     }
 
+    /**
+     * Normalise un enregistrement brut en structure stable.
+     *
+     * @param array $enregistrement Enregistrement brut JSON.
+     * @return array Media normalise.
+     */
     private function normaliserMedia(array $enregistrement): array
     {
         $typeMedia = (string) ($enregistrement['type_media'] ?? $enregistrement['media_type'] ?? self::TYPE_PHOTO);

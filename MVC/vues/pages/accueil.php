@@ -1,4 +1,16 @@
 <?php
+/**
+ * Vue: Accueil.
+ *
+ * Page vitrine du club:
+ * - hero + liens d'acces
+ * - statistiques et planning
+ * - carrousel et blocs d'informations
+ *
+ * Donnees attendues:
+ * - $pageData: textes de la page (hero_title, hero_text, etc.)
+ * - $siteData: donnees globales (stats, schedule, etc.)
+ */
 $stats = $siteData['stats'];
 $schedule = $siteData['schedule'];
 $compliancePoints = $siteData['compliance_points'];

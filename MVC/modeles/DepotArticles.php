@@ -2,6 +2,14 @@
 
 declare(strict_types=1);
 
+/**
+ * Depot articles (stockage JSON).
+ *
+ * Role:
+ * - creer des articles soumis par les adherents
+ * - lister les articles publies (visibles par tous)
+ * - fournir des listes pour le dashboard admin (moderation)
+ */
 final class DepotArticles
 {
     public const STATUT_EN_ATTENTE = 'en_attente_validation';
@@ -12,6 +20,9 @@ final class DepotArticles
     {
     }
 
+    /**
+     * @return array Articles au statut "publie".
+     */
     public function trouverPublies(): array
     {
         $articles = array_filter(
@@ -30,6 +41,12 @@ final class DepotArticles
         return array_map(fn (array $enregistrement): array => $this->normaliserArticle($enregistrement), array_values($articles));
     }
 
+    /**
+     * Liste les articles d'un auteur (suivi cote membre).
+     *
+     * @param string $identifiantAuteur Identifiant utilisateur auteur.
+     * @return array Articles de l'auteur.
+     */
     public function trouverParIdentifiantAuteur(string $identifiantAuteur): array
     {
         $articles = array_filter(
@@ -48,6 +65,11 @@ final class DepotArticles
         return array_map(fn (array $enregistrement): array => $this->normaliserArticle($enregistrement), array_values($articles));
     }
 
+    /**
+     * Liste tous les articles (usage dashboard admin).
+     *
+     * @return array Articles tries du plus recent au plus ancien.
+     */
     public function listerTous(): array
     {
         $articles = array_map(
@@ -66,6 +88,12 @@ final class DepotArticles
         return $articles;
     }
 
+    /**
+     * Cree un article en attente de validation.
+     *
+     * @param array $donnees Donnees article (auteur + texte).
+     * @return array Article cree.
+     */
     public function creer(array $donnees): array
     {
         $articles = $this->stockage->lire();
@@ -87,6 +115,13 @@ final class DepotArticles
         return $article;
     }
 
+    /**
+     * Change le statut d'un article (moderation admin).
+     *
+     * @param string $identifiant Identifiant article.
+     * @param string $statut Nouveau statut.
+     * @return array|null Article mis a jour, ou null si introuvable/invalide.
+     */
     public function changerStatut(string $identifiant, string $statut): ?array
     {
         if (!in_array($statut, [self::STATUT_EN_ATTENTE, self::STATUT_PUBLIE, self::STATUT_REFUSE], true)) {
@@ -122,6 +157,12 @@ final class DepotArticles
         return null;
     }
 
+    /**
+     * Normalise un enregistrement brut en structure stable.
+     *
+     * @param array $enregistrement Enregistrement brut JSON.
+     * @return array Article normalise.
+     */
     private function normaliserArticle(array $enregistrement): array
     {
         $statutBrut = (string) ($enregistrement['statut'] ?? $enregistrement['status'] ?? 'en_attente_validation');

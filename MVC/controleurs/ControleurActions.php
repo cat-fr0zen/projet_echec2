@@ -2,6 +2,21 @@
 
 declare(strict_types=1);
 
+/**
+ * Controleur d'actions (POST).
+ *
+ * Role:
+ * - traiter les formulaires du site (inscription, login, profil, depot article/media, etc.)
+ * - appliquer les regles de securite (CSRF) et d'autorisation (roles/statuts)
+ * - ecrire dans les depots JSON (utilisateurs/articles/medias/commandes)
+ * - rediriger vers la page cible avec message flash
+ *
+ * Dependances:
+ * - DepotUtilisateurs: authentification + roles/statuts
+ * - DepotArticles: soumission + moderation
+ * - DepotMedias: upload + moderation (metadonnees)
+ * - DepotCommandes: commandes "merch" (prototype)
+ */
 final class ControleurActions
 {
     private const PAGES_AUTORISEES = [
@@ -27,6 +42,11 @@ final class ControleurActions
     ) {
     }
 
+    /**
+     * Point d'entree unique: route toutes les actions POST.
+     *
+     * @return void
+     */
     public function traiter(): void
     {
         if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
@@ -95,6 +115,7 @@ final class ControleurActions
         }
     }
 
+    /** Traite le formulaire d'inscription. */
     private function traiterInscription(): void
     {
         $pageRedirection = $this->resoudrePageRedirection('accueil');
@@ -131,6 +152,7 @@ final class ControleurActions
         rediriger_vers(url_route('profil'));
     }
 
+    /** Traite le formulaire de connexion. */
     private function traiterConnexion(): void
     {
         $pageRedirection = $this->resoudrePageRedirection('accueil');
@@ -164,6 +186,7 @@ final class ControleurActions
         rediriger_vers(url_route('profil'));
     }
 
+    /** Traite la deconnexion (session). */
     private function traiterDeconnexion(): void
     {
         unset($_SESSION['identifiant_utilisateur']);
@@ -172,6 +195,7 @@ final class ControleurActions
         rediriger_vers(url_route('accueil'));
     }
 
+    /** Met a jour le profil (nom/prenom/date/description/pseudo chess). */
     private function traiterMiseAJourProfil(): void
     {
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
@@ -203,6 +227,7 @@ final class ControleurActions
         rediriger_vers(url_route('profil'));
     }
 
+    /** Soumission d'article (reserve adherent/admin). */
     private function traiterCreationArticle(): void
     {
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
@@ -254,6 +279,7 @@ final class ControleurActions
         rediriger_vers(url_route('articles'));
     }
 
+    /** Upload et enregistrement d'un media (reserve adherent/admin). */
     private function traiterSoumissionMedia(): void
     {
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
@@ -334,6 +360,7 @@ final class ControleurActions
         rediriger_vers(url_route('mediatheque'));
     }
 
+    /** Moderation d'un article (admin). */
     private function traiterModerationArticle(): void
     {
         $this->exigerAdmin();
@@ -350,6 +377,7 @@ final class ControleurActions
         rediriger_vers(url_route('admin'));
     }
 
+    /** Moderation d'un media (admin). */
     private function traiterModerationMedia(): void
     {
         $this->exigerAdmin();
@@ -366,6 +394,7 @@ final class ControleurActions
         rediriger_vers(url_route('admin'));
     }
 
+    /** Cree une commande produit (compte connecte). */
     private function traiterCommandeProduit(): void
     {
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
@@ -396,6 +425,7 @@ final class ControleurActions
         rediriger_vers(url_route('boutique'));
     }
 
+    /** Met a jour le statut d'une commande (admin). */
     private function traiterMiseAJourStatutCommande(): void
     {
         $this->exigerAdmin();
@@ -412,6 +442,7 @@ final class ControleurActions
         rediriger_vers(url_route('admin'));
     }
 
+    /** Met a jour role/statut d'un utilisateur (admin). */
     private function traiterMiseAJourAccesUtilisateur(): void
     {
         $administrateur = $this->obtenirUtilisateurCourant();
@@ -443,6 +474,11 @@ final class ControleurActions
         rediriger_vers(url_route('admin'));
     }
 
+    /**
+     * Recupere l'utilisateur courant depuis la session.
+     *
+     * @return array|null Utilisateur normalise, ou null si non connecte.
+     */
     private function obtenirUtilisateurCourant(): ?array
     {
         $identifiantUtilisateur = isset($_SESSION['identifiant_utilisateur']) ? (string) $_SESSION['identifiant_utilisateur'] : '';
@@ -450,6 +486,12 @@ final class ControleurActions
         return $this->depotUtilisateurs->trouverParIdentifiant($identifiantUtilisateur);
     }
 
+    /**
+     * Determine une page de redirection sure (whitelist).
+     *
+     * @param string $pageParDefaut Fallback.
+     * @return string Page valide.
+     */
     private function resoudrePageRedirection(string $pageParDefaut): string
     {
         $page = trim((string) ($_POST['page_redirection'] ?? $_POST['redirect_page'] ?? ''));
@@ -461,6 +503,13 @@ final class ControleurActions
         return $page;
     }
 
+    /**
+     * Valide les donnees de profil (nom/prenom/email/naissance/description/pseudo chess).
+     *
+     * @param array $donnees Donnees a verifier.
+     * @param bool $verifierMotDePasse True pour l'inscription.
+     * @return array Liste d'erreurs.
+     */
     private function validerDonneesProfil(array $donnees, bool $verifierMotDePasse): array
     {
         $erreurs = [];
@@ -496,6 +545,13 @@ final class ControleurActions
         return $erreurs;
     }
 
+    /**
+     * Valide un fichier upload (type, extension, taille) selon photo/video.
+     *
+     * @param array $fichier $_FILES[...] brut.
+     * @param string $typeMedia photo|video.
+     * @return array {erreurs, extension, mime}
+     */
     private function validerFichierMedia(array $fichier, string $typeMedia): array
     {
         $mimeAutorises = $typeMedia === DepotMedias::TYPE_VIDEO
@@ -538,6 +594,12 @@ final class ControleurActions
         ];
     }
 
+    /**
+     * Verifie si l'utilisateur a le droit de soumettre du contenu (article/media).
+     *
+     * @param array $utilisateur Utilisateur normalise.
+     * @return bool True si adherent/admin et compte actif.
+     */
     private function utilisateurPeutPublierContenu(array $utilisateur): bool
     {
         if (($utilisateur['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF) {
@@ -551,6 +613,11 @@ final class ControleurActions
         );
     }
 
+    /**
+     * Force l'acces admin (sinon redirection accueil).
+     *
+     * @return void
+     */
     private function exigerAdmin(): void
     {
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
@@ -565,6 +632,7 @@ final class ControleurActions
         }
     }
 
+    /** Verifie le format de date 'Y-m-d'. */
     private function estDateValide(string $valeur): bool
     {
         $date = DateTimeImmutable::createFromFormat('Y-m-d', $valeur);
@@ -572,6 +640,7 @@ final class ControleurActions
         return $date instanceof DateTimeImmutable && $date->format('Y-m-d') === $valeur;
     }
 
+    /** Verifie le pseudo Chess.com (alphanum + _ -). */
     private function estPseudoChessValide(string $valeur): bool
     {
         if ($valeur === '') {

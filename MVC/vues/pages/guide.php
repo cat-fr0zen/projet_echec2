@@ -1,4 +1,15 @@
-<?php $cartesGuide = $donneesSite['cartes_guide']; ?>
+<?php
+/**
+ * Vue: Guide.
+ *
+ * Guide reserve aux utilisateurs connectes/adherents selon les regles
+ * definies dans le controleur (masquage pour visiteurs).
+ *
+ * Donnees attendues:
+ * - $donneesSite['cartes_guide']
+ */
+$cartesGuide = $donneesSite['cartes_guide'];
+?>
 
 <section class="page-banner reveal reveal-2">
     <p class="eyebrow">Guide</p>

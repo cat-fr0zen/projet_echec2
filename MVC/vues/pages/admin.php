@@ -1,4 +1,16 @@
 <?php
+/**
+ * Vue: Administration (dashboard).
+ *
+ * Affiche les outils de pilotage reserves au role `admin`:
+ * - gestion des comptes (roles / statut compte / statut adhesion)
+ * - moderation des medias (validation / rejet)
+ * - suivi des articles et des commandes
+ *
+ * Donnees attendues (injectees par le controleur):
+ * - $pageData: titre/intro de la page
+ * - $siteData: listes globales (utilisateurs, articles, medias, commandes)
+ */
 $allUsers = $siteData['all_users'] ?? [];
 $allArticles = $siteData['all_articles'] ?? [];
 $allMedia = $siteData['all_media'] ?? [];

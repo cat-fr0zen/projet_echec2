@@ -1,4 +1,10 @@
 <?php
+/**
+ * Partiel: Entete (header).
+ *
+ * Navigation principale + actions (theme, authentification, lien dashboard).
+ * Les donnees de navigation viennent du modele "site" (ModeleSite).
+ */
 $navigationPrincipale = $donneesSite['navigation_principale'] ?? $donneesSite['primary_nav'] ?? [];
 $navigationSecondaire = $donneesSite['navigation_secondaire'] ?? $donneesSite['secondary_nav'] ?? [];
 $donneesAuthentification = $donneesSite['authentification'];

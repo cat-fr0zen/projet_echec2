@@ -1,4 +1,16 @@
-<?php $activities = $siteData['activities']; ?>
+<?php
+/**
+ * Vue: Activites.
+ *
+ * Affiche les activites du club (cours, tournois, evenements), a partir des
+ * donnees calculees par le controleur.
+ *
+ * Variables attendues:
+ * - $pageData: titre/intro
+ * - $siteData['activities']: liste d'activites
+ */
+$activities = $siteData['activities'];
+?>
 
 <section class="page-banner reveal reveal-2">
     <p class="eyebrow">Activités</p>
