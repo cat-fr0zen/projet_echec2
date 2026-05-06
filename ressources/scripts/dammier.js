@@ -64,6 +64,8 @@ function initDammierBoardGame() {
     };
     const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
     const sideToMove = String(puzzle.dammier_side_to_move || "w");
+    const opponentSide = sideToMove === "w" ? "b" : "w";
+    const replySequence = Array.isArray(puzzle.dammier_replies) ? puzzle.dammier_replies : [];
     let stepIndex = 0;
     let movesCount = 0;
     let startedAt = Date.now();
@@ -79,6 +81,17 @@ function initDammierBoardGame() {
         const remainder = String(safeSeconds % 60).padStart(2, "0");
 
         return `${minutes}:${remainder}`;
+    }
+
+    function formatMoveForDisplay(move) {
+        const from = String(move).slice(0, 2);
+        const to = String(move).slice(2, 4);
+
+        if (from.length < 2 || to.length < 2) {
+            return "";
+        }
+
+        return `${from} -> ${to}`;
     }
 
     function parseFenBoard(fen) {
@@ -338,6 +351,19 @@ function initDammierBoardGame() {
         boardState[from] = "";
     }
 
+    function applyAutomaticReply(move) {
+        const from = String(move).slice(0, 2);
+        const to = String(move).slice(2, 4);
+
+        if (from.length < 2 || to.length < 2 || !isLegalMove(from, to, boardState, opponentSide)) {
+            return false;
+        }
+
+        applyMoveToBoardState(move);
+
+        return true;
+    }
+
     function syncSelectionText() {
         if (!(selectionNode instanceof HTMLElement)) {
             return;
@@ -482,7 +508,7 @@ function initDammierBoardGame() {
 
         promptNode.textContent = puzzle.dammier_solution.length === 1
             ? "Trouve le coup gagnant. Clique sur une piece, puis sur sa case d'arrivee."
-            : `Trouve le coup ${stepIndex + 1}. Clique sur une piece, puis sur sa case d'arrivee.`;
+            : `Trouve le coup ${stepIndex + 1} sur ${puzzle.dammier_solution.length}. Clique sur une piece, puis sur sa case d'arrivee.`;
     }
 
     function submitScore() {
@@ -532,12 +558,21 @@ function initDammierBoardGame() {
 
         if (String(move) === expectedMove) {
             applyMoveToBoardState(move);
+            const automaticReply = String(replySequence[stepIndex] || "");
             selectedSquare = "";
             lastWrongTarget = "";
+
+            if (automaticReply !== "" && !applyAutomaticReply(automaticReply)) {
+                renderBoard();
+                syncSelectionText();
+                stopTimer();
+                setFeedback("La reponse automatique du puzzle est invalide.", "error");
+                return;
+            }
+
             stepIndex += 1;
             renderBoard();
             syncSelectionText();
-
             if (stepIndex >= puzzle.dammier_solution.length) {
                 isSolved = true;
                 stopTimer();
@@ -548,7 +583,12 @@ function initDammierBoardGame() {
             }
 
             clearHint();
-            setFeedback("Bien joue. Cherche maintenant le coup suivant.", "success");
+            setFeedback(
+                automaticReply !== ""
+                    ? `Bien joue. Reponse noire: ${formatMoveForDisplay(automaticReply)}. Trouve maintenant le coup suivant.`
+                    : "Bien joue. Cherche maintenant le coup suivant.",
+                "success"
+            );
             renderStep();
             return;
         }

@@ -42,6 +42,7 @@ final class DepotDammier
                 'dammier_fen' => '8/8/8/8/8/8/8/8 w - - 0 1',
                 'dammier_side_to_move' => 'w',
                 'dammier_solution' => [],
+                'dammier_replies' => [],
                 'dammier_hints' => [],
                 'dammier_source' => 'pool_local',
                 'dammier_generated_at' => gmdate('c'),
@@ -183,6 +184,7 @@ final class DepotDammier
             'dammier_fen' => (string) ($entry['dammier_fen'] ?? '8/8/8/8/8/8/8/8 w - - 0 1'),
             'dammier_side_to_move' => (string) ($entry['dammier_side_to_move'] ?? 'w'),
             'dammier_solution' => array_values(array_map('strval', (array) ($entry['dammier_solution'] ?? []))),
+            'dammier_replies' => array_values(array_map('strval', (array) ($entry['dammier_replies'] ?? []))),
             'dammier_hints' => array_values(array_map('strval', (array) ($entry['dammier_hints'] ?? []))),
             'dammier_source' => (string) ($entry['dammier_source'] ?? 'pool_local'),
         ];
