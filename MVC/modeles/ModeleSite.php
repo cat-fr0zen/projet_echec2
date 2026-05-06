@@ -204,7 +204,7 @@ final class ModeleSite
         ];
 
         return [
-            'brand' => "Association d'échecs",
+            'brand' => "Cavaliers d'Hérouville",
             'ville' => 'Informations officielles en cours de validation',
             'city' => 'Informations officielles en cours de validation',
             'accroche' => "Cadre légal, espace membre, publication responsable et contenus validés par l'association.",
