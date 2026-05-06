@@ -861,6 +861,96 @@ function initSettingsActions() {
     });
 }
 
+/**
+ * Gere les pop-ups legaux du footer (documents obligatoires et registre cookies).
+ */
+function initLegalModals() {
+    const openButtons = Array.from(document.querySelectorAll("[data-legal-open]"));
+    const modalRoots = Array.from(document.querySelectorAll("[data-legal-modal]"));
+    let previousFocusedElement = null;
+    let currentModal = null;
+
+    if (openButtons.length === 0 || modalRoots.length === 0) {
+        return;
+    }
+
+    function closeModal(modal = currentModal) {
+        if (!(modal instanceof HTMLElement)) {
+            return;
+        }
+
+        modal.hidden = true;
+        modal.setAttribute("aria-hidden", "true");
+
+        if (currentModal === modal) {
+            currentModal = null;
+            document.body.classList.remove("modal-open");
+        }
+
+        if (previousFocusedElement instanceof HTMLElement) {
+            previousFocusedElement.focus();
+            previousFocusedElement = null;
+        }
+    }
+
+    function openModal(modalId, triggerButton) {
+        const modal = modalRoots.find((candidate) => candidate.getAttribute("data-legal-modal") === modalId);
+
+        if (!(modal instanceof HTMLElement)) {
+            return;
+        }
+
+        if (currentModal instanceof HTMLElement && currentModal !== modal) {
+            currentModal.hidden = true;
+            currentModal.setAttribute("aria-hidden", "true");
+        }
+
+        previousFocusedElement = triggerButton instanceof HTMLElement ? triggerButton : document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        currentModal = modal;
+        modal.hidden = false;
+        modal.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+
+        const [firstFocusableElement] = getFocusableElements(modal);
+
+        if (firstFocusableElement instanceof HTMLElement) {
+            firstFocusableElement.focus();
+        }
+    }
+
+    openButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            openModal(button.getAttribute("data-legal-open") || "", button);
+        });
+    });
+
+    modalRoots.forEach((modal) => {
+        modal.querySelectorAll("[data-legal-close]").forEach((button) => {
+            button.addEventListener("click", () => {
+                closeModal(modal instanceof HTMLElement ? modal : null);
+            });
+        });
+
+        modal.addEventListener("click", (event) => {
+            if (event.target === modal) {
+                closeModal(modal instanceof HTMLElement ? modal : null);
+            }
+        });
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (!(currentModal instanceof HTMLElement) || currentModal.hidden) {
+            return;
+        }
+
+        trapFocus(event, currentModal);
+
+        if (event.key === "Escape") {
+            closeModal(currentModal);
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     initConsentGate();
     initThemeToggle();
@@ -870,5 +960,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initAuthModal();
     initPieceCarousel();
     initDammierPuzzle();
+    initLegalModals();
     initSettingsActions();
 });

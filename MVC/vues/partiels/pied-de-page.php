@@ -3,9 +3,9 @@
  * Partiel: Pied de page.
  *
  * Affiche:
- * - credits
- * - documents legaux (liens)
- * - recap cookies (trace/registre)
+ * - crédits
+ * - contact
+ * - accès compact aux documents légaux et au registre cookies
  */
 $anneeCourante = date('Y');
 $credits = $donneesSite['credits'];
@@ -13,90 +13,54 @@ $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_docum
 $registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_register'] ?? [];
 ?>
 
-<footer class="site-footer reveal reveal-6">
+<footer id="legal-hub" class="site-footer reveal reveal-6">
     <div class="site-footer__inner">
-        <div class="footer-overview">
-            <section class="footer-intro-card">
-                <p class="eyebrow">Cadre du site</p>
-                <h2 class="footer-title"><?= e($donneesSite['brand']) ?></h2>
-                <p class="footer-text"><?= e($donneesSite['accroche'] ?? $donneesSite['tagline'] ?? '') ?></p>
-
-                <nav class="footer-anchor-list" aria-label="Accès rapides aux documents obligatoires">
-                    <?php foreach ($documentsLegaux as $document): ?>
-                        <a class="footer-anchor" href="#<?= e($document['id']) ?>"><?= e($document['titre'] ?? $document['title'] ?? '') ?></a>
-                    <?php endforeach; ?>
-                    <a class="footer-anchor" href="#cookie-register">Cookies</a>
-                </nav>
-            </section>
-
-            <div class="footer-stack">
-                <section class="footer-detail-card">
-                    <p class="eyebrow">Crédits</p>
-                    <p class="footer-text"><strong>Auteur du site :</strong> <?= e($credits['auteur_site'] ?? $credits['site_author'] ?? '') ?></p>
-                    <p class="footer-text"><strong>Publication associative :</strong> <?= e($credits['publication_associative'] ?? $credits['association_publisher'] ?? '') ?></p>
-                </section>
-
-                <section class="footer-detail-card">
-                    <p class="eyebrow">Contact</p>
-                    <p class="footer-text"><?= e($donneesSite['courriel'] ?? $donneesSite['email'] ?? '') ?></p>
-                    <p class="footer-text"><?= e($donneesSite['adresse'] ?? $donneesSite['address'] ?? '') ?></p>
-                </section>
-            </div>
-        </div>
-
-        <section id="legal-hub" class="legal-hub">
-            <div class="section-head section-head--compact legal-intro">
-                <p class="eyebrow">Documents obligatoires</p>
-                <h2 class="footer-title footer-title--legal">Mentions légales, confidentialité et conditions d'utilisation</h2>
-                <p class="footer-text">
-                    Ces informations encadrent la consultation du site, la gestion des données, le droit à l'image
-                    et la propriété intellectuelle des contenus publiés.
-                </p>
-            </div>
-
-            <div class="legal-layout">
-                <div class="legal-grid">
-                    <?php foreach ($documentsLegaux as $document): ?>
-                        <details class="legal-card" id="<?= e($document['id']) ?>">
-                            <summary>
-                                <span class="legal-summary-title"><?= e($document['titre'] ?? $document['title'] ?? '') ?></span>
-                                <span class="legal-summary-text"><?= e($document['resume'] ?? $document['summary'] ?? '') ?></span>
-                            </summary>
-
-                            <div class="legal-card-body">
-                                <?php foreach ($document['sections'] as $section): ?>
-                                    <section class="legal-section">
-                                        <h3><?= e($section['titre'] ?? $section['title'] ?? '') ?></h3>
-                                        <ul class="legal-list">
-                                            <?php foreach (($section['elements'] ?? $section['items'] ?? []) as $element): ?>
-                                                <li><?= e($element) ?></li>
-                                            <?php endforeach; ?>
-                                        </ul>
-                                    </section>
-                                <?php endforeach; ?>
-                            </div>
-                        </details>
-                    <?php endforeach; ?>
+        <section class="footer-compact">
+            <div class="footer-compact-bar">
+                <div class="footer-compact-brand">
+                    <p class="eyebrow">Cadre du site</p>
+                    <h2 class="footer-title"><?= e($donneesSite['brand']) ?></h2>
+                    <p class="footer-text"><?= e($donneesSite['accroche'] ?? $donneesSite['tagline'] ?? '') ?></p>
                 </div>
 
-                <aside id="cookie-register" class="cookie-register">
-                    <div class="section-head section-head--compact">
-                        <p class="eyebrow">Cookies déclarés</p>
-                        <h3 class="footer-title footer-title--legal">Registre simplifié</h3>
-                        <p class="footer-text">Cookies essentiels, consentement et préférences d'affichage.</p>
-                    </div>
-
-                    <div class="cookie-register-grid">
-                        <?php foreach ($registreCookies as $cookie): ?>
-                            <article class="info-card">
-                                <p class="card-tag"><?= e($cookie['type']) ?></p>
-                                <h3><?= e($cookie['nom'] ?? $cookie['name'] ?? '') ?></h3>
-                                <p><?= e($cookie['finalite'] ?? $cookie['purpose'] ?? '') ?></p>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                </aside>
+                <div class="footer-compact-meta">
+                    <p class="footer-inline-line">
+                        <strong>Crédits :</strong>
+                        <?= e($credits['auteur_site'] ?? $credits['site_author'] ?? '') ?>
+                    </p>
+                    <p class="footer-inline-line">
+                        <strong>Publication associative :</strong>
+                        <?= e($credits['publication_associative'] ?? $credits['association_publisher'] ?? '') ?>
+                    </p>
+                    <p class="footer-inline-line">
+                        <strong>Contact :</strong>
+                        <?= e($donneesSite['courriel'] ?? $donneesSite['email'] ?? '') ?>
+                    </p>
+                    <p class="footer-inline-line">
+                        <strong>Adresse :</strong>
+                        <?= e($donneesSite['adresse'] ?? $donneesSite['address'] ?? '') ?>
+                    </p>
+                </div>
             </div>
+
+            <nav class="footer-anchor-list" aria-label="Accès rapides aux documents obligatoires">
+                <?php foreach ($documentsLegaux as $document): ?>
+                    <button
+                        type="button"
+                        class="footer-anchor footer-anchor--button"
+                        data-legal-open="<?= e($document['id']) ?>"
+                    >
+                        <?= e($document['titre'] ?? $document['title'] ?? '') ?>
+                    </button>
+                <?php endforeach; ?>
+                <button
+                    type="button"
+                    class="footer-anchor footer-anchor--button"
+                    data-legal-open="cookie-register"
+                >
+                    Cookies
+                </button>
+            </nav>
         </section>
 
         <div class="footer-meta-bar">
@@ -106,6 +70,65 @@ $registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_regi
                 Publication associative : <?= e($credits['publication_associative'] ?? $credits['association_publisher'] ?? '') ?>.
                 Tous droits réservés.
             </p>
+        </div>
+    </div>
+
+    <?php foreach ($documentsLegaux as $document): ?>
+        <div
+            class="legal-modal"
+            data-legal-modal="<?= e($document['id']) ?>"
+            hidden
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="<?= e($document['id']) ?>-title"
+        >
+            <div class="legal-modal-panel">
+                <button type="button" class="legal-modal-close" data-legal-close aria-label="Fermer la fenêtre">×</button>
+                <p class="eyebrow">Document obligatoire</p>
+                <h2 id="<?= e($document['id']) ?>-title" class="footer-title footer-title--legal">
+                    <?= e($document['titre'] ?? $document['title'] ?? '') ?>
+                </h2>
+                <p class="footer-text"><?= e($document['resume'] ?? $document['summary'] ?? '') ?></p>
+
+                <div class="legal-modal-body">
+                    <?php foreach ($document['sections'] as $section): ?>
+                        <section class="legal-section">
+                            <h3><?= e($section['titre'] ?? $section['title'] ?? '') ?></h3>
+                            <ul class="legal-list">
+                                <?php foreach (($section['elements'] ?? $section['items'] ?? []) as $element): ?>
+                                    <li><?= e($element) ?></li>
+                                <?php endforeach; ?>
+                            </ul>
+                        </section>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+
+    <div
+        class="legal-modal"
+        data-legal-modal="cookie-register"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cookie-register-title"
+    >
+        <div class="legal-modal-panel">
+            <button type="button" class="legal-modal-close" data-legal-close aria-label="Fermer la fenêtre">×</button>
+            <p class="eyebrow">Cookies déclarés</p>
+            <h2 id="cookie-register-title" class="footer-title footer-title--legal">Registre simplifié</h2>
+            <p class="footer-text">Cookies essentiels, consentement et préférences d'affichage.</p>
+
+            <div class="legal-modal-cookie-grid">
+                <?php foreach ($registreCookies as $cookie): ?>
+                    <article class="info-card">
+                        <p class="card-tag"><?= e($cookie['type']) ?></p>
+                        <h3><?= e($cookie['nom'] ?? $cookie['name'] ?? '') ?></h3>
+                        <p><?= e($cookie['finalite'] ?? $cookie['purpose'] ?? '') ?></p>
+                    </article>
+                <?php endforeach; ?>
+            </div>
         </div>
     </div>
 </footer>
