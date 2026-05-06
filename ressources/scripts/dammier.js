@@ -540,7 +540,7 @@ function initDammierBoardGame() {
                     return;
                 }
 
-                setFeedback("Puzzle resolu. Ton score est enregistre dans le classement.", "success");
+                setFeedback(result?.message || "Puzzle resolu. Ton score est enregistre dans le classement.", "success");
                 renderRanking(Array.isArray(result.dammier_classement) ? result.dammier_classement : []);
             })
             .catch(() => {

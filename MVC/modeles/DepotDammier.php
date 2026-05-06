@@ -111,6 +111,7 @@ final class DepotDammier
             'dammier_moves_count' => $movesCount,
             'dammier_elapsed_seconds' => $elapsedSeconds,
             'dammier_solved_at' => gmdate('c'),
+            'dammier_record_status' => 'created',
         ];
 
         $indexExistant = null;
@@ -136,10 +137,13 @@ final class DepotDammier
                 );
 
             if (!$estMeilleur) {
+                $scoreExistant['dammier_record_status'] = 'unchanged';
+
                 return $scoreExistant;
             }
 
             $nouveauScore['dammier_score_id'] = $scoreExistant['dammier_score_id'];
+            $nouveauScore['dammier_record_status'] = 'improved';
             $scores[$indexExistant] = $nouveauScore;
         } else {
             $scores[] = $nouveauScore;
@@ -201,6 +205,7 @@ final class DepotDammier
             'dammier_moves_count' => max(1, (int) ($entry['dammier_moves_count'] ?? 0)),
             'dammier_elapsed_seconds' => max(1, (int) ($entry['dammier_elapsed_seconds'] ?? 0)),
             'dammier_solved_at' => (string) ($entry['dammier_solved_at'] ?? ''),
+            'dammier_record_status' => (string) ($entry['dammier_record_status'] ?? ''),
         ];
     }
 }

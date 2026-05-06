@@ -522,10 +522,16 @@ final class ControleurActions
         $puzzle = $this->depotDammier->obtenirPuzzleHebdomadaire();
         $score = $this->depotDammier->enregistrerScoreHebdomadaire($utilisateurCourant, $puzzle, $movesCount, $elapsedSeconds);
         $classement = $this->depotDammier->listerClassementHebdomadaire($weekKey, $puzzleId);
+        $statutScore = (string) ($score['dammier_record_status'] ?? '');
+        $message = match ($statutScore) {
+            'improved' => 'Ton score a ete ameliore dans le classement.',
+            'unchanged' => 'Ton meilleur score etait deja meilleur. Le classement reste inchange.',
+            default => 'Score dammier enregistre.',
+        };
 
         $this->repondreJson([
             'success' => true,
-            'message' => 'Score dammier enregistre.',
+            'message' => $message,
             'dammier_score' => $score,
             'dammier_classement' => $classement,
         ]);
