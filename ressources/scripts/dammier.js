@@ -68,7 +68,7 @@ function initDammierBoardGame() {
     const replySequence = Array.isArray(puzzle.dammier_replies) ? puzzle.dammier_replies : [];
     let stepIndex = 0;
     let movesCount = 0;
-    let startedAt = Date.now();
+    let startedAt = null;
     let timerId = null;
     let isSolved = false;
     let selectedSquare = "";
@@ -81,6 +81,20 @@ function initDammierBoardGame() {
         const remainder = String(safeSeconds % 60).padStart(2, "0");
 
         return `${minutes}:${remainder}`;
+    }
+
+    function getElapsedSeconds() {
+        if (startedAt === null) {
+            return 0;
+        }
+
+        return Math.floor((Date.now() - startedAt) / 1000);
+    }
+
+    function renderTimer() {
+        if (timerNode instanceof HTMLElement) {
+            timerNode.textContent = formatElapsed(getElapsedSeconds());
+        }
     }
 
     function formatMoveForDisplay(move) {
@@ -484,12 +498,15 @@ function initDammierBoardGame() {
     }
 
     function startTimer() {
+        if (startedAt !== null) {
+            return;
+        }
+
+        startedAt = Date.now();
         stopTimer();
 
         const tick = () => {
-            if (timerNode instanceof HTMLElement) {
-                timerNode.textContent = formatElapsed(Math.floor((Date.now() - startedAt) / 1000));
-            }
+            renderTimer();
         };
 
         tick();
@@ -523,7 +540,7 @@ function initDammierBoardGame() {
         formData.append("dammier_puzzle_id", String(puzzle.dammier_id || ""));
         formData.append("dammier_week_key", String(puzzle.dammier_week_key || ""));
         formData.append("dammier_moves_count", String(movesCount));
-        formData.append("dammier_elapsed_seconds", String(Math.max(1, Math.floor((Date.now() - startedAt) / 1000))));
+        formData.append("dammier_elapsed_seconds", String(Math.max(1, getElapsedSeconds())));
 
         window.fetch(submitUrl, {
             method: "POST",
@@ -613,6 +630,7 @@ function initDammierBoardGame() {
                 return;
             }
 
+            startTimer();
             selectedSquare = coordinate;
             lastWrongTarget = "";
             renderBoard();
@@ -654,17 +672,18 @@ function initDammierBoardGame() {
     function resetPuzzle() {
         stepIndex = 0;
         movesCount = 0;
-        startedAt = Date.now();
+        startedAt = null;
         isSolved = false;
         selectedSquare = "";
         lastWrongTarget = "";
+        stopTimer();
         boardState = buildBoardState();
         renderBoard();
         renderStep();
         syncSelectionText();
+        renderTimer();
         clearHint();
         setFeedback("Le score compte le nombre total de tentatives jusqu’à la résolution.", "");
-        startTimer();
     }
 
     boardState = buildBoardState();
@@ -672,7 +691,7 @@ function initDammierBoardGame() {
     renderRanking(Array.isArray(payload?.dammier_classement) ? payload.dammier_classement : []);
     renderStep();
     syncSelectionText();
-    startTimer();
+    renderTimer();
 
     if (resetButton instanceof HTMLButtonElement) {
         resetButton.addEventListener("click", resetPuzzle);
