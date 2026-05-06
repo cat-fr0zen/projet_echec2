@@ -126,6 +126,8 @@ Le script inclut:
 - triggers de normalisation et horodatage
 - vues metier de lecture
 - package `pkg_maintenance_site`
+- package `pkg_site_api` (API PL/SQL de modification des donnees)
+- table + package de versionnage `schema_migration` / `pkg_schema_migration`
 - job scheduler `JOB_MAINTENANCE_QUOTIDIENNE_SITE` (02:00 chaque jour)
 
 Le package de maintenance execute:
@@ -136,6 +138,31 @@ Le package de maintenance execute:
 - cloture adhesions expirees
 - marquage des tournois termines
 
+## API PL/SQL (donnees)
+
+L'application web peut eviter les `INSERT/UPDATE` directs en appelant des procedures PL/SQL.
+L'objectif est de centraliser les regles metier et de rendre le projet maintenable sur le long terme.
+
+Package: `pkg_site_api`
+
+Operations couvertes (v1):
+- creation compte + profil (`creer_compte_membre`)
+- mise a jour profil (`mettre_a_jour_profil`)
+- creation article (`creer_article`), publication (`publier_article`)
+- depot d'un media externe (`deposer_media_externe`), validation (`valider_media`)
+
+## Versionnage du schema
+
+La table `schema_migration` enregistre les versions appliquees.
+Chaque patch futur peut terminer par:
+
+```sql
+BEGIN
+  pkg_schema_migration.enregistrer('1.0.1', 'Description courte du patch');
+END;
+/
+```
+
 ## Lancement
 
 Depuis SQL*Plus ou SQLcl:
@@ -145,4 +172,3 @@ Depuis SQL*Plus ou SQLcl:
 ```
 
 Le script est concu pour un deploiement initial complet (schema + donnees de reference + maintenance).
-
