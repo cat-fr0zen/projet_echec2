@@ -26,7 +26,7 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
             <p class="card-tag">Connexion requise</p>
             <h2>Connecte-toi pour accéder à ton profil.</h2>
             <p>Le profil membre, la description personnelle, les préférences du compte et la liaison Chess.com sont accessibles après connexion.</p>
-            <button type="button" class="button button-primary" data-auth-open data-auth-tab="login">Connexion</button>
+            <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
         </div>
     </section>
 <?php else: ?>

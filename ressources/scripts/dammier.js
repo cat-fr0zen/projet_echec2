@@ -62,6 +62,20 @@ function initDammierBoardGame() {
         Q: "\u2655",
         K: "\u2654",
     };
+    const pieceNames = {
+        p: "pion noir",
+        r: "tour noire",
+        n: "cavalier noir",
+        b: "fou noir",
+        q: "dame noire",
+        k: "roi noir",
+        P: "pion blanc",
+        R: "tour blanche",
+        N: "cavalier blanc",
+        B: "fou blanc",
+        Q: "dame blanche",
+        K: "roi blanc",
+    };
     const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
     const sideToMove = String(puzzle.dammier_side_to_move || "w");
     const opponentSide = sideToMove === "w" ? "b" : "w";
@@ -74,6 +88,7 @@ function initDammierBoardGame() {
     let selectedSquare = "";
     let boardState = {};
     let lastWrongTarget = "";
+    let focusedSquare = String(puzzle.dammier_solution?.[0] || "").slice(0, 2) || "a1";
 
     function formatElapsed(seconds) {
         const safeSeconds = Math.max(0, seconds);
@@ -391,6 +406,36 @@ function initDammierBoardGame() {
         selectionNode.textContent = `Piece selectionnee: ${selectedSquare}. Choisis la case d'arrivee.`;
     }
 
+    function buildSquareLabel(square) {
+        const pieceCode = String(boardState[square.coordinate] || "");
+        const pieceLabel = pieceCode !== "" ? pieceNames[pieceCode] || "pièce" : "case vide";
+        const selectionLabel = square.coordinate === selectedSquare ? ", pièce sélectionnée" : "";
+        const warningLabel = square.coordinate === lastWrongTarget ? ", dernière tentative incorrecte" : "";
+
+        return `Case ${square.coordinate}, ${pieceLabel}${selectionLabel}${warningLabel}.`;
+    }
+
+    function focusSquare(coordinate) {
+        focusedSquare = coordinate;
+        const squareNode = boardNode.querySelector(`[data-dammier-coordinate="${coordinate}"]`);
+
+        if (squareNode instanceof HTMLButtonElement) {
+            squareNode.focus();
+        }
+    }
+
+    function moveFocusFromSquare(originCoordinate, fileDelta, rankDelta) {
+        const origin = coordinateToIndex(originCoordinate);
+        const nextFile = origin.file + fileDelta;
+        const nextRank = origin.rank + rankDelta;
+
+        if (!isInsideBoard(nextFile, nextRank)) {
+            return;
+        }
+
+        focusSquare(indexToCoordinate(nextFile, nextRank));
+    }
+
     function renderBoard() {
         const squares = parseFenBoard(puzzle.dammier_fen).map((square) => ({
             ...square,
@@ -409,9 +454,11 @@ function initDammierBoardGame() {
             squareNode.type = "button";
             squareNode.className = "dammier_square";
             squareNode.setAttribute("data-dammier-color", isLight ? "light" : "dark");
-            squareNode.setAttribute("aria-label", `Case ${square.coordinate}`);
+            squareNode.setAttribute("aria-label", buildSquareLabel(square));
+            squareNode.setAttribute("data-dammier-coordinate", square.coordinate);
             squareNode.setAttribute("data-dammier-file", row === 7 ? square.coordinate.charAt(0) : "");
             squareNode.setAttribute("data-dammier-rank", column === 0 ? square.coordinate.charAt(1) : "");
+            squareNode.setAttribute("tabindex", square.coordinate === focusedSquare ? "0" : "-1");
             squareNode.classList.toggle("is-selected", square.coordinate === selectedSquare);
             squareNode.classList.toggle("is-wrong", square.coordinate === lastWrongTarget);
 
@@ -424,7 +471,49 @@ function initDammierBoardGame() {
             }
 
             squareNode.addEventListener("click", () => {
+                focusedSquare = square.coordinate;
                 handleSquareClick(square.coordinate);
+            });
+
+            squareNode.addEventListener("focus", () => {
+                focusedSquare = square.coordinate;
+            });
+
+            squareNode.addEventListener("keydown", (event) => {
+                if (event.key === "ArrowLeft") {
+                    event.preventDefault();
+                    moveFocusFromSquare(square.coordinate, -1, 0);
+                    return;
+                }
+
+                if (event.key === "ArrowRight") {
+                    event.preventDefault();
+                    moveFocusFromSquare(square.coordinate, 1, 0);
+                    return;
+                }
+
+                if (event.key === "ArrowUp") {
+                    event.preventDefault();
+                    moveFocusFromSquare(square.coordinate, 0, 1);
+                    return;
+                }
+
+                if (event.key === "ArrowDown") {
+                    event.preventDefault();
+                    moveFocusFromSquare(square.coordinate, 0, -1);
+                    return;
+                }
+
+                if (event.key === "Home") {
+                    event.preventDefault();
+                    focusSquare(`${files[0]}${square.coordinate.charAt(1)}`);
+                    return;
+                }
+
+                if (event.key === "End") {
+                    event.preventDefault();
+                    focusSquare(`${files[files.length - 1]}${square.coordinate.charAt(1)}`);
+                }
             });
 
             boardNode.appendChild(squareNode);
@@ -451,6 +540,11 @@ function initDammierBoardGame() {
 
         hintTextNode.hidden = true;
         hintTextNode.textContent = "";
+
+        if (hintButton instanceof HTMLButtonElement) {
+            hintButton.setAttribute("aria-expanded", "false");
+            hintButton.setAttribute("aria-label", "Afficher un indice");
+        }
     }
 
     function toggleHint() {
@@ -461,6 +555,12 @@ function initDammierBoardGame() {
         const hints = Array.isArray(puzzle.dammier_hints) ? puzzle.dammier_hints : [];
         hintTextNode.textContent = String(hints[stepIndex] || "Observe les lignes ouvertes, les échecs et les mats possibles.");
         hintTextNode.hidden = !hintTextNode.hidden;
+
+        if (hintButton instanceof HTMLButtonElement) {
+            const isExpanded = !hintTextNode.hidden;
+            hintButton.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+            hintButton.setAttribute("aria-label", isExpanded ? "Masquer l'indice" : "Afficher un indice");
+        }
     }
 
     function renderRanking(scores) {
@@ -583,6 +683,7 @@ function initDammierBoardGame() {
                 renderBoard();
                 syncSelectionText();
                 stopTimer();
+                focusSquare(String(move).slice(2, 4));
                 setFeedback("La réponse automatique du puzzle est invalide.", "error");
                 return;
             }
@@ -590,6 +691,7 @@ function initDammierBoardGame() {
             stepIndex += 1;
             renderBoard();
             syncSelectionText();
+            focusSquare(String(move).slice(2, 4));
             if (stepIndex >= puzzle.dammier_solution.length) {
                 isSolved = true;
                 stopTimer();
@@ -614,6 +716,7 @@ function initDammierBoardGame() {
         selectedSquare = "";
         renderBoard();
         syncSelectionText();
+        focusSquare(lastWrongTarget);
         setFeedback("Ce n'est pas le bon coup. Le score ajoute une tentative.", "error");
     }
 
@@ -635,6 +738,7 @@ function initDammierBoardGame() {
             lastWrongTarget = "";
             renderBoard();
             syncSelectionText();
+            focusSquare(coordinate);
             setFeedback("Pièce sélectionnée. Choisis maintenant sa destination.", "");
             return;
         }
@@ -644,6 +748,7 @@ function initDammierBoardGame() {
             lastWrongTarget = "";
             renderBoard();
             syncSelectionText();
+            focusSquare(coordinate);
             setFeedback("Sélection annulée.", "");
             return;
         }
@@ -653,6 +758,7 @@ function initDammierBoardGame() {
             lastWrongTarget = "";
             renderBoard();
             syncSelectionText();
+            focusSquare(coordinate);
             setFeedback("Pièce changée. Choisis sa destination.", "");
             return;
         }
@@ -662,6 +768,7 @@ function initDammierBoardGame() {
             selectedSquare = "";
             renderBoard();
             syncSelectionText();
+            focusSquare(coordinate);
             setFeedback("Ce coup est illégal selon les règles des échecs.", "error");
             return;
         }
@@ -676,6 +783,7 @@ function initDammierBoardGame() {
         isSolved = false;
         selectedSquare = "";
         lastWrongTarget = "";
+        focusedSquare = String(puzzle.dammier_solution?.[0] || "").slice(0, 2) || "a1";
         stopTimer();
         boardState = buildBoardState();
         renderBoard();
@@ -684,6 +792,7 @@ function initDammierBoardGame() {
         renderTimer();
         clearHint();
         setFeedback("Le score compte le nombre total de tentatives jusqu’à la résolution.", "");
+        focusSquare(focusedSquare);
     }
 
     boardState = buildBoardState();

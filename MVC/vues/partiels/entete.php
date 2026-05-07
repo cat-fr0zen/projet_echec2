@@ -75,6 +75,12 @@ $themeMoonIconUrl = url_ressource('ressources/media/image/theme-lune.svg');
     </div>
 
     <div id="burger-panel" class="burger-panel" data-burger-panel hidden aria-label="Menu secondaire">
+        <div class="burger-panel-topbar">
+            <p class="burger-panel-title">Menu secondaire</p>
+            <button type="button" class="burger-panel-close" data-burger-close aria-label="Fermer le menu">
+                Fermer
+            </button>
+        </div>
         <div class="burger-columns">
             <section class="burger-group">
                 <p class="eyebrow">Navigation</p>

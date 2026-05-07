@@ -46,8 +46,15 @@ $dammierScriptUrl = url_ressource('ressources/scripts/dammier.js') . '?v=' . (st
         <?php if ($messagesFlash !== []): ?>
             <div class="flash-stack" aria-live="polite">
                 <?php foreach ($messagesFlash as $messageFlash): ?>
-                    <div class="flash-message flash-message--<?= e($messageFlash['type'] ?? 'info') ?>">
-                        <?= e($messageFlash['message'] ?? '') ?>
+                    <?php
+                    $typeFlash = (string) ($messageFlash['type'] ?? 'info');
+                    $roleFlash = $typeFlash === 'error' ? 'alert' : 'status';
+                    ?>
+                    <div class="flash-message flash-message--<?= e($typeFlash) ?>" role="<?= e($roleFlash) ?>">
+                        <p class="flash-message__text"><?= e($messageFlash['message'] ?? '') ?></p>
+                        <button type="button" class="flash-message__dismiss" data-flash-dismiss aria-label="Fermer ce message">
+                            Fermer
+                        </button>
                     </div>
                 <?php endforeach; ?>
             </div>

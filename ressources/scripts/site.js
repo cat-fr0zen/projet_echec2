@@ -226,11 +226,12 @@ function initStickyHeader() {
 function initFlashMessages() {
     const flashMessages = Array.from(document.querySelectorAll(".flash-message"));
 
-    flashMessages.forEach((message, index) => {
+    flashMessages.forEach((message) => {
         if (!(message instanceof HTMLElement)) {
             return;
         }
 
+        const dismissButton = message.querySelector("[data-flash-dismiss]");
         const dismiss = () => {
             message.style.opacity = "0";
             message.style.transform = "translateY(-8px)";
@@ -239,8 +240,9 @@ function initFlashMessages() {
             }, 220);
         };
 
-        window.setTimeout(dismiss, 4200 + index * 350);
-        message.addEventListener("click", dismiss);
+        if (dismissButton instanceof HTMLButtonElement) {
+            dismissButton.addEventListener("click", dismiss);
+        }
     });
 }
 
@@ -250,6 +252,7 @@ function initFlashMessages() {
 function initBurgerMenu() {
     const burgerToggle = document.querySelector("[data-burger-toggle]");
     const burgerPanel = document.querySelector("[data-burger-panel]");
+    const burgerCloseButton = document.querySelector("[data-burger-close]");
     const siteHeader = document.querySelector("[data-site-header]");
     let previousFocusedElement = null;
 
@@ -259,6 +262,7 @@ function initBurgerMenu() {
 
     function setOpenState(isOpen) {
         burgerToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        burgerToggle.setAttribute("aria-label", isOpen ? "Fermer le menu" : "Ouvrir le menu");
         burgerPanel.hidden = !isOpen;
         document.body.classList.toggle("burger-open", isOpen);
         siteHeader?.classList.toggle("is-menu-open", isOpen);
@@ -280,6 +284,12 @@ function initBurgerMenu() {
         const isOpen = burgerToggle.getAttribute("aria-expanded") === "true";
         setOpenState(!isOpen);
     });
+
+    if (burgerCloseButton instanceof HTMLButtonElement) {
+        burgerCloseButton.addEventListener("click", () => {
+            setOpenState(false);
+        });
+    }
 
     document.addEventListener("click", (event) => {
         const target = event.target;
@@ -328,6 +338,7 @@ function initAuthModal() {
         tabButtons.forEach((button) => {
             const isActive = button.getAttribute("data-auth-tab-trigger") === currentTab;
             button.setAttribute("aria-selected", isActive ? "true" : "false");
+            button.setAttribute("tabindex", isActive ? "0" : "-1");
             button.classList.toggle("is-active", isActive);
         });
 
@@ -343,6 +354,12 @@ function initAuthModal() {
         modalRoot.hidden = false;
         modalRoot.setAttribute("aria-hidden", "false");
         document.body.classList.add("modal-open");
+        const errorSummary = modalRoot.querySelector(".auth-errors");
+
+        if (errorSummary instanceof HTMLElement) {
+            errorSummary.focus();
+            return;
+        }
 
         const [firstFocusableElement] = getFocusableElements(modalRoot);
 
@@ -375,6 +392,38 @@ function initAuthModal() {
     tabButtons.forEach((button) => {
         button.addEventListener("click", () => {
             renderTab(button.getAttribute("data-auth-tab-trigger") || "connexion");
+        });
+
+        button.addEventListener("keydown", (event) => {
+            const currentIndex = tabButtons.indexOf(button);
+
+            if (currentIndex < 0) {
+                return;
+            }
+
+            let nextIndex = currentIndex;
+
+            if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                nextIndex = (currentIndex + 1) % tabButtons.length;
+            } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                nextIndex = (currentIndex - 1 + tabButtons.length) % tabButtons.length;
+            } else if (event.key === "Home") {
+                nextIndex = 0;
+            } else if (event.key === "End") {
+                nextIndex = tabButtons.length - 1;
+            } else {
+                return;
+            }
+
+            event.preventDefault();
+            const nextButton = tabButtons[nextIndex];
+
+            if (!(nextButton instanceof HTMLButtonElement)) {
+                return;
+            }
+
+            renderTab(nextButton.getAttribute("data-auth-tab-trigger") || "connexion");
+            nextButton.focus();
         });
     });
 

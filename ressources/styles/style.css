@@ -1141,6 +1141,18 @@ body[data-theme="dark"] .dammier_ranking_item {
     transform: scale(1.15);
 }
 
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 .piece-carousel.is-interacting .piece-glyph-stack {
     animation-play-state: paused;
 }
@@ -1531,11 +1543,29 @@ body[data-theme="dark"] .page-noise {
 }
 
 .flash-message {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.85rem;
     padding: 0.95rem 1rem;
     border-radius: 1rem;
     border: 1px solid rgba(23, 32, 27, 0.08);
     background: rgba(255, 255, 255, 0.55);
     box-shadow: var(--shadow-soft);
+}
+
+.flash-message__text {
+    flex: 1;
+}
+
+.flash-message__dismiss {
+    flex-shrink: 0;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid rgba(23, 32, 27, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.84);
+    cursor: pointer;
 }
 
 .flash-message--success {
@@ -1650,6 +1680,27 @@ body[data-theme="dark"] .burger-panel {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
+}
+
+.burger-panel-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.burger-panel-title {
+    font-weight: 700;
+}
+
+.burger-panel-close {
+    min-height: 2.8rem;
+    padding: 0.65rem 0.95rem;
+    border: 1px solid rgba(23, 32, 27, 0.1);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    cursor: pointer;
 }
 
 .burger-group {
@@ -1784,6 +1835,13 @@ body.modal-open {
     border-radius: 1rem;
     border: 1px solid rgba(216, 103, 103, 0.32);
     background: rgba(130, 44, 44, 0.18);
+}
+
+.form-error {
+    display: block;
+    margin-top: 0.45rem;
+    color: #ffd8d8;
+    font-size: 0.92rem;
 }
 
 .auth-panels {

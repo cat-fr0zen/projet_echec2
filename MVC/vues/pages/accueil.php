@@ -63,29 +63,46 @@ $dammierPayload = [
 
             <div class="dammier_layout">
                 <div class="dammier_board_panel">
-                    <div class="dammier_board" data-dammier-board aria-label="Damier interactif"></div>
+                    <p id="dammier-board-help" class="sr-only">
+                        Utilise Tab ou les flèches pour parcourir le damier. Sélectionne d'abord une pièce de ton camp,
+                        puis sa case d'arrivée pour proposer le coup.
+                    </p>
+                    <div
+                        class="dammier_board"
+                        data-dammier-board
+                        role="group"
+                        aria-label="Damier interactif"
+                        aria-describedby="dammier-board-help dammier-feedback"
+                    ></div>
                     <div class="dammier_meta">
                         <span class="dammier_side">Trait: <?= (($dammierPuzzle['dammier_side_to_move'] ?? 'w') === 'w') ? 'Blancs' : 'Noirs' ?></span>
-                        <span class="dammier_timer" data-dammier-timer>00:00</span>
+                        <span class="dammier_timer" data-dammier-timer role="timer" aria-live="off">00:00</span>
                     </div>
                 </div>
 
                 <div class="dammier_play_panel">
                     <p class="dammier_prompt" data-dammier-prompt>Clique sur une pièce, puis sur sa case d'arrivée.</p>
                     <div class="dammier_status">
-                        <span class="dammier_status_chip" data-dammier-selection>Aucune pièce sélectionnée.</span>
+                        <span class="dammier_status_chip" data-dammier-selection role="status" aria-live="polite">Aucune pièce sélectionnée.</span>
                     </div>
-                    <p class="dammier_feedback" data-dammier-feedback>Le score compte le nombre total de tentatives jusqu’à la résolution.</p>
-                    <p class="dammier_hint_text" data-dammier-hint-text hidden></p>
+                    <p id="dammier-feedback" class="dammier_feedback" data-dammier-feedback role="status" aria-live="polite">Le score compte le nombre total de tentatives jusqu’à la résolution.</p>
+                    <p id="dammier-hint-text" class="dammier_hint_text" data-dammier-hint-text hidden aria-live="polite"></p>
 
                     <div class="dammier_actions">
                         <button type="button" class="button button-secondary dammier_action" data-dammier-reset>Rejouer</button>
                         <div class="dammier_side_actions">
-                            <button type="button" class="button button-secondary dammier_icon_action" data-dammier-hint-toggle aria-label="Afficher un indice">&#128161;</button>
+                            <button
+                                type="button"
+                                class="button button-secondary dammier_icon_action"
+                                data-dammier-hint-toggle
+                                aria-label="Afficher un indice"
+                                aria-controls="dammier-hint-text"
+                                aria-expanded="false"
+                            >&#128161;</button>
                             <details class="dammier_classement"<?= $dammierPeutVoirClassement ? '' : ' data-dammier-locked="true"' ?>>
                                 <summary>+ classement</summary>
                                 <?php if ($dammierPeutVoirClassement): ?>
-                                    <ol class="dammier_ranking_list" data-dammier-ranking-list>
+                                    <ol class="dammier_ranking_list" data-dammier-ranking-list aria-live="polite">
                                         <?php foreach ($dammierClassement as $score): ?>
                                             <li class="dammier_ranking_item">
                                                 <span><?= e((string) ($score['dammier_display_name'] ?? 'Membre')) ?></span>
