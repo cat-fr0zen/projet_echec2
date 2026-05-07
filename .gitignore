@@ -4,6 +4,7 @@
 # Server logs
 /journaux/
 *.log
+*.bat 
 
 # Environment and secrets
 .env

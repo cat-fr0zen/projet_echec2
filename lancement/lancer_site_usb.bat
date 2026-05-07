@@ -22,7 +22,7 @@ if not defined PROJECT_DIR (
     echo.
     echo Ce lanceur peut fonctionner seul.
     echo Indique le dossier du projet contenant index.php et routeur.php.
-    echo Exemple: E:\Projet_echec2
+    echo Exemple: C:\DEV\vscode_workspace\Projet_echec2
     echo.
     set /p "PROJECT_DIR=Chemin du projet: "
 )
