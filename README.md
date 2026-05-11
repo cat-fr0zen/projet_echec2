@@ -39,8 +39,12 @@ Projet_echec2/
 |-- README.md
 |-- base_de_donnees/
 |   `-- oracle/
-|       |-- BDD_echec_v1.sql
-|       `-- BDD_echec_v1.md
+|       `-- v2/
+|           |-- install_v2.sql
+|           |-- verify_v2.sql
+|           |-- dev_only_drop_v2.sql
+|           |-- README.md
+|           `-- migrations/
 |-- donnees/
 |   |-- articles.json
 |   |-- utilisateurs.json
@@ -84,6 +88,7 @@ Projet_echec2/
 - Visual Studio Code (ou IDE equivalent): developpement.
 - PHP (serveur local): execution du site.
 - Oracle Database: base de donnees cible.
+- Oracle v2 modulaire: nouvelle cible versionnee avec vues/packages d'administration.
 - Git: versioning du code.
 - Navigateur web: test et validation du rendu.
 
@@ -91,4 +96,3 @@ Projet_echec2/
 
 - Matthéo Mullois
 - Association Les Cavaliers d'Hérouville
-
