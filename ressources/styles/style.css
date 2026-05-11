@@ -998,11 +998,9 @@ body[data-theme="dark"] .dammier_ranking_item {
     width: 8.8rem;
     height: 2.2rem;
     border-radius: 999px;
-    background:
-        linear-gradient(180deg, rgba(255, 252, 246, 0.98), rgba(214, 194, 150, 0.92));
-    box-shadow:
-        0 10px 25px rgba(23, 32, 27, 0.18),
-        inset 0 -4px 8px rgba(115, 82, 24, 0.16);
+    background: transparent;
+    box-shadow: none;
+    opacity: 0;
     transform: translateY(5.3rem) translateZ(-6px) rotateX(72deg);
 }
 
@@ -1019,53 +1017,31 @@ body[data-theme="dark"] .dammier_ranking_item {
     position: relative;
     display: grid;
     place-items: center;
-    width: 10rem;
-    height: 11.3rem;
-    border-radius: 44% 44% 38% 38% / 26% 26% 54% 54%;
-    border: 1px solid rgba(123, 84, 28, 0.18);
-    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(245, 221, 174, 0.94) 44%, rgba(207, 155, 78, 0.94));
-    box-shadow:
-        0 18px 34px rgba(23, 32, 27, 0.18),
-        inset 0 2px 0 rgba(255, 255, 255, 0.72),
-        inset 0 -12px 18px rgba(115, 82, 24, 0.18);
+    width: auto;
+    height: auto;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     transform-style: preserve-3d;
 }
 
 .piece-figure-core::before {
-    content: "";
-    position: absolute;
-    inset: 0.9rem 1rem 2rem;
-    border-radius: 42% 42% 36% 36% / 28% 28% 52% 52%;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(250, 236, 202, 0.88));
-    box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.82),
-        inset 0 -8px 14px rgba(168, 123, 50, 0.16);
-    transform: translateZ(14px);
+    content: none;
 }
 
 .piece-figure-core::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: 1rem;
-    width: 4.8rem;
-    height: 1.05rem;
-    border-radius: 999px;
-    background: linear-gradient(180deg, rgba(255, 250, 240, 0.96), rgba(204, 154, 79, 0.9));
-    box-shadow: inset 0 -4px 6px rgba(115, 82, 24, 0.18);
-    transform: translateX(-50%) translateZ(24px);
+    content: none;
 }
 
 .piece-glyph-shell {
     position: relative;
     display: grid;
     place-items: center;
-    width: 6.9rem;
-    height: 7.8rem;
-    border-radius: 40% 40% 34% 34% / 26% 26% 48% 48%;
-    border: 1px solid rgba(140, 99, 36, 0.12);
-    background: linear-gradient(180deg, rgba(255, 253, 249, 0.82), rgba(239, 218, 171, 0.32));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    width: auto;
+    height: auto;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
     transform: translateZ(28px);
 }
 
@@ -1075,12 +1051,14 @@ body[data-theme="dark"] .dammier_ranking_item {
     place-items: center;
     width: 100%;
     height: 100%;
-    font-size: clamp(4.5rem, 10vw, 6.8rem);
+    font-size: clamp(5.4rem, 12vw, 8.2rem);
     line-height: 1;
     color: #3b2415;
     text-shadow:
-        0 1px 0 rgba(255, 255, 255, 0.55),
-        0 10px 16px rgba(75, 48, 20, 0.18);
+        0 1px 0 rgba(255, 247, 232, 0.55),
+        0 8px 14px rgba(75, 48, 20, 0.18),
+        0 18px 28px rgba(23, 32, 27, 0.16);
+    filter: drop-shadow(0 16px 22px rgba(23, 32, 27, 0.16));
     transform: translateY(-0.15rem);
 }
 
@@ -3622,11 +3600,8 @@ h3,
 }
 
 .piece-figure-core {
-    border-color: rgba(143, 103, 39, 0.2);
-    box-shadow:
-        0 18px 34px rgba(23, 32, 27, 0.18),
-        inset 0 2px 0 rgba(255, 255, 255, 0.72),
-        inset 0 -12px 18px rgba(115, 82, 24, 0.18);
+    border-color: transparent;
+    box-shadow: none;
 }
 
 .piece-glyph {
@@ -3796,12 +3771,9 @@ body[data-theme="dark"] .site-header .burger-label {
 }
 
 body[data-theme="dark"] .piece-figure-core {
-    border-color: rgba(212, 166, 80, 0.22);
-    background: linear-gradient(180deg, rgba(245, 228, 198, 0.3), rgba(168, 118, 53, 0.34) 38%, rgba(74, 48, 25, 0.96));
-    box-shadow:
-        0 20px 42px rgba(0, 0, 0, 0.28),
-        inset 0 1px 0 rgba(255, 255, 255, 0.12),
-        inset 0 -14px 20px rgba(0, 0, 0, 0.28);
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
 }
 
 body[data-theme="dark"] .piece-figure-core::before {
@@ -3816,9 +3788,9 @@ body[data-theme="dark"] .piece-figure-core::after {
 }
 
 body[data-theme="dark"] .piece-glyph-shell {
-    border-color: rgba(212, 166, 80, 0.18);
-    background: linear-gradient(180deg, rgba(255, 248, 232, 0.1), rgba(140, 99, 41, 0.14));
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
 }
 
 body[data-theme="dark"] .piece-glyph {
@@ -3829,10 +3801,9 @@ body[data-theme="dark"] .piece-glyph {
 }
 
 body[data-theme="dark"] .piece-plinth {
-    background: linear-gradient(180deg, rgba(244, 226, 187, 0.94), rgba(110, 76, 39, 0.9));
-    box-shadow:
-        0 10px 25px rgba(0, 0, 0, 0.32),
-        inset 0 -4px 8px rgba(0, 0, 0, 0.24);
+    background: transparent;
+    box-shadow: none;
+    opacity: 0;
 }
 
 body[data-theme="dark"] .brand-caption,
