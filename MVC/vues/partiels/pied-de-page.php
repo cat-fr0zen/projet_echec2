@@ -14,18 +14,179 @@ $registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_regi
 $adresse = (string) ($donneesSite['adresse'] ?? $donneesSite['address'] ?? '');
 $googleMapsUrl = (string) ($donneesSite['google_maps_url'] ?? '');
 $googleMapsEmbedUrl = (string) ($donneesSite['google_maps_embed_url'] ?? '');
+$clubGoogleMapsUrl = (string) ($donneesSite['club_google_maps_url'] ?? '');
+$clubGoogleReviewsUrl = (string) ($donneesSite['club_google_reviews_url'] ?? $clubGoogleMapsUrl);
+$clubGoogleWriteReviewUrl = (string) ($donneesSite['club_google_write_review_url'] ?? $clubGoogleMapsUrl);
+$clubGoogleReviewsLabel = (string) ($donneesSite['club_google_reviews_label'] ?? "Les Cavaliers d'Hérouville");
+$googleReviewsData = is_array($donneesSite['google_reviews'] ?? null) ? $donneesSite['google_reviews'] : [];
+$googleReviewsList = array_slice(
+    is_array($googleReviewsData['avis'] ?? null) ? $googleReviewsData['avis'] : [],
+    0,
+    2
+);
 $hasLocationMap = $adresse !== '' && $googleMapsUrl !== '' && $googleMapsEmbedUrl !== '';
+$hasClubGoogleReviews = $clubGoogleReviewsUrl !== '' && $clubGoogleWriteReviewUrl !== '';
+$hasRenderedGoogleReviews = $googleReviewsList !== [];
 $googleMapsAriaLabel = sprintf("Ouvrir l'adresse %s dans Google Maps (nouvel onglet)", $adresse);
+$clubGoogleReviewsAriaLabel = sprintf("Consulter les avis Google de %s (nouvel onglet)", $clubGoogleReviewsLabel);
+$clubGoogleWriteReviewAriaLabel = sprintf("Ajouter un avis Google pour %s (nouvel onglet)", $clubGoogleReviewsLabel);
+$avisGoogleNotice = 'Vous devez être connecté à un compte Google pour consulter ou rédiger un avis.';
+$renderReviewStars = static function (?float $note): string {
+    if ($note === null) {
+        return '';
+    }
+
+    $noteArrondie = max(0, min(5, (int) round($note)));
+
+    return str_repeat('&#9733;', $noteArrondie) . str_repeat('&#9734;', 5 - $noteArrondie);
+};
 ?>
 
 <footer id="legal-hub" class="site-footer reveal reveal-6">
     <div class="site-footer__inner">
         <section class="footer-compact">
             <div class="footer-compact-bar">
-                <div class="footer-compact-brand">
-                    <p class="eyebrow">Cadre du site</p>
-                    <h2 class="footer-title"><?= e($donneesSite['brand']) ?></h2>
-                    <p class="footer-text"><?= e($donneesSite['accroche'] ?? $donneesSite['tagline'] ?? '') ?></p>
+                <div class="footer-compact-primary">
+                    <div class="footer-compact-brand">
+                        <p class="eyebrow">Cadre du site</p>
+                        <h2 class="footer-title"><?= e($donneesSite['brand']) ?></h2>
+                        <p class="footer-text"><?= e($donneesSite['accroche'] ?? $donneesSite['tagline'] ?? '') ?></p>
+                    </div>
+
+                    <?php if ($hasClubGoogleReviews): ?>
+                        <section class="footer-review-card" aria-labelledby="footer-review-title">
+                            <div class="footer-review-header">
+                                <p class="eyebrow">Avis Google</p>
+                                <h3 id="footer-review-title" class="footer-review-title">Les retours publics du club</h3>
+                                <p class="footer-review-copy">
+                                    Les avis restent lus sur la fiche Google officielle pour conserver des retours authentiques
+                                    et les plus r&eacute;cents.
+                                </p>
+                            </div>
+
+                            <div class="footer-review-actions">
+                                <a
+                                    class="footer-anchor"
+                                    href="<?= e($clubGoogleReviewsUrl) ?>"
+                                    target="_blank"
+                                    rel="noopener noreferrer external"
+                                    referrerpolicy="no-referrer"
+                                    aria-label="<?= e($clubGoogleReviewsAriaLabel) ?>"
+                                >
+                                    Voir les avis
+                                </a>
+                                <a
+                                    class="footer-anchor"
+                                    href="<?= e($clubGoogleWriteReviewUrl) ?>"
+                                    target="_blank"
+                                    rel="noopener noreferrer external"
+                                    referrerpolicy="no-referrer"
+                                    aria-label="<?= e($clubGoogleWriteReviewAriaLabel) ?>"
+                                >
+                                    Ajouter un avis
+                                </a>
+                            </div>
+
+                            <div class="footer-review-summary">
+                                <?php if ($hasRenderedGoogleReviews): ?>
+                                    <div class="footer-review-score">
+                                        <div class="footer-review-rating-line">
+                                            <strong class="footer-review-average">
+                                                <?= e((string) ($googleReviewsData['note_moyenne_libelle'] ?? '')) ?>
+                                            </strong>
+                                            <span class="footer-review-stars" aria-hidden="true">
+                                                <?= $renderReviewStars($googleReviewsData['note_moyenne'] ?? null) ?>
+                                            </span>
+                                        </div>
+                                        <p class="footer-review-count">
+                                            <?= e((string) ($googleReviewsData['nombre_avis_libelle'] ?? '')) ?>
+                                        </p>
+                                        <p class="footer-review-meta">
+                                            <?= e((string) ($googleReviewsData['tri_libelle'] ?? '')) ?>
+                                        </p>
+                                        <?php if ((string) ($googleReviewsData['date_recuperation_libelle'] ?? '') !== ''): ?>
+                                            <p class="footer-review-meta">
+                                                <?= e((string) ($googleReviewsData['date_recuperation_libelle'] ?? '')) ?>
+                                            </p>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
+
+                                <p class="footer-review-note"><?= e($avisGoogleNotice) ?></p>
+                            </div>
+
+                            <?php if ($hasRenderedGoogleReviews): ?>
+                                <div class="footer-review-list" aria-label="Extrait des avis Google">
+                                    <?php foreach ($googleReviewsList as $avis): ?>
+                                        <?php
+                                        $auteurAvis = (string) ($avis['auteur'] ?? 'Avis Google');
+                                        $profilAuteurAvis = (string) ($avis['profil_auteur'] ?? '');
+                                        $photoAuteurAvis = (string) ($avis['photo_auteur'] ?? '');
+                                        $dateRelativeAvis = (string) ($avis['date_relative'] ?? '');
+                                        $lienAvisGoogle = (string) ($avis['lien_google_maps'] ?? '');
+                                        $initialeAuteurAvis = strtoupper((string) mb_substr($auteurAvis, 0, 1));
+                                        ?>
+                                        <article class="footer-review-item">
+                                            <div class="footer-review-item-head">
+                                                <div class="footer-review-author-block">
+                                                    <?php if ($photoAuteurAvis !== ''): ?>
+                                                        <img
+                                                            class="footer-review-avatar"
+                                                            src="<?= e($photoAuteurAvis) ?>"
+                                                            alt=""
+                                                            loading="lazy"
+                                                            referrerpolicy="no-referrer"
+                                                        >
+                                                    <?php else: ?>
+                                                        <span class="footer-review-avatar footer-review-avatar--fallback" aria-hidden="true">
+                                                            <?= e($initialeAuteurAvis) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+
+                                                    <div class="footer-review-author-text">
+                                                        <?php if ($profilAuteurAvis !== ''): ?>
+                                                            <a
+                                                                class="footer-review-author"
+                                                                href="<?= e($profilAuteurAvis) ?>"
+                                                                target="_blank"
+                                                                rel="noopener noreferrer external"
+                                                                referrerpolicy="no-referrer"
+                                                            >
+                                                                <?= e($auteurAvis) ?>
+                                                            </a>
+                                                        <?php else: ?>
+                                                            <p class="footer-review-author"><?= e($auteurAvis) ?></p>
+                                                        <?php endif; ?>
+
+                                                        <p class="footer-review-item-meta">
+                                                            <?= e((string) ($avis['note_libelle'] ?? '')) ?>
+                                                            <?php if ($dateRelativeAvis !== ''): ?>
+                                                                &middot; <?= e($dateRelativeAvis) ?>
+                                                            <?php endif; ?>
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <?php if ($lienAvisGoogle !== ''): ?>
+                                                    <a
+                                                        class="footer-review-inline-link"
+                                                        href="<?= e($lienAvisGoogle) ?>"
+                                                        target="_blank"
+                                                        rel="noopener noreferrer external"
+                                                        referrerpolicy="no-referrer"
+                                                    >
+                                                        Voir
+                                                    </a>
+                                                <?php endif; ?>
+                                            </div>
+
+                                            <p class="footer-review-item-text"><?= e((string) ($avis['texte'] ?? '')) ?></p>
+                                        </article>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </section>
+                    <?php endif; ?>
                 </div>
 
                 <div class="footer-compact-meta">

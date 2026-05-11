@@ -54,6 +54,7 @@ require_once __DIR__ . '/MVC/modeles/DepotMedias.php';
 require_once __DIR__ . '/MVC/modeles/DepotCommandes.php';
 require_once __DIR__ . '/MVC/modeles/DepotDammier.php';
 require_once __DIR__ . '/MVC/modeles/ServiceChessCom.php';
+require_once __DIR__ . '/MVC/modeles/ServiceGoogleAvis.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurActions.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurPages.php';
 
@@ -238,6 +239,12 @@ $serviceChessCom = new ServiceChessCom(
     __DIR__ . '/donnees/cache/chesscom',
     'association-echecs-site/1.0'
 );
+$cleGooglePlaces = getenv('GOOGLE_PLACES_API_KEY');
+$serviceGoogleAvis = new ServiceGoogleAvis(
+    __DIR__ . '/donnees/cache/google-avis',
+    is_string($cleGooglePlaces) ? $cleGooglePlaces : '',
+    'association-echecs-site/1.0'
+);
 
 $controleurPages = new ControleurPages(
     new ModeleSite(),
@@ -247,6 +254,7 @@ $controleurPages = new ControleurPages(
     $depotCommandes,
     $depotDammier,
     $serviceChessCom,
+    $serviceGoogleAvis,
     $messagesFlash,
     $etatFormulaire
 );

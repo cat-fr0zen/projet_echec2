@@ -26,6 +26,7 @@ final class ControleurPages
         private DepotCommandes $depotCommandes,
         private DepotDammier $depotDammier,
         private ServiceChessCom $serviceChessCom,
+        private ServiceGoogleAvis $serviceGoogleAvis,
         private array $messagesFlash,
         private array $etatFormulaire
     ) {
@@ -68,6 +69,10 @@ final class ControleurPages
         $donneesSite['cartes_guide'] = $this->modeleSite->obtenirCartesGuide();
         $donneesSite['cartes_mediatheque'] = $this->modeleSite->obtenirCartesMediatheque();
         $donneesSite['cartes_boutique'] = $this->modeleSite->obtenirCartesBoutique();
+        $donneesSite['google_reviews'] = $this->serviceGoogleAvis->recupererAvisLieu(
+            (string) ($donneesSite['club_google_reviews_cache_key'] ?? 'club'),
+            (string) ($donneesSite['club_google_search_query'] ?? '')
+        );
 
         $articlesPublies = $this->depotArticles->trouverPublies();
         $mesArticles = $utilisateurCourant !== null

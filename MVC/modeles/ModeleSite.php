@@ -205,6 +205,10 @@ final class ModeleSite
 
         $adresseClub = 'Centre Socio culturel CAF, 202 Belles Portes, 14200 Hérouville Saint Clair';
         $googleMapsQuery = rawurlencode('Centre Socio culturel CAF, 202 Belles Portes, 14200 Hérouville-Saint-Clair, France');
+        $clubGoogleMapsUrl = "https://www.google.com/maps/place/Les+Cavaliers+d%E2%80%99H%C3%A9rouville/@49.202257,-0.3291525,187m/data=!3m3!1e3!4b1!5s0x480a680a78ca3d5f:0x384a8ec2e3a3f87c!4m6!3m5!1s0x480a6809998ff8e7:0xe6341a96630f0c83!8m2!3d49.202257!4d-0.3285074!16s%2Fg%2F11gmwb__3b?entry=ttu&g_ep=EgoyMDI2MDUwNi4wIKXMDSoASAFQAw%3D%3D";
+        $clubGoogleReviewsUrl = "https://www.google.com/maps/place/Les+Cavaliers+d%E2%80%99H%C3%A9rouville/@49.202257,-0.3291525,187m/data=!3m2!1e3!5s0x480a680a78ca3d5f:0x384a8ec2e3a3f87c!4m18!1m9!3m8!1s0x480a6809998ff8e7:0xe6341a96630f0c83!2sLes+Cavaliers+d%E2%80%99H%C3%A9rouville!8m2!3d49.202257!4d-0.3285074!9m1!1b1!16s%2Fg%2F11gmwb__3b!3m7!1s0x480a6809998ff8e7:0xe6341a96630f0c83!8m2!3d49.202257!4d-0.3285074!9m1!1b1!16s%2Fg%2F11gmwb__3b?entry=ttu&g_ep=EgoyMDI2MDUwNi4wIKXMDSoASAFQAw%3D%3D";
+        $clubGoogleSearchQuery = rawurlencode("Les Cavaliers d'Hérouville");
+        $clubGoogleReviewsBaseUrl = "https://www.google.com/search?hl=fr&q={$clubGoogleSearchQuery}&ludocid=16587912560721726595";
 
         return [
             'brand' => "Cavaliers d'Hérouville",
@@ -220,8 +224,14 @@ final class ModeleSite
             'email' => 'Adresse de contact à publier',
             'telephone' => 'Numéro de contact à publier',
             'phone' => 'Numéro de contact à publier',
-            'google_maps_url' => "https://www.google.com/maps/search/?api=1&query={$googleMapsQuery}",
+            'google_maps_url' => $clubGoogleMapsUrl,
             'google_maps_embed_url' => "https://www.google.com/maps?output=embed&q={$googleMapsQuery}",
+            'club_google_maps_url' => $clubGoogleMapsUrl,
+            'club_google_reviews_url' => $clubGoogleReviewsUrl,
+            'club_google_write_review_url' => "{$clubGoogleReviewsBaseUrl}#lrd=0x0:0xe6341a96630f0c83,3,,,",
+            'club_google_reviews_label' => "Les Cavaliers d'Hérouville",
+            'club_google_search_query' => "Les Cavaliers d'Hérouville, 202 Belles Portes, 14200 Hérouville-Saint-Clair, France",
+            'club_google_reviews_cache_key' => 'cavaliers-herouville',
             'navigation_principale' => $navigationPrincipale,
             'primary_nav' => $navigationPrincipale,
             'navigation_secondaire' => $navigationSecondaire,
