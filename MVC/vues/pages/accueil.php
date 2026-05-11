@@ -160,10 +160,12 @@ $dammierPayload = [
                         <div class="piece-stage-3d" data-piece-tilt>
                             <span class="piece-aura" aria-hidden="true"></span>
                             <span class="piece-shadow-disc" aria-hidden="true"></span>
-                            <span class="piece-glyph-stack" aria-hidden="true">
-                                <span class="piece-glyph piece-glyph--back"><?= e($piece['glyph']) ?></span>
-                                <span class="piece-glyph piece-glyph--mid"><?= e($piece['glyph']) ?></span>
-                                <span class="piece-glyph piece-glyph--front"><?= e($piece['glyph']) ?></span>
+                            <span class="piece-figure" aria-hidden="true">
+                                <span class="piece-figure-core">
+                                    <span class="piece-glyph-shell">
+                                        <span class="piece-glyph"><?= e($piece['glyph']) ?></span>
+                                    </span>
+                                </span>
                             </span>
                             <span class="piece-plinth" aria-hidden="true"></span>
                         </div>

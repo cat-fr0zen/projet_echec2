@@ -973,7 +973,7 @@ body[data-theme="dark"] .dammier_ranking_item {
 .piece-aura,
 .piece-shadow-disc,
 .piece-plinth,
-.piece-glyph-stack {
+.piece-figure {
     position: absolute;
 }
 
@@ -1006,56 +1006,85 @@ body[data-theme="dark"] .dammier_ranking_item {
     transform: translateY(5.3rem) translateZ(-6px) rotateX(72deg);
 }
 
-.piece-glyph-stack {
+.piece-figure {
+    display: grid;
+    place-items: center;
+    width: min(100%, 10.75rem);
+    min-height: 12rem;
+    transform-style: preserve-3d;
+    transform: translateZ(24px);
+}
+
+.piece-figure-core {
     position: relative;
     display: grid;
     place-items: center;
-    width: 9rem;
-    height: 9rem;
+    width: 10rem;
+    height: 11.3rem;
+    border-radius: 44% 44% 38% 38% / 26% 26% 54% 54%;
+    border: 1px solid rgba(123, 84, 28, 0.18);
+    background: linear-gradient(180deg, rgba(255, 253, 248, 0.98), rgba(245, 221, 174, 0.94) 44%, rgba(207, 155, 78, 0.94));
+    box-shadow:
+        0 18px 34px rgba(23, 32, 27, 0.18),
+        inset 0 2px 0 rgba(255, 255, 255, 0.72),
+        inset 0 -12px 18px rgba(115, 82, 24, 0.18);
     transform-style: preserve-3d;
+}
+
+.piece-figure-core::before {
+    content: "";
+    position: absolute;
+    inset: 0.9rem 1rem 2rem;
+    border-radius: 42% 42% 36% 36% / 28% 28% 52% 52%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(250, 236, 202, 0.88));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.82),
+        inset 0 -8px 14px rgba(168, 123, 50, 0.16);
+    transform: translateZ(14px);
+}
+
+.piece-figure-core::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 1rem;
+    width: 4.8rem;
+    height: 1.05rem;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255, 250, 240, 0.96), rgba(204, 154, 79, 0.9));
+    box-shadow: inset 0 -4px 6px rgba(115, 82, 24, 0.18);
+    transform: translateX(-50%) translateZ(24px);
+}
+
+.piece-glyph-shell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 6.9rem;
+    height: 7.8rem;
+    border-radius: 40% 40% 34% 34% / 26% 26% 48% 48%;
+    border: 1px solid rgba(140, 99, 36, 0.12);
+    background: linear-gradient(180deg, rgba(255, 253, 249, 0.82), rgba(239, 218, 171, 0.32));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
     transform: translateZ(28px);
 }
 
 .piece-glyph {
-    position: absolute;
-    inset: 0;
+    position: relative;
     display: grid;
-    align-items: center;
-    justify-content: center;
-    width: 9rem;
-    height: 9rem;
-    font-size: clamp(4.8rem, 11vw, 8rem);
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: clamp(4.5rem, 10vw, 6.8rem);
     line-height: 1;
-    transform-style: preserve-3d;
-}
-
-.piece-glyph--front {
-    color: #fffdf7;
+    color: #3b2415;
     text-shadow:
-        0 0 1px rgba(23, 32, 27, 0.24),
-        0 12px 24px rgba(23, 32, 27, 0.16);
-    transform: translateZ(26px);
+        0 1px 0 rgba(255, 255, 255, 0.55),
+        0 10px 16px rgba(75, 48, 20, 0.18);
+    transform: translateY(-0.15rem);
 }
 
-.piece-glyph--mid {
-    color: #d2ba84;
-    opacity: 0.9;
-    transform: translateZ(14px);
-    filter: brightness(0.96);
-}
-
-.piece-glyph--back {
-    color: #7d6031;
-    opacity: 0.95;
-    transform: translateZ(2px);
-    filter: blur(0.6px);
-}
-
-.piece-slide.is-active .piece-glyph {
-    animation: none;
-}
-
-.piece-slide.is-active .piece-glyph-stack {
+.piece-slide.is-active .piece-figure {
     animation: piece-turn var(--piece-turn-duration, 6800ms) linear infinite;
 }
 
@@ -1153,7 +1182,7 @@ body[data-theme="dark"] .dammier_ranking_item {
     border: 0;
 }
 
-.piece-carousel.is-interacting .piece-glyph-stack {
+.piece-carousel.is-interacting .piece-figure {
     animation-play-state: paused;
 }
 
@@ -1492,11 +1521,11 @@ body.consent-locked {
 
 @keyframes piece-turn {
     from {
-        transform: translateZ(28px) rotateY(0deg);
+        transform: translateZ(24px) rotateX(-4deg) rotateY(0deg);
     }
 
     to {
-        transform: translateZ(28px) rotateY(360deg);
+        transform: translateZ(24px) rotateX(-4deg) rotateY(360deg);
     }
 }
 
@@ -3592,13 +3621,19 @@ h3,
     color: var(--muted);
 }
 
-.piece-glyph--front,
-.piece-glyph--mid,
-.piece-glyph--back {
-    color: #fff5e5;
+.piece-figure-core {
+    border-color: rgba(143, 103, 39, 0.2);
+    box-shadow:
+        0 18px 34px rgba(23, 32, 27, 0.18),
+        inset 0 2px 0 rgba(255, 255, 255, 0.72),
+        inset 0 -12px 18px rgba(115, 82, 24, 0.18);
+}
+
+.piece-glyph {
+    color: #4b2b18;
     text-shadow:
-        0 3px 0 rgba(38, 27, 19, 0.34),
-        0 18px 26px rgba(0, 0, 0, 0.2);
+        0 1px 0 rgba(255, 247, 232, 0.62),
+        0 12px 18px rgba(75, 48, 20, 0.22);
 }
 
 .footer-anchor:hover,
@@ -3758,6 +3793,46 @@ body[data-theme="dark"] .brand,
 body[data-theme="dark"] .site-header .nav-link,
 body[data-theme="dark"] .site-header .burger-label {
     color: #fbf3e6;
+}
+
+body[data-theme="dark"] .piece-figure-core {
+    border-color: rgba(212, 166, 80, 0.22);
+    background: linear-gradient(180deg, rgba(245, 228, 198, 0.3), rgba(168, 118, 53, 0.34) 38%, rgba(74, 48, 25, 0.96));
+    box-shadow:
+        0 20px 42px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        inset 0 -14px 20px rgba(0, 0, 0, 0.28);
+}
+
+body[data-theme="dark"] .piece-figure-core::before {
+    background: linear-gradient(180deg, rgba(255, 246, 228, 0.18), rgba(148, 105, 48, 0.16));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        inset 0 -8px 14px rgba(0, 0, 0, 0.24);
+}
+
+body[data-theme="dark"] .piece-figure-core::after {
+    background: linear-gradient(180deg, rgba(240, 208, 137, 0.92), rgba(115, 74, 33, 0.92));
+}
+
+body[data-theme="dark"] .piece-glyph-shell {
+    border-color: rgba(212, 166, 80, 0.18);
+    background: linear-gradient(180deg, rgba(255, 248, 232, 0.1), rgba(140, 99, 41, 0.14));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body[data-theme="dark"] .piece-glyph {
+    color: #f9efdc;
+    text-shadow:
+        0 1px 0 rgba(38, 27, 19, 0.44),
+        0 16px 24px rgba(0, 0, 0, 0.3);
+}
+
+body[data-theme="dark"] .piece-plinth {
+    background: linear-gradient(180deg, rgba(244, 226, 187, 0.94), rgba(110, 76, 39, 0.9));
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.32),
+        inset 0 -4px 8px rgba(0, 0, 0, 0.24);
 }
 
 body[data-theme="dark"] .brand-caption,
