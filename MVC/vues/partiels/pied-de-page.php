@@ -11,6 +11,11 @@ $anneeCourante = date('Y');
 $credits = $donneesSite['credits'];
 $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_documents'] ?? [];
 $registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_register'] ?? [];
+$adresse = (string) ($donneesSite['adresse'] ?? $donneesSite['address'] ?? '');
+$googleMapsUrl = (string) ($donneesSite['google_maps_url'] ?? '');
+$googleMapsEmbedUrl = (string) ($donneesSite['google_maps_embed_url'] ?? '');
+$hasLocationMap = $adresse !== '' && $googleMapsUrl !== '' && $googleMapsEmbedUrl !== '';
+$googleMapsAriaLabel = sprintf("Ouvrir l'adresse %s dans Google Maps (nouvel onglet)", $adresse);
 ?>
 
 <footer id="legal-hub" class="site-footer reveal reveal-6">
@@ -38,8 +43,37 @@ $registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_regi
                     </p>
                     <p class="footer-inline-line">
                         <strong>Adresse :</strong>
-                        <?= e($donneesSite['adresse'] ?? $donneesSite['address'] ?? '') ?>
+                        <?= e($adresse) ?>
                     </p>
+                    <?php if ($hasLocationMap): ?>
+                        <div class="footer-location-card">
+                            <p class="card-tag">Plan d'acc&egrave;s</p>
+                            <div class="footer-location-map">
+                                <iframe
+                                    src="<?= e($googleMapsEmbedUrl) ?>"
+                                    title="Aper&ccedil;u de la localisation du club"
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer"
+                                    tabindex="-1"
+                                    aria-hidden="true"
+                                ></iframe>
+                                <a
+                                    class="footer-location-link"
+                                    href="<?= e($googleMapsUrl) ?>"
+                                    target="_blank"
+                                    rel="noopener noreferrer external"
+                                    referrerpolicy="no-referrer"
+                                    aria-label="<?= e($googleMapsAriaLabel) ?>"
+                                >
+                                    <span class="footer-location-link-badge">
+                                        Voir sur Google Maps
+                                        <span aria-hidden="true">&#8599;</span>
+                                    </span>
+                                </a>
+                            </div>
+                            <p class="footer-location-copy">Le plan s'ouvre dans un nouvel onglet sur le lieu exact.</p>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
 

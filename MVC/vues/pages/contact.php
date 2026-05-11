@@ -8,7 +8,10 @@
 $email = (string) ($siteData['email'] ?? '');
 $address = (string) ($siteData['address'] ?? '');
 $phone = (string) ($siteData['phone'] ?? '');
+$googleMapsUrl = (string) ($siteData['google_maps_url'] ?? '');
 $isEmailLinkable = filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+$hasGoogleMaps = $address !== '' && $googleMapsUrl !== '';
+$googleMapsAriaLabel = sprintf("Ouvrir l'adresse %s dans Google Maps (nouvel onglet)", $address);
 ?>
 
 <section class="page-banner reveal reveal-2">
@@ -39,6 +42,18 @@ $isEmailLinkable = filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
             <p class="card-tag">Adresse</p>
             <h3><?= e($address) ?></h3>
             <p>Adresse postale et lieu de référence du club.</p>
+            <?php if ($hasGoogleMaps): ?>
+                <a
+                    class="button button-secondary contact-link"
+                    href="<?= e($googleMapsUrl) ?>"
+                    target="_blank"
+                    rel="noopener noreferrer external"
+                    referrerpolicy="no-referrer"
+                    aria-label="<?= e($googleMapsAriaLabel) ?>"
+                >
+                    Voir sur Google Maps
+                </a>
+            <?php endif; ?>
         </article>
 
         <article class="info-card">

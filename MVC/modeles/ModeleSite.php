@@ -203,6 +203,9 @@ final class ModeleSite
             'register_title' => 'Créer un compte',
         ];
 
+        $adresseClub = 'Centre Socio culturel CAF, 202 Belles Portes, 14200 Hérouville Saint Clair';
+        $googleMapsQuery = rawurlencode('Centre Socio culturel CAF, 202 Belles Portes, 14200 Hérouville-Saint-Clair, France');
+
         return [
             'brand' => "Cavaliers d'Hérouville",
             'ville' => 'Informations officielles en cours de validation',
@@ -211,12 +214,14 @@ final class ModeleSite
             'tagline' => "Cadre légal, espace membre, publication responsable et contenus validés par l'association.",
             'appel_action' => 'Connexion / inscription',
             'cta' => 'Connexion / inscription',
-            'adresse' => 'Coordonnées postales à publier',
-            'address' => 'Coordonnées postales à publier',
+            'adresse' => $adresseClub,
+            'address' => $adresseClub,
             'courriel' => 'Adresse de contact à publier',
             'email' => 'Adresse de contact à publier',
             'telephone' => 'Numéro de contact à publier',
             'phone' => 'Numéro de contact à publier',
+            'google_maps_url' => "https://www.google.com/maps/search/?api=1&query={$googleMapsQuery}",
+            'google_maps_embed_url' => "https://www.google.com/maps?output=embed&q={$googleMapsQuery}",
             'navigation_principale' => $navigationPrincipale,
             'primary_nav' => $navigationPrincipale,
             'navigation_secondaire' => $navigationSecondaire,
