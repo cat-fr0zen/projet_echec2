@@ -169,6 +169,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                     id="auth-panel-connexion"
                     role="tabpanel"
                     aria-labelledby="auth-tab-connexion"
+                    aria-hidden="<?= $ongletActif === 'connexion' ? 'false' : 'true' ?>"
                     <?= $erreursFormulaire !== [] ? 'aria-describedby="' . e($resumeErreursId) . '"' : '' ?>
                     <?= $ongletActif !== 'connexion' ? 'hidden' : '' ?>
                 >
@@ -227,6 +228,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                     id="auth-panel-inscription"
                     role="tabpanel"
                     aria-labelledby="auth-tab-inscription"
+                    aria-hidden="<?= $ongletActif === 'inscription' ? 'false' : 'true' ?>"
                     <?= $erreursFormulaire !== [] ? 'aria-describedby="' . e($resumeErreursId) . '"' : '' ?>
                     <?= $ongletActif !== 'inscription' ? 'hidden' : '' ?>
                 >

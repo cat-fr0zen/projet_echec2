@@ -345,6 +345,7 @@ function initAuthModal() {
         panels.forEach((panel) => {
             const isActive = panel.getAttribute("data-auth-panel") === currentTab;
             panel.hidden = !isActive;
+            panel.setAttribute("aria-hidden", isActive ? "false" : "true");
         });
     }
 

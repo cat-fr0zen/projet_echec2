@@ -61,8 +61,7 @@ final class ControleurActions
         }
 
         if (!verifier_jeton_csrf($_POST['jeton_csrf'] ?? null)) {
-            ajouter_message_flash('error', 'Votre session a expiré. Merci de recommencer.');
-            rediriger_vers(url_route('accueil'));
+            $this->traiterEchecCsrf($action);
         }
 
         switch ($action) {
@@ -159,6 +158,48 @@ final class ControleurActions
         $_SESSION['identifiant_utilisateur'] = $utilisateur['identifiant'];
         ajouter_message_flash('success', 'Votre compte a été créé avec succès.');
         rediriger_vers(url_route('profil'));
+    }
+
+    /**
+     * Affiche une erreur claire quand un formulaire d'auth arrive avec une session expiree.
+     *
+     * @return never
+     */
+    private function traiterEchecCsrf(string $action): never
+    {
+        $pageRedirection = $this->resoudrePageRedirection('accueil');
+
+        if (in_array($action, ['inscription', 'register'], true)) {
+            memoriser_etat_formulaire([
+                'ouverte' => true,
+                'onglet' => 'inscription',
+                'erreurs' => ['Votre session a expiré. Merci de renvoyer le formulaire.'],
+                'anciennes_valeurs' => [
+                    'nom' => trim((string) ($_POST['nom'] ?? $_POST['last_name'] ?? '')),
+                    'prenom' => trim((string) ($_POST['prenom'] ?? $_POST['first_name'] ?? '')),
+                    'date_naissance' => trim((string) ($_POST['date_naissance'] ?? $_POST['birth_date'] ?? '')),
+                    'courriel' => trim((string) ($_POST['courriel'] ?? $_POST['email'] ?? '')),
+                    'description_profil' => trim((string) ($_POST['description_profil'] ?? $_POST['profile_description'] ?? '')),
+                    'pseudo_chess' => trim((string) ($_POST['pseudo_chess'] ?? '')),
+                ],
+            ]);
+            rediriger_vers(url_route($pageRedirection));
+        }
+
+        if (in_array($action, ['connexion', 'login'], true)) {
+            memoriser_etat_formulaire([
+                'ouverte' => true,
+                'onglet' => 'connexion',
+                'erreurs' => ['Votre session a expiré. Merci de renvoyer le formulaire.'],
+                'anciennes_valeurs' => [
+                    'courriel' => trim((string) ($_POST['courriel'] ?? $_POST['email'] ?? '')),
+                ],
+            ]);
+            rediriger_vers(url_route($pageRedirection));
+        }
+
+        ajouter_message_flash('error', 'Votre session a expiré. Merci de recommencer.');
+        rediriger_vers(url_route($pageRedirection));
     }
 
     /** Traite le formulaire de connexion. */
