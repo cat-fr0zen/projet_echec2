@@ -125,7 +125,8 @@ $allOrders = $siteData['all_orders'] ?? [];
                         <p class="card-tag"><?= e((string) ($article['libelle_statut'] ?? 'En attente')) ?></p>
                         <h3><?= e((string) ($article['titre'] ?? 'Article')) ?></h3>
                         <p><?= e((string) ($article['resume'] ?? '')) ?></p>
-                        <p class="card-subtitle">Auteur: <?= e((string) ($article['nom_auteur'] ?? '')) ?></p>
+                        <p class="card-subtitle">Auteur: <?= e((string) ($article['auteur_affiche'] ?? $article['nom_auteur'] ?? '')) ?></p>
+                        <p class="card-subtitle">Créé le: <?= e((string) ($article['date_creation_libelle'] ?? '')) ?></p>
 
                         <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form admin-inline-form">
                             <input type="hidden" name="action" value="review_article">
@@ -135,6 +136,13 @@ $allOrders = $siteData['all_orders'] ?? [];
                             <button type="submit" name="statut_article" value="publie" class="button button-primary">Publier</button>
                             <button type="submit" name="statut_article" value="refuse" class="button button-secondary">Refuser</button>
                             <button type="submit" name="statut_article" value="en_attente_validation" class="button button-secondary">Remettre en attente</button>
+                        </form>
+
+                        <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form admin-inline-form" data-confirm-delete>
+                            <input type="hidden" name="action" value="delete_article">
+                            <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                            <input type="hidden" name="identifiant_article" value="<?= e((string) ($article['identifiant'] ?? '')) ?>">
+                            <button type="submit" class="button button-secondary button-danger">Supprimer</button>
                         </form>
                     </article>
                 <?php endforeach; ?>

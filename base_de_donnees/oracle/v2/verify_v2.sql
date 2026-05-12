@@ -17,10 +17,12 @@ SELECT object_name, object_type, status
      'PKG_SCHEMA_MIGRATION',
      'PKG_SITE_PORTAIL',
      'PKG_SITE_ADMIN',
+     'PKG_ARTICLE_EDITOR',
      'PKG_MAINTENANCE_SITE',
      'VW_ADMIN_COMPTES',
      'VW_ADMIN_ARTICLES',
      'VW_ADMIN_MEDIAS',
+     'VW_ARTICLE_BLOCS_ORDONNES',
      'VW_ADHESIONS_ACTIVES',
      'VW_CALENDRIER_ACTIVITES_PUBLIC'
  )
@@ -32,6 +34,8 @@ UNION ALL
 SELECT 'ref_statut_compte', COUNT(*) FROM ref_statut_compte
 UNION ALL
 SELECT 'ref_statut_article', COUNT(*) FROM ref_statut_article
+UNION ALL
+SELECT 'ref_type_bloc_article', COUNT(*) FROM ref_type_bloc_article
 UNION ALL
 SELECT 'ref_statut_media', COUNT(*) FROM ref_statut_media
 UNION ALL

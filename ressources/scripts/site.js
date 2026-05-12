@@ -911,6 +911,342 @@ function initSettingsActions() {
 }
 
 /**
+ * Gere l'editeur d'articles par blocs.
+ */
+function initArticleEditor() {
+    const editorRoot = document.querySelector("[data-article-editor]");
+    const openButton = document.querySelector("[data-article-editor-open]");
+
+    if (!(editorRoot instanceof HTMLElement)) {
+        return;
+    }
+
+    const form = editorRoot.querySelector("[data-article-editor-form]");
+    const blockList = editorRoot.querySelector("[data-article-block-list]");
+    const payloadInput = editorRoot.querySelector("[data-article-blocks-payload]");
+    const titleInput = editorRoot.querySelector("[data-article-title]");
+    const authorInput = editorRoot.querySelector("[data-article-author]");
+    const previewTitle = editorRoot.querySelector("[data-article-preview-title]");
+    const previewAuthor = editorRoot.querySelector("[data-article-preview-author]");
+    const previewBody = editorRoot.querySelector("[data-article-preview-body]");
+    const statusNode = editorRoot.querySelector("[data-article-editor-status]");
+    const addButtons = Array.from(editorRoot.querySelectorAll("[data-add-article-block]"));
+    let blockCounter = 0;
+    let previewUrls = [];
+
+    if (!(form instanceof HTMLFormElement) || !(blockList instanceof HTMLElement) || !(payloadInput instanceof HTMLInputElement)) {
+        return;
+    }
+
+    function setStatus(message) {
+        if (statusNode instanceof HTMLElement) {
+            statusNode.textContent = message;
+        }
+    }
+
+    function createBlockId() {
+        blockCounter += 1;
+        return `${Date.now().toString(36)}_${blockCounter.toString(36)}`;
+    }
+
+    function buildBlockActions(block) {
+        const actions = document.createElement("div");
+        actions.className = "article-editor-block-actions";
+
+        const moveUpButton = document.createElement("button");
+        moveUpButton.type = "button";
+        moveUpButton.className = "article-editor-icon-button";
+        moveUpButton.textContent = "↑";
+        moveUpButton.setAttribute("aria-label", "Monter ce bloc");
+
+        const moveDownButton = document.createElement("button");
+        moveDownButton.type = "button";
+        moveDownButton.className = "article-editor-icon-button";
+        moveDownButton.textContent = "↓";
+        moveDownButton.setAttribute("aria-label", "Descendre ce bloc");
+
+        const removeButton = document.createElement("button");
+        removeButton.type = "button";
+        removeButton.className = "article-editor-icon-button article-editor-icon-button--danger";
+        removeButton.textContent = "×";
+        removeButton.setAttribute("aria-label", "Supprimer ce bloc");
+
+        moveUpButton.addEventListener("click", () => {
+            const previous = block.previousElementSibling;
+            if (previous instanceof HTMLElement) {
+                blockList.insertBefore(block, previous);
+                updateEditorState("Bloc deplacé vers le haut.");
+            }
+        });
+
+        moveDownButton.addEventListener("click", () => {
+            const next = block.nextElementSibling;
+            if (next instanceof HTMLElement) {
+                blockList.insertBefore(next, block);
+                updateEditorState("Bloc deplacé vers le bas.");
+            }
+        });
+
+        removeButton.addEventListener("click", () => {
+            block.remove();
+            updateEditorState("Bloc supprimé.");
+        });
+
+        actions.append(moveUpButton, moveDownButton, removeButton);
+        return actions;
+    }
+
+    function createTextBlock(type) {
+        const block = document.createElement("section");
+        const blockId = createBlockId();
+        block.className = "article-editor-block";
+        block.dataset.articleBlockType = type;
+
+        const header = document.createElement("header");
+        header.className = "article-editor-block-header";
+
+        const title = document.createElement("h3");
+        title.textContent = type === "sous_titre" ? "Sous-titre" : "Paragraphe";
+
+        const field = type === "sous_titre" ? document.createElement("input") : document.createElement("textarea");
+        field.className = "article-editor-block-field";
+        field.name = `article_block_${blockId}`;
+        field.required = true;
+        field.maxLength = type === "sous_titre" ? 140 : 3000;
+
+        if (field instanceof HTMLTextAreaElement) {
+            field.rows = 5;
+        }
+
+        field.setAttribute("aria-label", title.textContent);
+        field.addEventListener("input", () => updateEditorState());
+
+        header.append(title, buildBlockActions(block));
+        block.append(header, field);
+        return block;
+    }
+
+    function createMediaBlock(type) {
+        const block = document.createElement("section");
+        const blockId = createBlockId();
+        const isVideo = type === "video";
+        block.className = "article-editor-block article-editor-block--media";
+        block.dataset.articleBlockType = type;
+
+        const header = document.createElement("header");
+        header.className = "article-editor-block-header";
+
+        const title = document.createElement("h3");
+        title.textContent = isVideo ? "Vidéo" : "Image / GIF";
+
+        const grid = document.createElement("div");
+        grid.className = "article-editor-media-grid";
+
+        const fileLabel = document.createElement("label");
+        const fileLabelText = document.createElement("span");
+        fileLabel.className = "form-group";
+        fileLabelText.textContent = "Fichier";
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.name = `article_media_${blockId}`;
+        fileInput.accept = isVideo ? "video/mp4,video/webm,video/quicktime" : "image/jpeg,image/png,image/webp,image/gif";
+        fileInput.required = true;
+
+        const altLabel = document.createElement("label");
+        const altLabelText = document.createElement("span");
+        altLabel.className = "form-group";
+        altLabelText.textContent = isVideo ? "Description accessible" : "Texte alternatif";
+        const altInput = document.createElement("input");
+        altInput.type = "text";
+        altInput.maxLength = 180;
+        altInput.required = true;
+
+        const captionLabel = document.createElement("label");
+        const captionLabelText = document.createElement("span");
+        captionLabel.className = "form-group";
+        captionLabelText.textContent = "Légende";
+        const captionInput = document.createElement("input");
+        captionInput.type = "text";
+        captionInput.maxLength = 220;
+
+        fileInput.addEventListener("change", () => updateEditorState("Média ajouté à l'aperçu."));
+        altInput.addEventListener("input", () => updateEditorState());
+        captionInput.addEventListener("input", () => updateEditorState());
+
+        fileLabel.append(fileLabelText, fileInput);
+        altLabel.append(altLabelText, altInput);
+        captionLabel.append(captionLabelText, captionInput);
+        grid.append(fileLabel, altLabel, captionLabel);
+        header.append(title, buildBlockActions(block));
+        block.append(header, grid);
+        return block;
+    }
+
+    function readBlocks() {
+        return Array.from(blockList.querySelectorAll("[data-article-block-type]")).map((block) => {
+            const type = block.getAttribute("data-article-block-type") || "paragraphe";
+
+            if (type === "paragraphe" || type === "sous_titre") {
+                const field = block.querySelector(".article-editor-block-field");
+                return {
+                    type,
+                    texte: field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement ? field.value.trim() : "",
+                };
+            }
+
+            const fileInput = block.querySelector('input[type="file"]');
+            const textInputs = Array.from(block.querySelectorAll('input[type="text"]'));
+
+            return {
+                type,
+                nom_champ_fichier: fileInput instanceof HTMLInputElement ? fileInput.name : "",
+                texte_alternatif: textInputs[0] instanceof HTMLInputElement ? textInputs[0].value.trim() : "",
+                legende: textInputs[1] instanceof HTMLInputElement ? textInputs[1].value.trim() : "",
+            };
+        });
+    }
+
+    function clearPreviewUrls() {
+        previewUrls.forEach((url) => URL.revokeObjectURL(url));
+        previewUrls = [];
+    }
+
+    function renderPreview(blocks) {
+        if (previewTitle instanceof HTMLElement && titleInput instanceof HTMLInputElement) {
+            previewTitle.textContent = titleInput.value.trim() || "Nouvel article";
+        }
+
+        if (previewAuthor instanceof HTMLElement && authorInput instanceof HTMLInputElement) {
+            previewAuthor.textContent = authorInput.value.trim() || "Auteur";
+        }
+
+        if (!(previewBody instanceof HTMLElement)) {
+            return;
+        }
+
+        clearPreviewUrls();
+        previewBody.replaceChildren();
+
+        blocks.forEach((blockData, index) => {
+            const type = blockData.type || "paragraphe";
+
+            if (type === "sous_titre" && blockData.texte) {
+                const subtitle = document.createElement("h3");
+                subtitle.className = "published-article-subtitle";
+                subtitle.textContent = blockData.texte;
+                previewBody.append(subtitle);
+                return;
+            }
+
+            if (type === "paragraphe" && blockData.texte) {
+                const paragraph = document.createElement("p");
+                paragraph.textContent = blockData.texte;
+                previewBody.append(paragraph);
+                return;
+            }
+
+            if (type === "image" || type === "video") {
+                const block = blockList.querySelectorAll("[data-article-block-type]")[index];
+                const fileInput = block instanceof HTMLElement ? block.querySelector('input[type="file"]') : null;
+                const file = fileInput instanceof HTMLInputElement && fileInput.files ? fileInput.files[0] : null;
+
+                if (!file) {
+                    return;
+                }
+
+                const figure = document.createElement("figure");
+                figure.className = "published-article-media";
+                const previewUrl = URL.createObjectURL(file);
+                previewUrls.push(previewUrl);
+
+                if (type === "video") {
+                    const video = document.createElement("video");
+                    video.controls = true;
+                    video.preload = "metadata";
+                    video.src = previewUrl;
+                    video.setAttribute("aria-label", blockData.texte_alternatif || "Video de l'article");
+                    figure.append(video);
+                } else {
+                    const image = document.createElement("img");
+                    image.src = previewUrl;
+                    image.alt = blockData.texte_alternatif || "";
+                    figure.append(image);
+                }
+
+                if (blockData.legende) {
+                    const caption = document.createElement("figcaption");
+                    caption.textContent = blockData.legende;
+                    figure.append(caption);
+                }
+
+                previewBody.append(figure);
+            }
+        });
+    }
+
+    function updateEditorState(message = "") {
+        const blocks = readBlocks();
+        payloadInput.value = JSON.stringify(blocks);
+        renderPreview(blocks);
+
+        if (message) {
+            setStatus(message);
+        }
+    }
+
+    function addBlock(type, shouldFocus = true) {
+        const block = type === "image" || type === "video" ? createMediaBlock(type) : createTextBlock(type);
+        blockList.append(block);
+        updateEditorState(`${type === "sous_titre" ? "Sous-titre" : type === "paragraphe" ? "Paragraphe" : "Média"} ajouté.`);
+
+        if (shouldFocus) {
+            const focusTarget = block.querySelector("input, textarea, button");
+            if (focusTarget instanceof HTMLElement) {
+                focusTarget.focus();
+            }
+        }
+    }
+
+    addButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            addBlock(button.getAttribute("data-add-article-block") || "paragraphe");
+        });
+    });
+
+    [titleInput, authorInput].forEach((field) => {
+        if (field instanceof HTMLInputElement) {
+            field.addEventListener("input", () => updateEditorState());
+        }
+    });
+
+    if (openButton instanceof HTMLButtonElement) {
+        openButton.addEventListener("click", () => {
+            editorRoot.hidden = false;
+            openButton.setAttribute("aria-expanded", "true");
+            addBlock("paragraphe", false);
+
+            if (titleInput instanceof HTMLInputElement) {
+                titleInput.focus();
+            }
+        }, { once: true });
+    }
+
+    form.addEventListener("submit", () => {
+        updateEditorState();
+    });
+}
+
+function initDeleteConfirmations() {
+    document.querySelectorAll("[data-confirm-delete]").forEach((form) => {
+        form.addEventListener("submit", (event) => {
+            if (!window.confirm("Supprimer definitivement cet article ?")) {
+                event.preventDefault();
+            }
+        });
+    });
+}
+
+/**
  * Gere les pop-ups legaux du footer (documents obligatoires et registre cookies).
  */
 function initLegalModals() {
@@ -1009,6 +1345,8 @@ document.addEventListener("DOMContentLoaded", () => {
     initAuthModal();
     initPieceCarousel();
     initDammierPuzzle();
+    initArticleEditor();
+    initDeleteConfirmations();
     initLegalModals();
     initSettingsActions();
 });

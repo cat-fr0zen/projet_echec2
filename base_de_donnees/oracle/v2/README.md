@@ -37,18 +37,21 @@ sequences + triggers avant execution.
   - `vw_admin_comptes`
   - `vw_admin_articles`
   - `vw_admin_medias`
+  - `vw_article_blocs_ordonnes`
   - `vw_adhesions_actives`
   - `vw_calendrier_activites_public`
 - table `journal_audit_administration` pour tracer les operations
 - table `parametre_application` pour les reglages metier sans changement de code
 - package `pkg_site_portail` pour le front-office
 - package `pkg_site_admin` pour les operations sensibles reservees a l'administration
+- package `pkg_article_editor` pour creer des articles structures par blocs
 
 ### 3. Securite
 
 - roles Oracle dedies aux usages applicatifs et d'audit
 - execution des operations via packages plutot que DML direct
 - requetes ciblees par codes metier et contraintes explicites
+- article editor stocke en blocs normalises au lieu d'un HTML libre dangereux
 - historique de moderation et des consentements
 
 ### 4. Maintenance et migrations
@@ -76,7 +79,8 @@ Le script appelle les migrations suivantes:
 5. `2.0.4_commerce_and_club.sql`
 6. `2.0.5_views_and_packages.sql`
 7. `2.0.6_security_and_seed.sql`
-8. `verify_v2.sql`
+8. `2.0.7_article_editor_blocks.sql`
+9. `verify_v2.sql`
 
 Migration de donnees disponible en modele:
 
@@ -101,6 +105,8 @@ Mapping de reference:
 - `utilisateurs.json.role=admin` -> `ref_role_compte.code_role = 'admin'`
 - `utilisateurs.json.statut_compte` -> `ref_statut_compte.code_statut`
 - `utilisateurs.json.statut_adhesion` -> `ref_statut_adhesion.code_statut`
+- `articles.json.blocs[]` -> `article_bloc` avec `ref_type_bloc_article`
+- `articles.json.auteur_affiche` -> `article.auteur_affiche`
 
 ## Verification
 

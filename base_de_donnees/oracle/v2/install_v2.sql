@@ -13,6 +13,7 @@ PROMPT ============================================
 @@migrations/2.0.4_commerce_and_club.sql
 @@migrations/2.0.5_views_and_packages.sql
 @@migrations/2.0.6_security_and_seed.sql
+@@migrations/2.0.7_article_editor_blocks.sql
 @@verify_v2.sql
 
 PROMPT ============================================

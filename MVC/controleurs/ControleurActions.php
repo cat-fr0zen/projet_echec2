@@ -98,6 +98,10 @@ final class ControleurActions
             case 'review_article':
                 $this->traiterModerationArticle();
                 break;
+            case 'supprimer_article':
+            case 'delete_article':
+                $this->traiterSuppressionArticle();
+                break;
             case 'moderer_media':
             case 'review_media':
                 $this->traiterModerationMedia();
@@ -248,24 +252,37 @@ final class ControleurActions
         }
 
         $titre = trim((string) ($_POST['titre'] ?? $_POST['title'] ?? ''));
-        $resume = trim((string) ($_POST['resume'] ?? $_POST['excerpt'] ?? ''));
-        $contenu = trim((string) ($_POST['contenu'] ?? $_POST['content'] ?? ''));
-
+        $auteurAffiche = trim((string) ($_POST['auteur_affiche'] ?? $_POST['display_author'] ?? ''));
         $erreurs = [];
 
         if ($titre === '' || mb_strlen($titre) > 150) {
             $erreurs[] = 'Le titre est obligatoire et doit rester inferieur a 150 caracteres.';
         }
 
-        if ($resume === '' || mb_strlen($resume) > 280) {
-            $erreurs[] = 'Le resume est obligatoire et doit rester inferieur a 280 caracteres.';
+        if ($auteurAffiche === '' || mb_strlen($auteurAffiche) > 120) {
+            $erreurs[] = "Le nom d'auteur affiche est obligatoire et doit rester inferieur a 120 caracteres.";
         }
 
-        if (mb_strlen($contenu) < 80) {
-            $erreurs[] = "Le contenu de l'article doit contenir au moins 80 caracteres.";
+        if (preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $auteurAffiche) === 1) {
+            $erreurs[] = "Le nom d'auteur contient des caracteres non autorises.";
         }
 
         if ($erreurs !== []) {
+            ajouter_message_flash('error', implode(' ', $erreurs));
+            rediriger_vers(url_route('articles'));
+        }
+
+        $blocsArticle = $this->normaliserBlocsArticleDepuisFormulaire();
+        $contenuTexte = $this->extraireTexteArticle($blocsArticle['blocs']);
+        $resume = $this->genererResumeArticle($blocsArticle['blocs']);
+        $erreurs = $blocsArticle['erreurs'];
+
+        if (mb_strlen($contenuTexte) < 40) {
+            $erreurs[] = "L'article doit contenir au moins 40 caracteres de texte.";
+        }
+
+        if ($erreurs !== []) {
+            $this->supprimerMediasArticleTeleverses($blocsArticle['blocs']);
             ajouter_message_flash('error', implode(' ', $erreurs));
             rediriger_vers(url_route('articles'));
         }
@@ -275,9 +292,11 @@ final class ControleurActions
         $this->depotArticles->creer([
             'identifiant_auteur' => $utilisateurCourant['identifiant'],
             'nom_auteur' => $nomAuteur !== '' ? $nomAuteur : (string) $utilisateurCourant['courriel'],
+            'auteur_affiche' => $auteurAffiche,
             'titre' => $titre,
             'resume' => $resume,
-            'contenu' => $contenu,
+            'contenu' => $contenuTexte,
+            'blocs' => $blocsArticle['blocs'],
         ]);
 
         ajouter_message_flash('success', 'Votre article a été enregistré et attend validation.');
@@ -379,6 +398,24 @@ final class ControleurActions
         }
 
         ajouter_message_flash('success', "Le statut de l'article a été mis à jour.");
+        rediriger_vers(url_route('admin'));
+    }
+
+    /** Suppression definitive d'un article (admin). */
+    private function traiterSuppressionArticle(): void
+    {
+        $this->exigerAdmin();
+
+        $identifiantArticle = trim((string) ($_POST['identifiant_article'] ?? ''));
+        $article = $identifiantArticle !== '' ? $this->depotArticles->trouverParIdentifiant($identifiantArticle) : null;
+
+        if ($article === null || !$this->depotArticles->supprimer($identifiantArticle)) {
+            ajouter_message_flash('error', "Impossible de supprimer l'article.");
+            rediriger_vers(url_route('admin'));
+        }
+
+        $this->supprimerMediasArticleTeleverses($article['blocs'] ?? []);
+        ajouter_message_flash('success', "L'article a ete supprime.");
         rediriger_vers(url_route('admin'));
     }
 
@@ -606,6 +643,235 @@ final class ControleurActions
         }
 
         return $erreurs;
+    }
+
+    /**
+     * Construit des blocs d'article propres depuis le formulaire editeur.
+     *
+     * @return array{blocs: array, erreurs: array}
+     */
+    private function normaliserBlocsArticleDepuisFormulaire(): array
+    {
+        $payload = (string) ($_POST['article_blocks_payload'] ?? '');
+        $donnees = json_decode($payload, true);
+        $erreurs = [];
+        $blocs = [];
+
+        if (!is_array($donnees)) {
+            return [
+                'blocs' => [],
+                'erreurs' => ["L'editeur d'article n'a pas transmis de contenu valide."],
+            ];
+        }
+
+        if (count($donnees) > 60) {
+            $erreurs[] = "L'article contient trop de blocs.";
+        }
+
+        foreach (array_slice($donnees, 0, 60) as $bloc) {
+            if (!is_array($bloc)) {
+                continue;
+            }
+
+            $type = (string) ($bloc['type'] ?? '');
+            $texte = trim((string) ($bloc['texte'] ?? ''));
+
+            if ($type === DepotArticles::TYPE_BLOC_PARAGRAPHE) {
+                if ($texte === '') {
+                    continue;
+                }
+
+                if (mb_strlen($texte) > 3000) {
+                    $erreurs[] = 'Un paragraphe doit rester inferieur a 3000 caracteres.';
+                    continue;
+                }
+
+                $blocs[] = [
+                    'type' => DepotArticles::TYPE_BLOC_PARAGRAPHE,
+                    'texte' => $texte,
+                ];
+                continue;
+            }
+
+            if ($type === DepotArticles::TYPE_BLOC_SOUS_TITRE) {
+                if ($texte === '' || mb_strlen($texte) > 140) {
+                    $erreurs[] = 'Chaque sous-titre doit contenir entre 1 et 140 caracteres.';
+                    continue;
+                }
+
+                $blocs[] = [
+                    'type' => DepotArticles::TYPE_BLOC_SOUS_TITRE,
+                    'texte' => $texte,
+                ];
+                continue;
+            }
+
+            if (in_array($type, [DepotArticles::TYPE_BLOC_IMAGE, DepotArticles::TYPE_BLOC_VIDEO], true)) {
+                $blocMedia = $this->traiterBlocMediaArticle($bloc, $type);
+                $erreurs = [...$erreurs, ...$blocMedia['erreurs']];
+
+                if ($blocMedia['bloc'] !== null) {
+                    $blocs[] = $blocMedia['bloc'];
+                }
+            }
+        }
+
+        if ($blocs === []) {
+            $erreurs[] = "Ajoute au moins un paragraphe, un sous-titre ou un media a l'article.";
+        }
+
+        return [
+            'blocs' => $blocs,
+            'erreurs' => array_values(array_unique($erreurs)),
+        ];
+    }
+
+    /**
+     * @return array{bloc: array|null, erreurs: array}
+     */
+    private function traiterBlocMediaArticle(array $bloc, string $type): array
+    {
+        $nomChampFichier = (string) ($bloc['nom_champ_fichier'] ?? '');
+        $texteAlternatif = trim((string) ($bloc['texte_alternatif'] ?? ''));
+        $legende = trim((string) ($bloc['legende'] ?? ''));
+
+        if (!preg_match('/^article_media_[a-z0-9_]+$/', $nomChampFichier)) {
+            return [
+                'bloc' => null,
+                'erreurs' => ['Un bloc media est invalide.'],
+            ];
+        }
+
+        $fichier = $_FILES[$nomChampFichier] ?? null;
+
+        if (!is_array($fichier) || (($fichier['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK)) {
+            return [
+                'bloc' => null,
+                'erreurs' => ['Chaque bloc image ou video doit contenir un fichier valide.'],
+            ];
+        }
+
+        if ($texteAlternatif === '' || mb_strlen($texteAlternatif) > 180) {
+            return [
+                'bloc' => null,
+                'erreurs' => $type === DepotArticles::TYPE_BLOC_VIDEO
+                    ? ['Chaque video doit avoir une description courte accessible.']
+                    : ['Chaque image ou GIF doit avoir un texte alternatif court.'],
+            ];
+        }
+
+        if (mb_strlen($legende) > 220) {
+            return [
+                'bloc' => null,
+                'erreurs' => ['Une legende media doit rester inferieure a 220 caracteres.'],
+            ];
+        }
+
+        $validation = $this->validerFichierMedia(
+            $fichier,
+            $type === DepotArticles::TYPE_BLOC_VIDEO ? DepotMedias::TYPE_VIDEO : DepotMedias::TYPE_PHOTO
+        );
+
+        if ($validation['erreurs'] !== []) {
+            return [
+                'bloc' => null,
+                'erreurs' => $validation['erreurs'],
+            ];
+        }
+
+        $dossierArticles = rtrim($this->dossierUploadMedias, '/\\') . DIRECTORY_SEPARATOR . 'articles';
+
+        if (!is_dir($dossierArticles)) {
+            mkdir($dossierArticles, 0777, true);
+        }
+
+        $nomStocke = 'article_' . bin2hex(random_bytes(12)) . '.' . $validation['extension'];
+        $cheminDestination = $dossierArticles . DIRECTORY_SEPARATOR . $nomStocke;
+
+        if (!move_uploaded_file((string) ($fichier['tmp_name'] ?? ''), $cheminDestination)) {
+            return [
+                'bloc' => null,
+                'erreurs' => ["Le televersement d'un media d'article a echoue."],
+            ];
+        }
+
+        return [
+            'bloc' => [
+                'type' => $type,
+                'chemin_public' => 'ressources/media/uploads/articles/' . $nomStocke,
+                'type_mime' => $validation['mime'],
+                'texte_alternatif' => $texteAlternatif,
+                'legende' => $legende,
+                'nom_fichier_original' => (string) ($fichier['name'] ?? ''),
+                'taille_octets' => (int) ($fichier['size'] ?? 0),
+            ],
+            'erreurs' => [],
+        ];
+    }
+
+    private function extraireTexteArticle(array $blocs): string
+    {
+        $segments = [];
+
+        foreach ($blocs as $bloc) {
+            $type = (string) ($bloc['type'] ?? '');
+
+            if (in_array($type, [DepotArticles::TYPE_BLOC_PARAGRAPHE, DepotArticles::TYPE_BLOC_SOUS_TITRE], true)) {
+                $segments[] = trim((string) ($bloc['texte'] ?? ''));
+            }
+
+            if (in_array($type, [DepotArticles::TYPE_BLOC_IMAGE, DepotArticles::TYPE_BLOC_VIDEO], true)) {
+                $segments[] = trim((string) ($bloc['texte_alternatif'] ?? ''));
+                $segments[] = trim((string) ($bloc['legende'] ?? ''));
+            }
+        }
+
+        return trim(preg_replace('/\s+/', ' ', implode(' ', array_filter($segments))) ?? '');
+    }
+
+    private function genererResumeArticle(array $blocs): string
+    {
+        foreach ($blocs as $bloc) {
+            if (($bloc['type'] ?? '') === DepotArticles::TYPE_BLOC_PARAGRAPHE) {
+                $texte = trim((string) ($bloc['texte'] ?? ''));
+
+                if ($texte !== '') {
+                    return mb_substr($texte, 0, 280);
+                }
+            }
+        }
+
+        return mb_substr($this->extraireTexteArticle($blocs), 0, 280);
+    }
+
+    private function supprimerMediasArticleTeleverses(array $blocs): void
+    {
+        $dossierArticles = rtrim($this->dossierUploadMedias, '/\\') . DIRECTORY_SEPARATOR . 'articles';
+        $prefixePublic = 'ressources/media/uploads/articles/';
+
+        foreach ($blocs as $bloc) {
+            if (!in_array((string) ($bloc['type'] ?? ''), [DepotArticles::TYPE_BLOC_IMAGE, DepotArticles::TYPE_BLOC_VIDEO], true)) {
+                continue;
+            }
+
+            $cheminPublic = (string) ($bloc['chemin_public'] ?? '');
+
+            if (!str_starts_with($cheminPublic, $prefixePublic)) {
+                continue;
+            }
+
+            $nomFichier = basename($cheminPublic);
+
+            if ($nomFichier === '' || !str_starts_with($nomFichier, 'article_')) {
+                continue;
+            }
+
+            $cheminFichier = $dossierArticles . DIRECTORY_SEPARATOR . $nomFichier;
+
+            if (is_file($cheminFichier)) {
+                unlink($cheminFichier);
+            }
+        }
     }
 
     /**
