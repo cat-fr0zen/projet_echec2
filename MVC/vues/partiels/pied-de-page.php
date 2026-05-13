@@ -56,7 +56,7 @@ $renderReviewStars = static function (?float $note): string {
                     <?php if ($hasClubGoogleReviews): ?>
                         <section class="footer-review-card" aria-labelledby="footer-review-title">
                             <div class="footer-review-header">
-                                <p class="eyebrow">Avis Google</p>
+                                <p class="eyebrow">Avis</p>
                                 <h3 id="footer-review-title" class="footer-review-title">Les retours publics du club</h3>
                                 <p class="footer-review-copy">
                                     Les avis restent lus sur la fiche Google officielle pour conserver des retours authentiques
