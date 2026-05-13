@@ -74,31 +74,62 @@ $themeMoonIconUrl = url_ressource('ressources/media/image/theme-lune.svg');
         </div>
     </div>
 
-    <div id="burger-panel" class="burger-panel" data-burger-panel hidden aria-label="Menu secondaire">
+    <div
+        id="burger-panel"
+        class="burger-panel"
+        data-burger-panel
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="burger-panel-title"
+        aria-hidden="true"
+    >
         <div class="burger-panel-topbar">
-            <p class="burger-panel-title">Menu secondaire</p>
+            <div class="burger-panel-heading">
+                <p class="burger-panel-title" id="burger-panel-title">
+                    <?= e($donneesAuthentification['est_connecte'] ? $donneesAuthentification['nom_affichage'] : 'Menu secondaire') ?>
+                </p>
+                <?php if ($donneesAuthentification['est_connecte']): ?>
+                    <p class="burger-panel-role"><?= e($donneesAuthentification['role_label'] ?? 'Compte') ?></p>
+                <?php endif; ?>
+            </div>
             <button type="button" class="burger-panel-close" data-burger-close aria-label="Fermer le menu">
                 Fermer
             </button>
         </div>
         <div class="burger-columns">
-            <section class="burger-group">
-                <p class="eyebrow">Navigation</p>
-                <div class="burger-links">
-                    <?php foreach ($navigationSecondaire as $elementNavigation): ?>
-                        <a class="burger-link" href="<?= e(url_route($elementNavigation['slug'])) ?>"><?= e($elementNavigation['label']) ?></a>
-                    <?php endforeach; ?>
-                </div>
-            </section>
+            <?php if ($navigationPrincipale): ?>
+                <section class="burger-group">
+                    <p class="eyebrow">Pages principales</p>
+                    <nav class="burger-links" aria-label="Navigation principale du menu">
+                        <?php foreach ($navigationPrincipale as $elementNavigation): ?>
+                            <?php $estActive = $elementNavigation['slug'] === $pageCourante; ?>
+                            <a
+                                class="burger-link<?= $estActive ? ' is-active' : '' ?>"
+                                href="<?= e(url_route($elementNavigation['slug'])) ?>"
+                                <?= $estActive ? 'aria-current="page"' : '' ?>
+                            >
+                                <?= e($elementNavigation['label']) ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </nav>
+                </section>
+            <?php endif; ?>
+
+            <?php if ($navigationSecondaire): ?>
+                <section class="burger-group">
+                    <p class="eyebrow">Menu secondaire</p>
+                    <nav class="burger-links" aria-label="Navigation secondaire du menu">
+                        <?php foreach ($navigationSecondaire as $elementNavigation): ?>
+                            <a class="burger-link" href="<?= e(url_route($elementNavigation['slug'])) ?>"><?= e($elementNavigation['label']) ?></a>
+                        <?php endforeach; ?>
+                    </nav>
+                </section>
+            <?php endif; ?>
 
             <section class="burger-group">
                 <p class="eyebrow">Espace membre</p>
                 <?php if ($donneesAuthentification['est_connecte']): ?>
-                    <div class="burger-user-card">
-                        <p class="burger-user-name"><?= e($donneesAuthentification['nom_affichage']) ?></p>
-                        <p class="burger-user-mail"><?= e($donneesAuthentification['utilisateur']['courriel'] ?? '') ?></p>
-                        <p class="burger-user-role"><?= e($donneesAuthentification['role_label'] ?? 'Compte') ?></p>
-                    </div>
                     <div class="burger-links">
                         <a class="burger-link" href="<?= e(url_route('profil')) ?>">Profil</a>
                         <a class="burger-link" href="<?= e(url_route('parametres')) ?>">Paramètres</a>

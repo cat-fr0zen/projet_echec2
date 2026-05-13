@@ -264,6 +264,7 @@ function initBurgerMenu() {
         burgerToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
         burgerToggle.setAttribute("aria-label", isOpen ? "Fermer le menu" : "Ouvrir le menu");
         burgerPanel.hidden = !isOpen;
+        burgerPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
         document.body.classList.toggle("burger-open", isOpen);
         siteHeader?.classList.toggle("is-menu-open", isOpen);
 
