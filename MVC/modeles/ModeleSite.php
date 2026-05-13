@@ -232,6 +232,18 @@ final class ModeleSite
             'club_google_reviews_label' => "Les Cavaliers d'Hérouville",
             'club_google_search_query' => "Les Cavaliers d'Hérouville, 202 Belles Portes, 14200 Hérouville-Saint-Clair, France",
             'club_google_reviews_cache_key' => 'cavaliers-herouville',
+            'reseaux_sociaux' => [
+                [
+                    'nom' => 'Instagram',
+                    'url' => 'https://www.instagram.com/',
+                    'icone' => 'ressources/media/divers/instagram.jpg',
+                ],
+                [
+                    'nom' => 'Facebook',
+                    'url' => 'https://www.facebook.com/profile.php?id=61576317887170',
+                    'icone' => 'ressources/media/divers/facebook.jpg',
+                ],
+            ],
             'navigation_principale' => $navigationPrincipale,
             'primary_nav' => $navigationPrincipale,
             'navigation_secondaire' => $navigationSecondaire,

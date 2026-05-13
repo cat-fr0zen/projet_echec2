@@ -18,6 +18,7 @@ $clubGoogleMapsUrl = (string) ($donneesSite['club_google_maps_url'] ?? '');
 $clubGoogleReviewsUrl = (string) ($donneesSite['club_google_reviews_url'] ?? $clubGoogleMapsUrl);
 $clubGoogleWriteReviewUrl = (string) ($donneesSite['club_google_write_review_url'] ?? $clubGoogleMapsUrl);
 $clubGoogleReviewsLabel = (string) ($donneesSite['club_google_reviews_label'] ?? "Les Cavaliers d'Hérouville");
+$reseauxSociaux = is_array($donneesSite['reseaux_sociaux'] ?? null) ? $donneesSite['reseaux_sociaux'] : [];
 $googleReviewsData = is_array($donneesSite['google_reviews'] ?? null) ? $donneesSite['google_reviews'] : [];
 $googleReviewsList = array_slice(
     is_array($googleReviewsData['avis'] ?? null) ? $googleReviewsData['avis'] : [],
@@ -206,6 +207,39 @@ $renderReviewStars = static function (?float $note): string {
                         <strong>Adresse :</strong>
                         <?= e($adresse) ?>
                     </p>
+                    <?php if ($reseauxSociaux !== []): ?>
+                        <nav class="footer-social-card" aria-label="R&eacute;seaux sociaux du club">
+                            <p class="card-tag">R&eacute;seaux sociaux</p>
+                            <div class="footer-social-list">
+                                <?php foreach ($reseauxSociaux as $reseauSocial): ?>
+                                    <?php
+                                    $nomReseau = (string) ($reseauSocial['nom'] ?? '');
+                                    $urlReseau = (string) ($reseauSocial['url'] ?? '');
+                                    $iconeReseau = (string) ($reseauSocial['icone'] ?? '');
+                                    ?>
+                                    <?php if ($nomReseau !== '' && $urlReseau !== '' && $iconeReseau !== ''): ?>
+                                        <a
+                                            class="footer-social-link"
+                                            href="<?= e($urlReseau) ?>"
+                                            target="_blank"
+                                            rel="noopener noreferrer external"
+                                            referrerpolicy="no-referrer"
+                                            aria-label="Ouvrir <?= e($nomReseau) ?> des Cavaliers d'H&eacute;rouville (nouvel onglet)"
+                                        >
+                                            <img
+                                                class="footer-social-icon"
+                                                src="<?= e(url_ressource($iconeReseau)) ?>"
+                                                alt=""
+                                                loading="lazy"
+                                                aria-hidden="true"
+                                            >
+                                            <span><?= e($nomReseau) ?></span>
+                                        </a>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            </div>
+                        </nav>
+                    <?php endif; ?>
                     <?php if ($hasLocationMap): ?>
                         <div class="footer-location-card">
                             <p class="card-tag">Plan d'acc&egrave;s</p>
