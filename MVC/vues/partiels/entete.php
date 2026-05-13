@@ -99,7 +99,7 @@ $themeMoonIconUrl = url_ressource('ressources/media/image/theme-lune.svg');
         </div>
         <div class="burger-columns">
             <?php if ($navigationPrincipale): ?>
-                <section class="burger-group">
+                <section class="burger-group burger-group--primary-mobile">
                     <p class="eyebrow">Pages principales</p>
                     <nav class="burger-links" aria-label="Navigation principale du menu">
                         <?php foreach ($navigationPrincipale as $elementNavigation): ?>

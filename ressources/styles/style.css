@@ -45,11 +45,14 @@
 
 html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
 }
 
 body {
     margin: 0;
+    max-width: 100%;
     min-height: 100vh;
+    overflow-x: hidden;
     color: var(--text);
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.65;
@@ -4133,6 +4136,10 @@ body.burger-open {
     gap: 0.65rem;
 }
 
+.burger-group--primary-mobile {
+    display: none;
+}
+
 .burger-link {
     display: flex;
     align-items: center;
@@ -4188,6 +4195,10 @@ body[data-theme="dark"] .burger-link:focus-visible {
 
     .header-actions {
         justify-content: flex-end;
+    }
+
+    .burger-group--primary-mobile {
+        display: grid;
     }
 
     .brand-lockup {

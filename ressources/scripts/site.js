@@ -260,7 +260,12 @@ function initBurgerMenu() {
         return;
     }
 
-    function setOpenState(isOpen) {
+    function resetHorizontalScroll() {
+        document.documentElement.scrollLeft = 0;
+        document.body.scrollLeft = 0;
+    }
+
+    function setOpenState(isOpen, shouldRestoreFocus = true) {
         burgerToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
         burgerToggle.setAttribute("aria-label", isOpen ? "Fermer le menu" : "Ouvrir le menu");
         burgerPanel.hidden = !isOpen;
@@ -275,10 +280,14 @@ function initBurgerMenu() {
             if (firstFocusableElement instanceof HTMLElement) {
                 firstFocusableElement.focus();
             }
-        } else if (previousFocusedElement instanceof HTMLElement) {
+        } else if (shouldRestoreFocus && previousFocusedElement instanceof HTMLElement) {
             previousFocusedElement.focus();
             previousFocusedElement = null;
+        } else {
+            previousFocusedElement = null;
         }
+
+        resetHorizontalScroll();
     }
 
     burgerToggle.addEventListener("click", () => {
@@ -291,6 +300,12 @@ function initBurgerMenu() {
             setOpenState(false);
         });
     }
+
+    burgerPanel.querySelectorAll("a").forEach((link) => {
+        link.addEventListener("click", () => {
+            setOpenState(false, false);
+        });
+    });
 
     document.addEventListener("click", (event) => {
         const target = event.target;
