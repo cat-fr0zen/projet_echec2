@@ -45,14 +45,19 @@
 
 html {
     scroll-behavior: smooth;
+    width: 100%;
     overflow-x: hidden;
+    overflow-x: clip;
 }
 
 body {
     margin: 0;
+    position: relative;
+    width: 100%;
     max-width: 100%;
     min-height: 100vh;
     overflow-x: hidden;
+    overflow-x: clip;
     color: var(--text);
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.65;
@@ -134,6 +139,7 @@ p {
     position: relative;
     z-index: 1;
     width: min(calc(100% - 2rem), var(--max-width));
+    max-width: 100%;
     margin: 0 auto;
     padding: 1rem 0 2rem;
 }
@@ -269,6 +275,15 @@ p {
     display: grid;
     gap: 1.25rem;
     padding-top: 1.4rem;
+}
+
+.page-shell > *,
+.hero-grid > *,
+.split-grid > *,
+.card-grid > *,
+.footer-overview > * {
+    min-width: 0;
+    max-width: 100%;
 }
 
 .hero-grid,
@@ -3056,9 +3071,10 @@ body[data-theme="dark"] .auth-form textarea {
 }
 
 .site-footer {
-    width: 100vw;
+    width: 100%;
+    max-width: 100%;
     margin-top: 1.5rem;
-    margin-left: calc(50% - 50vw);
+    margin-left: 0;
     border-left: 0;
     border-right: 0;
     border-radius: 0;
@@ -4270,6 +4286,8 @@ body[data-theme="dark"] .burger-link:focus-visible {
 @media (max-width: 560px) {
     .site-shell {
         width: min(calc(100% - 0.75rem), var(--max-width));
+        max-width: calc(100vw - 0.75rem);
+        margin-inline: auto;
     }
 
     .site-header {
@@ -4317,6 +4335,8 @@ body[data-theme="dark"] .burger-link:focus-visible {
 @media (max-width: 420px) {
     .site-shell {
         width: min(calc(100% - 0.5rem), var(--max-width));
+        max-width: calc(100vw - 0.5rem);
+        margin-inline: auto;
     }
 
     .header-rail {

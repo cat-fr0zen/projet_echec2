@@ -38,6 +38,29 @@ function setCookieValue(name, value, days = 365) {
 }
 
 /**
+ * Corrige les positions horizontales conservees par certains navigateurs mobiles.
+ */
+function resetHorizontalScroll() {
+    const scrollingElement = document.scrollingElement || document.documentElement;
+    const currentVerticalScroll = window.scrollY || scrollingElement.scrollTop || 0;
+
+    scrollingElement.scrollLeft = 0;
+    document.documentElement.scrollLeft = 0;
+    document.body.scrollLeft = 0;
+
+    if (window.scrollX !== 0) {
+        window.scrollTo(0, currentVerticalScroll);
+    }
+}
+
+function scheduleHorizontalScrollReset() {
+    resetHorizontalScroll();
+    window.requestAnimationFrame(resetHorizontalScroll);
+    window.setTimeout(resetHorizontalScroll, 80);
+    window.setTimeout(resetHorizontalScroll, 240);
+}
+
+/**
  * Retourne la liste des elements focusables dans un conteneur (accessibilite).
  *
  * @param {HTMLElement} root Conteneur.
@@ -258,11 +281,6 @@ function initBurgerMenu() {
 
     if (!(burgerToggle instanceof HTMLButtonElement) || !(burgerPanel instanceof HTMLElement)) {
         return;
-    }
-
-    function resetHorizontalScroll() {
-        document.documentElement.scrollLeft = 0;
-        document.body.scrollLeft = 0;
     }
 
     function setOpenState(isOpen, shouldRestoreFocus = true) {
@@ -1354,6 +1372,7 @@ function initLegalModals() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+    scheduleHorizontalScrollReset();
     initConsentGate();
     initThemeToggle();
     initStickyHeader();
@@ -1367,3 +1386,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initLegalModals();
     initSettingsActions();
 });
+
+window.addEventListener("pageshow", scheduleHorizontalScrollReset);
+window.addEventListener("resize", scheduleHorizontalScrollReset);
+window.addEventListener("orientationchange", scheduleHorizontalScrollReset);
