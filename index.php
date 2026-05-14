@@ -23,14 +23,58 @@ $utiliserCookiesSecurises = (
     || (isset($_SERVER['SERVER_PORT']) && (string) $_SERVER['SERVER_PORT'] === '443')
 );
 
+/**
+ * Cree un dossier runtime avec des permissions restrictives.
+ */
+function creer_dossier_runtime(string $chemin, int $mode): bool
+{
+    if (!is_dir($chemin) && !mkdir($chemin, $mode, true)) {
+        return false;
+    }
+
+    if (is_dir($chemin) && DIRECTORY_SEPARATOR !== '\\') {
+        chmod($chemin, $mode);
+    }
+
+    return is_dir($chemin) && is_writable($chemin);
+}
+
+/**
+ * Envoie les en-tetes de securite communs a toutes les pages HTML.
+ */
+function envoyer_entetes_securite(bool $connexionSecurisee): void
+{
+    $politiqueSecuriteContenu = implode('; ', [
+        "default-src 'self'",
+        "base-uri 'self'",
+        "object-src 'none'",
+        "frame-ancestors 'self'",
+        "form-action 'self'",
+        "script-src 'self'",
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "font-src 'self' https://fonts.gstatic.com",
+        "img-src 'self' data: blob: https:",
+        "media-src 'self' blob:",
+        "frame-src https://www.google.com https://maps.google.com",
+        "connect-src 'self'",
+    ]);
+
+    if ($connexionSecurisee) {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
+
+    header('Content-Type: text/html; charset=UTF-8');
+    header('Content-Security-Policy: ' . $politiqueSecuriteContenu);
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+}
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     ini_set('session.use_strict_mode', '1');
 
-    if (!is_dir($dossierSessions)) {
-        mkdir($dossierSessions, 0777, true);
-    }
-
-    if (is_dir($dossierSessions) && is_writable($dossierSessions)) {
+    if (creer_dossier_runtime($dossierSessions, 0700)) {
         session_save_path($dossierSessions);
     }
 
@@ -56,7 +100,7 @@ if (function_exists('mb_http_output')) {
     mb_http_output('UTF-8');
 }
 
-header('Content-Type: text/html; charset=UTF-8');
+envoyer_entetes_securite($utiliserCookiesSecurises);
 
 require_once __DIR__ . '/MVC/modeles/ModeleSite.php';
 require_once __DIR__ . '/MVC/modeles/StockageJson.php';

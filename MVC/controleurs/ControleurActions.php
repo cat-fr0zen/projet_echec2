@@ -19,6 +19,9 @@ declare(strict_types=1);
  */
 final class ControleurActions
 {
+    private const MODE_DOSSIER_UPLOAD = 0755;
+    private const MODE_FICHIER_UPLOAD = 0644;
+
     private const PAGES_AUTORISEES = [
         'accueil',
         'guide',
@@ -394,8 +397,9 @@ final class ControleurActions
             rediriger_vers(url_route('mediatheque'));
         }
 
-        if (!is_dir($this->dossierUploadMedias)) {
-            mkdir($this->dossierUploadMedias, 0777, true);
+        if (!$this->preparerDossierUpload($this->dossierUploadMedias)) {
+            ajouter_message_flash('error', "Le dossier d'envoi des medias n'est pas disponible.");
+            rediriger_vers(url_route('mediatheque'));
         }
 
         $nomStocke = 'media_' . bin2hex(random_bytes(12)) . '.' . $validationFichier['extension'];
@@ -405,6 +409,8 @@ final class ControleurActions
             ajouter_message_flash('error', 'Le téléversement du média a échoué.');
             rediriger_vers(url_route('mediatheque'));
         }
+
+        $this->securiserFichierTeleverse($cheminDestination);
 
         $nomAuteur = trim((string) $utilisateurCourant['prenom'] . ' ' . (string) $utilisateurCourant['nom']);
 
@@ -822,8 +828,11 @@ final class ControleurActions
 
         $dossierArticles = rtrim($this->dossierUploadMedias, '/\\') . DIRECTORY_SEPARATOR . 'articles';
 
-        if (!is_dir($dossierArticles)) {
-            mkdir($dossierArticles, 0777, true);
+        if (!$this->preparerDossierUpload($dossierArticles)) {
+            return [
+                'bloc' => null,
+                'erreurs' => ["Le dossier d'envoi des medias d'article n'est pas disponible."],
+            ];
         }
 
         $nomStocke = 'article_' . bin2hex(random_bytes(12)) . '.' . $validation['extension'];
@@ -835,6 +844,8 @@ final class ControleurActions
                 'erreurs' => ["Le televersement d'un media d'article a echoue."],
             ];
         }
+
+        $this->securiserFichierTeleverse($cheminDestination);
 
         return [
             'bloc' => [
@@ -912,6 +923,26 @@ final class ControleurActions
             if (is_file($cheminFichier)) {
                 unlink($cheminFichier);
             }
+        }
+    }
+
+    private function preparerDossierUpload(string $dossier): bool
+    {
+        if (!is_dir($dossier) && !mkdir($dossier, self::MODE_DOSSIER_UPLOAD, true)) {
+            return false;
+        }
+
+        if (is_dir($dossier) && DIRECTORY_SEPARATOR !== '\\') {
+            chmod($dossier, self::MODE_DOSSIER_UPLOAD);
+        }
+
+        return is_dir($dossier) && is_writable($dossier);
+    }
+
+    private function securiserFichierTeleverse(string $cheminFichier): void
+    {
+        if (is_file($cheminFichier) && DIRECTORY_SEPARATOR !== '\\') {
+            chmod($cheminFichier, self::MODE_FICHIER_UPLOAD);
         }
     }
 

@@ -237,7 +237,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_schema_migration AS
                  FROM schema_migration
                 WHERE version_schema = TRIM(p_version_schema)
          );
-        COMMIT;
+        -- Transaction controlled by caller.
     END enregistrer;
 END pkg_schema_migration;
 /
@@ -747,7 +747,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Creation d''un compte membre pour ' || LOWER(TRIM(p_email))
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END creer_compte_membre;
 
     PROCEDURE attribuer_role_compte(
@@ -776,7 +776,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Role attribue: ' || LOWER(TRIM(p_code_role))
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END attribuer_role_compte;
 
     PROCEDURE mettre_a_jour_statut_compte(
@@ -801,7 +801,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Nouveau statut: ' || LOWER(TRIM(p_code_statut_compte))
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END mettre_a_jour_statut_compte;
 
     PROCEDURE mettre_a_jour_profil_membre(
@@ -833,7 +833,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Mise a jour du profil membre'
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END mettre_a_jour_profil_membre;
 
     PROCEDURE enregistrer_consentement_membre(
@@ -872,7 +872,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Consentement ' || LOWER(TRIM(p_code_type_consentement)) || ' version ' || TRIM(p_version_document)
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END enregistrer_consentement_membre;
 
     PROCEDURE creer_article(
@@ -913,7 +913,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Article cree: ' || TRIM(p_titre)
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END creer_article;
 
     PROCEDURE moderer_article(
@@ -958,7 +958,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Statut article: ' || LOWER(TRIM(p_code_statut_article))
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END moderer_article;
 
     PROCEDURE creer_media_externe(
@@ -1026,7 +1026,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Media externe cree: ' || TRIM(p_titre)
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END creer_media_externe;
 
     PROCEDURE enregistrer_autorisation_media(
@@ -1068,7 +1068,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Autorisation media enregistree'
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END enregistrer_autorisation_media;
 
     PROCEDURE moderer_media(
@@ -1111,7 +1111,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Statut media: ' || LOWER(TRIM(p_code_statut_media))
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END moderer_media;
 
     PROCEDURE creer_produit(
@@ -1160,7 +1160,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Produit cree: ' || TRIM(p_titre)
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END creer_produit;
 
     PROCEDURE definir_prix_produit(
@@ -1197,7 +1197,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Prix defini en devise ' || UPPER(TRIM(p_code_devise))
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END definir_prix_produit;
 
     PROCEDURE ouvrir_saison_club(
@@ -1239,7 +1239,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Saison creee: ' || LOWER(TRIM(p_code_saison))
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END ouvrir_saison_club;
 
     PROCEDURE ouvrir_adhesion_membre(
@@ -1302,7 +1302,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Adhesion ouverte pour le compte ' || TO_CHAR(p_identifiant_compte_membre)
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END ouvrir_adhesion_membre;
 
     PROCEDURE enregistrer_paiement_adhesion(
@@ -1362,7 +1362,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Paiement adhesion enregistre'
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END enregistrer_paiement_adhesion;
 
     PROCEDURE creer_activite_club(
@@ -1405,7 +1405,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Activite creee: ' || TRIM(p_titre)
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END creer_activite_club;
 
     PROCEDURE programmer_session_activite(
@@ -1443,7 +1443,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Session programmee'
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END programmer_session_activite;
 
     PROCEDURE inscrire_membre_session(
@@ -1473,7 +1473,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_site_admin AS
             'Inscription session effectuee'
         );
 
-        COMMIT;
+        -- Transaction controlled by caller.
     END inscrire_membre_session;
 END pkg_site_admin;
 /
@@ -1774,7 +1774,7 @@ CREATE OR REPLACE PACKAGE BODY pkg_maintenance_site AS
         expirer_catalogue_boutique;
         clore_adhesions_expirees;
         marquer_tournois_termines;
-        COMMIT;
+        -- Transaction controlled by caller.
     END lancer_maintenance_quotidienne;
 END pkg_maintenance_site;
 /
@@ -1787,3 +1787,5 @@ BEGIN
     );
 END;
 /
+
+COMMIT;
