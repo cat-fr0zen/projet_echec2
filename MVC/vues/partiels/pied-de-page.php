@@ -293,6 +293,15 @@ $renderReviewStars = static function (?float $note): string {
         </section>
 
         <div class="footer-meta-bar">
+            <img
+                class="footer-meta-logo"
+                src="<?= e($logoClubUrl) ?>"
+                alt=""
+                aria-hidden="true"
+                width="394"
+                height="401"
+                loading="lazy"
+            >
             <p class="footer-meta">
                 &copy; <?= e((string) $anneeCourante) ?> <?= e($donneesSite['brand']) ?>.
                 Conception du site : <?= e($credits['auteur_site'] ?? $credits['site_author'] ?? '') ?>.

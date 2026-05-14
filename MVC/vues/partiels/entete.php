@@ -15,8 +15,18 @@ $themeMoonIconUrl = url_ressource('ressources/media/image/theme-lune.svg');
 <header class="site-header reveal reveal-1" data-site-header>
     <div class="header-rail">
         <div class="brand-lockup">
-            <a class="brand" href="<?= e(url_route('accueil')) ?>"><?= e($donneesSite['brand']) ?></a>
-            <p class="brand-caption"><?= e($donneesSite['ville'] ?? $donneesSite['city'] ?? '') ?></p>
+            <div class="brand-copy">
+                <a class="brand" href="<?= e(url_route('accueil')) ?>"><?= e($donneesSite['brand']) ?></a>
+                <p class="brand-caption"><?= e($donneesSite['ville'] ?? $donneesSite['city'] ?? '') ?></p>
+            </div>
+            <img
+                class="brand-logo"
+                src="<?= e($logoClubUrl) ?>"
+                alt=""
+                aria-hidden="true"
+                width="394"
+                height="401"
+            >
         </div>
 
         <div class="header-main-nav">

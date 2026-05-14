@@ -2009,8 +2009,25 @@ body.modal-open {
 }
 
 .brand-lockup {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.85rem;
     min-width: 0;
     transition: gap 220ms var(--ease-out);
+}
+
+.brand-copy {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.brand-logo {
+    width: clamp(3rem, 5vw, 4.25rem);
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 18px rgba(31, 22, 17, 0.12));
 }
 
 .brand {
@@ -2101,6 +2118,10 @@ body.modal-open {
 .site-header.is-condensed .brand {
     font-size: 1.12rem;
     transform: translateY(-1px);
+}
+
+.site-header.is-condensed .brand-logo {
+    width: 2.75rem;
 }
 
 .site-header.is-condensed .brand-caption,
@@ -2567,13 +2588,24 @@ body.modal-open {
 }
 
 .footer-meta-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
     padding: 1rem 1.35rem 1.2rem;
     border-top: 1px solid rgba(23, 32, 27, 0.08);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
 }
 
+.footer-meta-logo {
+    flex: 0 0 auto;
+    width: 3.35rem;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 18px rgba(31, 22, 17, 0.1));
+}
+
 .footer-meta {
-    margin-top: 0;
+    margin: 0;
 }
 
 body[data-theme="dark"] .primary-nav,
@@ -2943,6 +2975,10 @@ body[data-theme="dark"] .flash-message {
     gap: 0.08rem;
 }
 
+.brand-logo {
+    width: 3rem;
+}
+
 .site-header .eyebrow,
 .header-mobile-bar {
     display: none !important;
@@ -3258,6 +3294,10 @@ body[data-theme="dark"] .legal-card {
 
     .header-rail {
         padding: 0.62rem 0.75rem;
+    }
+
+    .brand-logo {
+        width: 2.35rem;
     }
 
     .brand-caption {
@@ -4406,6 +4446,15 @@ body[data-theme="dark"] .burger-link:focus-visible {
         max-height: var(--burger-panel-max-height, calc(100dvh - 4.55rem));
         padding: 0.85rem;
     }
+
+    .footer-meta-bar {
+        align-items: flex-start;
+        gap: 0.65rem;
+    }
+
+    .footer-meta-logo {
+        width: 2.75rem;
+    }
 }
 
 @media (max-width: 420px) {
@@ -4422,6 +4471,10 @@ body[data-theme="dark"] .burger-link:focus-visible {
 
     .brand-lockup {
         max-width: calc(100vw - 7.4rem);
+    }
+
+    .brand-logo {
+        width: 2rem;
     }
 
     .brand {
@@ -4468,6 +4521,10 @@ body[data-theme="dark"] .burger-link:focus-visible {
 @media (max-width: 340px) {
     .brand-lockup {
         max-width: calc(100vw - 7.25rem);
+    }
+
+    .brand-logo {
+        width: 1.75rem;
     }
 
     .burger-panel-title {

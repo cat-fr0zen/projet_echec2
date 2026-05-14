@@ -24,9 +24,11 @@ $viewFile = $fichierVue;
 $stylePath = __DIR__ . '/../../ressources/styles/style.css';
 $siteScriptPath = __DIR__ . '/../../ressources/scripts/site.js';
 $dammierScriptPath = __DIR__ . '/../../ressources/scripts/dammier.js';
+$logoClubPath = __DIR__ . '/../../ressources/media/divers/Logo_LCH2025.png';
 $styleUrl = url_ressource('ressources/styles/style.css') . '?v=' . (string) @filemtime($stylePath);
 $siteScriptUrl = url_ressource('ressources/scripts/site.js') . '?v=' . (string) @filemtime($siteScriptPath);
 $dammierScriptUrl = url_ressource('ressources/scripts/dammier.js') . '?v=' . (string) @filemtime($dammierScriptPath);
+$logoClubUrl = url_ressource('ressources/media/divers/Logo_LCH2025.png') . '?v=' . (string) @filemtime($logoClubPath);
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -35,6 +37,8 @@ $dammierScriptUrl = url_ressource('ressources/scripts/dammier.js') . '?v=' . (st
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="<?= e($descriptionMeta) ?>">
     <title><?= e($metaTitre) ?></title>
+    <link rel="icon" type="image/png" href="<?= e($logoClubUrl) ?>">
+    <link rel="apple-touch-icon" href="<?= e($logoClubUrl) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
