@@ -4137,7 +4137,7 @@ body[data-theme="dark"] .footer-location-link:focus-visible .footer-location-lin
 
 /*
  * Header mobile et tiroir burger accessible.
- * Le menu est fixe pour ne plus agrandir le header avec un grand espace vide.
+ * Le menu est fixe et ancre sous le bouton burger par JavaScript.
  */
 
 body.burger-open {
@@ -4150,12 +4150,12 @@ body.burger-open {
 
 .burger-panel {
     position: fixed;
-    top: calc(max(0.75rem, env(safe-area-inset-top)) + 5.5rem);
-    left: max(0.75rem, env(safe-area-inset-left));
+    top: var(--burger-panel-top, calc(max(0.75rem, env(safe-area-inset-top)) + 5.5rem));
+    left: var(--burger-panel-left, max(0.75rem, env(safe-area-inset-left)));
     right: auto;
     z-index: 120;
     width: min(22rem, calc(100vw - 1.5rem));
-    max-height: calc(100dvh - 6.25rem);
+    max-height: var(--burger-panel-max-height, calc(100dvh - 6.25rem));
     overflow-y: auto;
     overscroll-behavior: contain;
     padding: 1rem;
@@ -4305,8 +4305,8 @@ body[data-theme="dark"] .burger-link:focus-visible {
     }
 
     .burger-panel {
-        top: calc(max(0.65rem, env(safe-area-inset-top)) + 4.85rem);
-        max-height: calc(100dvh - 5.5rem);
+        top: var(--burger-panel-top, calc(max(0.65rem, env(safe-area-inset-top)) + 4.85rem));
+        max-height: var(--burger-panel-max-height, calc(100dvh - 5.5rem));
     }
 }
 
@@ -4352,10 +4352,10 @@ body[data-theme="dark"] .burger-link:focus-visible {
     }
 
     .burger-panel {
-        top: calc(max(0.55rem, env(safe-area-inset-top)) + 4.35rem);
-        left: max(0.55rem, env(safe-area-inset-left));
+        top: var(--burger-panel-top, calc(max(0.55rem, env(safe-area-inset-top)) + 4.35rem));
+        left: var(--burger-panel-left, max(0.55rem, env(safe-area-inset-left)));
         width: min(21rem, calc(100vw - 1.1rem));
-        max-height: calc(100dvh - 5rem);
+        max-height: var(--burger-panel-max-height, calc(100dvh - 5rem));
     }
 }
 
@@ -4400,10 +4400,10 @@ body[data-theme="dark"] .burger-link:focus-visible {
     }
 
     .burger-panel {
-        top: calc(max(0.45rem, env(safe-area-inset-top)) + 4rem);
-        left: max(0.45rem, env(safe-area-inset-left));
+        top: var(--burger-panel-top, calc(max(0.45rem, env(safe-area-inset-top)) + 4rem));
+        left: var(--burger-panel-left, max(0.45rem, env(safe-area-inset-left)));
         width: min(20rem, calc(100vw - 0.9rem));
-        max-height: calc(100dvh - 4.55rem);
+        max-height: var(--burger-panel-max-height, calc(100dvh - 4.55rem));
         padding: 0.85rem;
     }
 }
@@ -4453,10 +4453,10 @@ body[data-theme="dark"] .burger-link:focus-visible {
     }
 
     .burger-panel {
-        top: calc(max(0.35rem, env(safe-area-inset-top)) + 3.75rem);
-        left: max(0.35rem, env(safe-area-inset-left));
+        top: var(--burger-panel-top, calc(max(0.35rem, env(safe-area-inset-top)) + 3.75rem));
+        left: var(--burger-panel-left, max(0.35rem, env(safe-area-inset-left)));
         width: min(19rem, calc(100vw - 0.7rem));
-        max-height: calc(100dvh - 4.1rem);
+        max-height: var(--burger-panel-max-height, calc(100dvh - 4.1rem));
         padding: 0.78rem;
     }
 
