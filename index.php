@@ -46,6 +46,18 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
 
+ini_set('default_charset', 'UTF-8');
+
+if (function_exists('mb_internal_encoding')) {
+    mb_internal_encoding('UTF-8');
+}
+
+if (function_exists('mb_http_output')) {
+    mb_http_output('UTF-8');
+}
+
+header('Content-Type: text/html; charset=UTF-8');
+
 require_once __DIR__ . '/MVC/modeles/ModeleSite.php';
 require_once __DIR__ . '/MVC/modeles/StockageJson.php';
 require_once __DIR__ . '/MVC/modeles/DepotUtilisateurs.php';
@@ -66,7 +78,89 @@ require_once __DIR__ . '/MVC/controleurs/ControleurPages.php';
  */
 function e(?string $valeur): string
 {
-    return htmlspecialchars((string) $valeur, ENT_QUOTES, 'UTF-8');
+    return htmlspecialchars(normaliser_texte_utf8((string) $valeur), ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Repare les cas de mojibake les plus courants sans dependre de l'encodage
+ * du terminal local.
+ *
+ * @param ?string $valeur Texte source.
+ * @return string Texte normalise pour l'affichage UTF-8.
+ */
+function normaliser_texte_utf8(?string $valeur): string
+{
+    $texte = (string) $valeur;
+
+    if ($texte === '') {
+        return '';
+    }
+
+    if (!preg_match('//u', $texte) && function_exists('mb_convert_encoding')) {
+        $texte = mb_convert_encoding($texte, 'UTF-8', 'Windows-1252,ISO-8859-1,UTF-8');
+    }
+
+    static $corrections = null;
+
+    if ($corrections === null) {
+        $corrections = [
+            hex2bin('C383C2A0') => "\u{00E0}",
+            hex2bin('C383C2A2') => "\u{00E2}",
+            hex2bin('C383C2A4') => "\u{00E4}",
+            hex2bin('C383C2A7') => "\u{00E7}",
+            hex2bin('C383C2A8') => "\u{00E8}",
+            hex2bin('C383C2A9') => "\u{00E9}",
+            hex2bin('C383C2AA') => "\u{00EA}",
+            hex2bin('C383C2AB') => "\u{00EB}",
+            hex2bin('C383C2AE') => "\u{00EE}",
+            hex2bin('C383C2AF') => "\u{00EF}",
+            hex2bin('C383C2B4') => "\u{00F4}",
+            hex2bin('C383C2B6') => "\u{00F6}",
+            hex2bin('C383C2B9') => "\u{00F9}",
+            hex2bin('C383C2BB') => "\u{00FB}",
+            hex2bin('C383C2BC') => "\u{00FC}",
+            hex2bin('C383E282AC') => "\u{00C0}",
+            hex2bin('C383E280A1') => "\u{00C7}",
+            hex2bin('C383CB86') => "\u{00C8}",
+            hex2bin('C383E280B0') => "\u{00C9}",
+            hex2bin('C385E28099') => "\u{0152}",
+            hex2bin('C385E2809C') => "\u{0153}",
+            hex2bin('C3A2E282ACE284A2') => "\u{2019}",
+            hex2bin('C3A2E282ACC593') => "\u{201C}",
+            hex2bin('C3A2E282ACC29D') => "\u{201D}",
+            hex2bin('C3A2E282ACE28093') => "\u{2013}",
+            hex2bin('C3A2E282ACE28094') => "\u{2014}",
+            hex2bin('C3A2E282ACC2A6') => "\u{2026}",
+            hex2bin('C382C2AB') => "\u{00AB}",
+            hex2bin('C382C2BB') => "\u{00BB}",
+            hex2bin('C382C2B0') => "\u{00B0}",
+            hex2bin('C382C2B7') => "\u{00B7}",
+            hex2bin('C382') => '',
+        ];
+    }
+
+    return strtr($texte, $corrections);
+}
+
+/**
+ * Normalise recursivement toutes les chaines d'un tableau de donnees.
+ *
+ * @param mixed $valeur Structure scalaire / tableau.
+ * @return mixed Structure nettoyee.
+ */
+function normaliser_structure_utf8(mixed $valeur): mixed
+{
+    if (is_array($valeur)) {
+        $resultat = [];
+
+        foreach ($valeur as $cle => $element) {
+            $resultat[$cle] = normaliser_structure_utf8($element);
+        }
+
+        return $resultat;
+    }
+
+    return is_string($valeur) ? normaliser_texte_utf8($valeur) : $valeur;
 }
 
 /**
@@ -169,7 +263,7 @@ function ajouter_message_flash(string $type, string $message): void
 {
     $_SESSION['messages_flash'][] = [
         'type' => $type,
-        'message' => $message,
+        'message' => normaliser_texte_utf8($message),
     ];
 }
 

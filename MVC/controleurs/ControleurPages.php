@@ -162,6 +162,11 @@ final class ControleurPages
         $metaTitre = $titrePage . ' | ' . $donneesSite['brand'];
         $descriptionMeta = (string) ($donneesPage['description_meta'] ?? $donneesPage['meta_description'] ?? $donneesSite['accroche'] ?? $donneesSite['tagline']);
 
+        $donneesSite = normaliser_structure_utf8($donneesSite);
+        $donneesPage = normaliser_structure_utf8($donneesPage);
+        $metaTitre = normaliser_texte_utf8($metaTitre);
+        $descriptionMeta = normaliser_texte_utf8($descriptionMeta);
+
         ob_start();
         require __DIR__ . '/../vues/mise-en-page.php';
 
