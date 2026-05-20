@@ -894,6 +894,25 @@ body[data-theme="dark"] .dammier_ranking_item {
     background: #f0dbab;
 }
 
+.useful-links-list {
+    margin-top: 1rem;
+}
+
+.useful-link {
+    display: inline-flex;
+    min-height: 1.75rem;
+    align-items: center;
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.22em;
+}
+
+.useful-link:hover,
+.useful-link:focus-visible {
+    color: #fff5d8;
+}
+
 .site-footer {
     margin-top: 1.25rem;
     padding: 1.45rem;
