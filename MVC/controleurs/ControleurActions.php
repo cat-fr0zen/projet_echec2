@@ -135,6 +135,7 @@ final class ControleurActions
             'prenom' => trim((string) ($_POST['prenom'] ?? $_POST['first_name'] ?? '')),
             'date_naissance' => trim((string) ($_POST['date_naissance'] ?? $_POST['birth_date'] ?? '')),
             'courriel' => trim((string) ($_POST['courriel'] ?? $_POST['email'] ?? '')),
+            'numero_licence' => $this->depotUtilisateurs->normaliserNumeroLicenceFederale($_POST['numero_licence'] ?? $_POST['federal_license_number'] ?? ''),
             'mot_de_passe' => (string) ($_POST['mot_de_passe'] ?? $_POST['password'] ?? ''),
             'description_profil' => trim((string) ($_POST['description_profil'] ?? $_POST['profile_description'] ?? '')),
             'pseudo_chess' => trim((string) ($_POST['pseudo_chess'] ?? '')),
@@ -144,6 +145,10 @@ final class ControleurActions
 
         if ($this->depotUtilisateurs->trouverParCourriel($donnees['courriel']) !== null) {
             $erreurs[] = 'Un compte existe deja avec cet email.';
+        }
+
+        if ($this->numeroLicenceDejaUtilise($donnees['numero_licence'])) {
+            $erreurs[] = 'Un compte existe deja avec ce numero de licence.';
         }
 
         if ($erreurs !== []) {
@@ -182,6 +187,7 @@ final class ControleurActions
                     'prenom' => trim((string) ($_POST['prenom'] ?? $_POST['first_name'] ?? '')),
                     'date_naissance' => trim((string) ($_POST['date_naissance'] ?? $_POST['birth_date'] ?? '')),
                     'courriel' => trim((string) ($_POST['courriel'] ?? $_POST['email'] ?? '')),
+                    'numero_licence' => $this->depotUtilisateurs->normaliserNumeroLicenceFederale($_POST['numero_licence'] ?? $_POST['federal_license_number'] ?? ''),
                     'description_profil' => trim((string) ($_POST['description_profil'] ?? $_POST['profile_description'] ?? '')),
                     'pseudo_chess' => trim((string) ($_POST['pseudo_chess'] ?? '')),
                 ],
@@ -190,12 +196,14 @@ final class ControleurActions
         }
 
         if (in_array($action, ['connexion', 'login'], true)) {
+            $identifiantConnexion = trim((string) ($_POST['identifiant_connexion'] ?? $_POST['login_identifier'] ?? $_POST['courriel'] ?? $_POST['email'] ?? ''));
             memoriser_etat_formulaire([
                 'ouverte' => true,
                 'onglet' => 'connexion',
                 'erreurs' => ['Votre session a expiré. Merci de renvoyer le formulaire.'],
                 'anciennes_valeurs' => [
-                    'courriel' => trim((string) ($_POST['courriel'] ?? $_POST['email'] ?? '')),
+                    'identifiant_connexion' => $identifiantConnexion,
+                    'courriel' => $identifiantConnexion,
                 ],
             ]);
             rediriger_vers(url_route($pageRedirection));
@@ -209,16 +217,19 @@ final class ControleurActions
     private function traiterConnexion(): void
     {
         $pageRedirection = $this->resoudrePageRedirection('accueil');
-        $courriel = trim((string) ($_POST['courriel'] ?? $_POST['email'] ?? ''));
+        $identifiantConnexion = trim((string) ($_POST['identifiant_connexion'] ?? $_POST['login_identifier'] ?? $_POST['courriel'] ?? $_POST['email'] ?? ''));
         $motDePasse = (string) ($_POST['mot_de_passe'] ?? $_POST['password'] ?? '');
-        $utilisateur = $this->depotUtilisateurs->trouverParCourriel($courriel);
+        $utilisateur = $this->depotUtilisateurs->trouverParIdentifiantConnexion($identifiantConnexion);
 
         if ($utilisateur === null || !password_verify($motDePasse, (string) ($utilisateur['mot_de_passe_hache'] ?? ''))) {
             memoriser_etat_formulaire([
                 'ouverte' => true,
                 'onglet' => 'connexion',
-                'erreurs' => ['Email ou mot de passe incorrect.'],
-                'anciennes_valeurs' => ['courriel' => $courriel],
+                'erreurs' => ['Identifiant ou mot de passe incorrect.'],
+                'anciennes_valeurs' => [
+                    'identifiant_connexion' => $identifiantConnexion,
+                    'courriel' => $identifiantConnexion,
+                ],
             ]);
             rediriger_vers(url_route($pageRedirection));
         }
@@ -228,7 +239,10 @@ final class ControleurActions
                 'ouverte' => true,
                 'onglet' => 'connexion',
                 'erreurs' => ['Votre compte est actuellement suspendu.'],
-                'anciennes_valeurs' => ['courriel' => $courriel],
+                'anciennes_valeurs' => [
+                    'identifiant_connexion' => $identifiantConnexion,
+                    'courriel' => $identifiantConnexion,
+                ],
             ]);
             rediriger_vers(url_route($pageRedirection));
         }
@@ -264,6 +278,7 @@ final class ControleurActions
             'date_naissance' => trim((string) ($_POST['date_naissance'] ?? $_POST['birth_date'] ?? '')),
             'description_profil' => trim((string) ($_POST['description_profil'] ?? $_POST['profile_description'] ?? '')),
             'pseudo_chess' => trim((string) ($_POST['pseudo_chess'] ?? $_POST['chess_username'] ?? '')),
+            'numero_licence' => $this->depotUtilisateurs->normaliserNumeroLicenceFederale($_POST['numero_licence'] ?? $_POST['federal_license_number'] ?? ''),
             'courriel' => (string) ($utilisateurCourant['courriel'] ?? ''),
             'mot_de_passe' => 'ignore',
         ];
@@ -272,6 +287,11 @@ final class ControleurActions
 
         if ($erreurs !== []) {
             ajouter_message_flash('error', implode(' ', $erreurs));
+            rediriger_vers(url_route('profil'));
+        }
+
+        if ($this->numeroLicenceDejaUtilise($donnees['numero_licence'], (string) $utilisateurCourant['identifiant'])) {
+            ajouter_message_flash('error', 'Ce numero de licence est deja associe a un autre compte.');
             rediriger_vers(url_route('profil'));
         }
 
@@ -677,6 +697,10 @@ final class ControleurActions
             $erreurs[] = 'Veuillez saisir une adresse email valide.';
         }
 
+        if (!$this->estNumeroLicenceValide((string) ($donnees['numero_licence'] ?? ''))) {
+            $erreurs[] = 'Le numero de licence doit contenir 3 a 30 caracteres: lettres, chiffres ou tirets.';
+        }
+
         if ($verifierMotDePasse && mb_strlen($donnees['mot_de_passe']) < 8) {
             $erreurs[] = 'Le mot de passe doit contenir au moins 8 caracteres.';
         }
@@ -1031,6 +1055,30 @@ final class ControleurActions
             ajouter_message_flash('error', "Accès réservé à l'administrateur du site.");
             rediriger_vers(url_route('accueil'));
         }
+    }
+
+    /** Verifie le format du numero de licence federale. */
+    private function estNumeroLicenceValide(string $valeur): bool
+    {
+        if ($valeur === '') {
+            return true;
+        }
+
+        return mb_strlen($valeur) >= 3
+            && mb_strlen($valeur) <= 30
+            && preg_match('/^[A-Z0-9-]+$/', $valeur) === 1;
+    }
+
+    private function numeroLicenceDejaUtilise(string $numeroLicence, ?string $identifiantIgnore = null): bool
+    {
+        if ($numeroLicence === '') {
+            return false;
+        }
+
+        $utilisateur = $this->depotUtilisateurs->trouverParNumeroLicence($numeroLicence);
+
+        return $utilisateur !== null
+            && ($identifiantIgnore === null || ($utilisateur['identifiant'] ?? '') !== $identifiantIgnore);
     }
 
     /** Verifie le format de date 'Y-m-d'. */

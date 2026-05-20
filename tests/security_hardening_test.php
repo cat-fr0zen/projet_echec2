@@ -34,7 +34,9 @@ $controleurActions = contenu_fichier($racineProjet . '/MVC/controleurs/Controleu
 $migrationPackages = contenu_fichier($racineProjet . '/base_de_donnees/oracle/v2/migrations/2.0.5_views_and_packages.sql');
 $migrationSeed = contenu_fichier($racineProjet . '/base_de_donnees/oracle/v2/migrations/2.0.6_security_and_seed.sql');
 $migrationArticles = contenu_fichier($racineProjet . '/base_de_donnees/oracle/v2/migrations/2.0.7_article_editor_blocks.sql');
+$migrationLicence = contenu_fichier($racineProjet . '/base_de_donnees/oracle/v2/migrations/2.1.1_member_license_number.sql');
 $migrationArticlesMinuscule = strtolower($migrationArticles);
+$migrationLicenceMinuscule = strtolower($migrationLicence);
 
 verifier(!str_contains($index, '0777'), 'index.php ne doit pas creer le dossier de session en 0777.');
 verifier(!str_contains($controleurActions, '0777'), 'ControleurActions ne doit pas creer les dossiers upload en 0777.');
@@ -55,6 +57,11 @@ verifier(str_contains($migrationArticlesMinuscule, 'user_tables'), 'La migration
 verifier(str_contains($migrationArticlesMinuscule, 'user_tab_columns'), 'La migration 2.0.7 doit verifier la colonne auteur_affiche avant ALTER TABLE.');
 verifier(str_contains($migrationArticles, 'MERGE INTO ref_type_bloc_article'), 'Les types de blocs article doivent etre rejouables via MERGE.');
 verifier(str_contains($migrationArticles, 'COMMIT;'), 'La migration 2.0.7 doit valider explicitement son lot.');
+
+verifier(str_contains($migrationLicenceMinuscule, 'numero_licence_federale'), 'La migration 2.1.1 doit ajouter le numero de licence federale.');
+verifier(str_contains($migrationLicenceMinuscule, 'user_tab_columns'), 'La migration 2.1.1 doit verifier la colonne avant ALTER TABLE.');
+verifier(str_contains($migrationLicenceMinuscule, 'create unique index uq_compte_membre_licence_ffe'), 'La licence federale doit etre unique quand elle est renseignee.');
+verifier(str_contains($migrationLicence, 'COMMIT;'), 'La migration 2.1.1 doit valider explicitement son lot.');
 
 if ($echecs !== []) {
     fwrite(STDERR, "Echecs de durcissement:\n");

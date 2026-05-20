@@ -232,6 +232,7 @@ final class ControleurPages
             'user' => [
                 ...$utilisateur,
                 'email' => $utilisateur['courriel'] ?? '',
+                'federal_license_number' => $utilisateur['numero_licence'] ?? '',
                 'first_name' => $utilisateur['prenom'] ?? '',
                 'last_name' => $utilisateur['nom'] ?? '',
                 'birth_date' => $utilisateur['date_naissance'] ?? '',

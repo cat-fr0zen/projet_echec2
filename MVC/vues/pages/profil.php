@@ -71,6 +71,19 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
                 </label>
 
                 <label class="form-group">
+                    <span>Numero de licence FFE facultatif</span>
+                    <input
+                        type="text"
+                        name="numero_licence"
+                        maxlength="30"
+                        autocomplete="off"
+                        autocapitalize="characters"
+                        value="<?= e((string) ($user['numero_licence'] ?? $user['federal_license_number'] ?? '')) ?>"
+                    >
+                </label>
+                <p class="form-helper">Les adherents peuvent utiliser ce numero a la connexion, en plus de leur email.</p>
+
+                <label class="form-group">
                     <span>Pseudo Chess.com facultatif</span>
                     <input
                         type="text"
@@ -110,7 +123,7 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
             </p>
 
             <ul class="bullet-list">
-                <li>La connexion du site se fait avec votre email et votre mot de passe.</li>
+                <li>La connexion du site se fait avec votre email ou, pour les adherents, votre numero de licence et votre mot de passe.</li>
                 <li>La date de naissance reste facultative.</li>
                 <li>Le pseudo Chess.com, s'il est ajouté, sert seulement à lire des données publiques.</li>
                 <li>Le thème clair ou sombre reste mémorisé via un cookie de préférence.</li>

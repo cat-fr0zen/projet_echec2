@@ -48,7 +48,7 @@ $donneesAuthentification = $donneesSite['authentification'];
             <p>
                 <?= $donneesAuthentification['est_connecte']
                     ? "Un cookie de session PHP maintient votre connexion et permet l'accès au profil ainsi qu'à la création d'articles."
-                    : "Aucune session membre active pour le moment. La connexion par email ouvre l'accès au profil et à la rédaction d'articles." ?>
+                    : "Aucune session membre active pour le moment. La connexion par email ou numéro de licence ouvre l'accès au profil et à la rédaction d'articles." ?>
             </p>
         </div>
     </article>

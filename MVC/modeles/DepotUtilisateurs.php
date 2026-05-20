@@ -88,6 +88,48 @@ final class DepotUtilisateurs
     }
 
     /**
+     * Trouve un utilisateur par numero de licence federale.
+     *
+     * Le numero est facultatif, mais unique lorsqu'il est renseigne.
+     */
+    public function trouverParNumeroLicence(string $numeroLicence): ?array
+    {
+        $numeroNormalise = $this->normaliserNumeroLicenceFederale($numeroLicence);
+
+        if ($numeroNormalise === '') {
+            return null;
+        }
+
+        foreach ($this->stockage->lire() as $enregistrement) {
+            $utilisateur = $this->normaliserUtilisateur($enregistrement);
+
+            if (($utilisateur['numero_licence'] ?? '') === $numeroNormalise) {
+                return $utilisateur;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Trouve un utilisateur par email ou par numero de licence.
+     */
+    public function trouverParIdentifiantConnexion(string $identifiantConnexion): ?array
+    {
+        $identifiant = trim($identifiantConnexion);
+
+        if ($identifiant === '') {
+            return null;
+        }
+
+        if (filter_var($identifiant, FILTER_VALIDATE_EMAIL)) {
+            return $this->trouverParCourriel($identifiant);
+        }
+
+        return $this->trouverParNumeroLicence($identifiant);
+    }
+
+    /**
      * Cree un compte utilisateur (inscription).
      *
      * Regles:
@@ -107,6 +149,7 @@ final class DepotUtilisateurs
             'prenom' => $donnees['prenom'],
             'date_naissance' => $donnees['date_naissance'],
             'courriel' => mb_strtolower(trim($donnees['courriel'])),
+            'numero_licence' => $this->normaliserNumeroLicenceFederale($donnees['numero_licence'] ?? ''),
             'mot_de_passe_hache' => password_hash($donnees['mot_de_passe'], PASSWORD_DEFAULT),
             'description_profil' => $donnees['description_profil'],
             'pseudo_chess' => $this->normaliserPseudoChess($donnees['pseudo_chess'] ?? ''),
@@ -146,6 +189,7 @@ final class DepotUtilisateurs
                 'prenom' => $donnees['prenom'],
                 'date_naissance' => $donnees['date_naissance'],
                 'courriel' => $utilisateur['courriel'],
+                'numero_licence' => $this->normaliserNumeroLicenceFederale($donnees['numero_licence'] ?? $utilisateur['numero_licence']),
                 'mot_de_passe_hache' => $utilisateur['mot_de_passe_hache'],
                 'description_profil' => $donnees['description_profil'],
                 'pseudo_chess' => $this->normaliserPseudoChess($donnees['pseudo_chess'] ?? ''),
@@ -209,6 +253,7 @@ final class DepotUtilisateurs
                 'prenom' => $utilisateur['prenom'],
                 'date_naissance' => $utilisateur['date_naissance'],
                 'courriel' => $utilisateur['courriel'],
+                'numero_licence' => $utilisateur['numero_licence'],
                 'mot_de_passe_hache' => $utilisateur['mot_de_passe_hache'],
                 'description_profil' => $utilisateur['description_profil'],
                 'pseudo_chess' => $utilisateur['pseudo_chess'],
@@ -225,6 +270,16 @@ final class DepotUtilisateurs
         }
 
         return null;
+    }
+
+    /**
+     * Normalise le numero de licence federale pour comparaison et stockage.
+     */
+    public function normaliserNumeroLicenceFederale(mixed $valeur): string
+    {
+        $numero = mb_strtoupper(trim((string) $valeur));
+
+        return preg_replace('/\s+/', '', $numero) ?? '';
     }
 
     /**
@@ -257,6 +312,9 @@ final class DepotUtilisateurs
             'prenom' => (string) ($enregistrement['prenom'] ?? $enregistrement['first_name'] ?? ''),
             'date_naissance' => (string) ($enregistrement['date_naissance'] ?? $enregistrement['birth_date'] ?? ''),
             'courriel' => mb_strtolower((string) ($enregistrement['courriel'] ?? $enregistrement['email'] ?? '')),
+            'numero_licence' => $this->normaliserNumeroLicenceFederale(
+                $enregistrement['numero_licence'] ?? $enregistrement['federal_license_number'] ?? ''
+            ),
             'mot_de_passe_hache' => (string) ($enregistrement['mot_de_passe_hache'] ?? $enregistrement['password_hash'] ?? ''),
             'description_profil' => (string) ($enregistrement['description_profil'] ?? $enregistrement['profile_description'] ?? ''),
             'pseudo_chess' => $this->normaliserPseudoChess((string) ($enregistrement['pseudo_chess'] ?? $enregistrement['chess_username'] ?? '')),
@@ -320,6 +378,7 @@ final class DepotUtilisateurs
                 'prenom' => $utilisateurNormalise['prenom'],
                 'date_naissance' => $utilisateurNormalise['date_naissance'],
                 'courriel' => $utilisateurNormalise['courriel'],
+                'numero_licence' => $utilisateurNormalise['numero_licence'],
                 'mot_de_passe_hache' => $utilisateurNormalise['mot_de_passe_hache'],
                 'description_profil' => $utilisateurNormalise['description_profil'],
                 'pseudo_chess' => $utilisateurNormalise['pseudo_chess'],

@@ -23,8 +23,8 @@ foreach ($erreursFormulaire as $erreurBrute) {
     $erreur = (string) $erreurBrute;
     $erreurMinuscule = mb_strtolower($erreur);
 
-    if (str_contains($erreurMinuscule, 'email ou mot de passe incorrect')) {
-        $erreursParChamp['courriel'][] = $erreur;
+    if (str_contains($erreurMinuscule, 'identifiant ou mot de passe incorrect')) {
+        $erreursParChamp['identifiant_connexion'][] = $erreur;
         $erreursParChamp['mot_de_passe'][] = $erreur;
         continue;
     }
@@ -36,6 +36,11 @@ foreach ($erreursFormulaire as $erreurBrute) {
 
     if (str_contains($erreurMinuscule, 'adresse email') || str_contains($erreurMinuscule, 'cet email')) {
         $erreursParChamp['courriel'][] = $erreur;
+        continue;
+    }
+
+    if (str_contains($erreurMinuscule, 'licence')) {
+        $erreursParChamp['numero_licence'][] = $erreur;
         continue;
     }
 
@@ -94,12 +99,13 @@ $construireMetaChamp = static function (string $idChamp, string $cleErreur) use 
     ];
 };
 
-$champConnexionCourriel = $construireMetaChamp('auth-login-email', 'courriel');
+$champConnexionIdentifiant = $construireMetaChamp('auth-login-identifier', 'identifiant_connexion');
 $champConnexionMotDePasse = $construireMetaChamp('auth-login-password', 'mot_de_passe');
 $champInscriptionNom = $construireMetaChamp('auth-register-last-name', 'nom');
 $champInscriptionPrenom = $construireMetaChamp('auth-register-first-name', 'prenom');
 $champInscriptionNaissance = $construireMetaChamp('auth-register-birth-date', 'date_naissance');
 $champInscriptionCourriel = $construireMetaChamp('auth-register-email', 'courriel');
+$champInscriptionNumeroLicence = $construireMetaChamp('auth-register-license-number', 'numero_licence');
 $champInscriptionMotDePasse = $construireMetaChamp('auth-register-password', 'mot_de_passe');
 $champInscriptionPseudoChess = $construireMetaChamp('auth-register-chess-username', 'pseudo_chess');
 $champInscriptionDescription = $construireMetaChamp('auth-register-description', 'description_profil');
@@ -122,7 +128,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
             <p class="eyebrow">Espace membre</p>
             <h2 id="auth-modal-title"><?= e($modaleAuthentification['title']) ?></h2>
             <p id="auth-modal-description" class="auth-modal-description">
-                Connexion rapide par email. La création de compte reste disponible dans la même fenêtre, sans surcharger les pages.
+                Connexion par email ou numéro de licence pour les adhérents. La création de compte reste disponible dans la même fenêtre, sans surcharger les pages.
             </p>
 
             <div class="auth-tab-row" role="tablist" aria-label="Connexion ou création de compte">
@@ -178,21 +184,23 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                     <input type="hidden" name="page_redirection" value="<?= e($pageCourante) ?>">
 
                     <label class="form-group">
-                        <span id="<?= e($champConnexionCourriel['label_id']) ?>">Email</span>
+                        <span id="<?= e($champConnexionIdentifiant['label_id']) ?>">Email ou numéro de licence</span>
                         <input
-                            id="<?= e($champConnexionCourriel['id']) ?>"
-                            type="email"
-                            name="courriel"
+                            id="<?= e($champConnexionIdentifiant['id']) ?>"
+                            type="text"
+                            name="identifiant_connexion"
                             required
-                            autocomplete="email"
-                            value="<?= e((string) ($anciennesValeurs['courriel'] ?? '')) ?>"
-                            aria-labelledby="<?= e($champConnexionCourriel['label_id']) ?>"
-                            <?= $champConnexionCourriel['describedby'] !== '' ? 'aria-describedby="' . e($champConnexionCourriel['describedby']) . '"' : '' ?>
-                            <?= $champConnexionCourriel['invalid'] ? 'aria-invalid="true"' : '' ?>
+                            autocomplete="username"
+                            inputmode="email"
+                            value="<?= e((string) ($anciennesValeurs['identifiant_connexion'] ?? $anciennesValeurs['courriel'] ?? '')) ?>"
+                            aria-labelledby="<?= e($champConnexionIdentifiant['label_id']) ?>"
+                            <?= $champConnexionIdentifiant['describedby'] !== '' ? 'aria-describedby="' . e($champConnexionIdentifiant['describedby']) . '"' : '' ?>
+                            <?= $champConnexionIdentifiant['invalid'] ? 'aria-invalid="true"' : '' ?>
                         >
-                        <?php if ($champConnexionCourriel['error_message'] !== ''): ?>
-                            <span id="<?= e($champConnexionCourriel['error_id']) ?>" class="form-error">
-                                <?= e($champConnexionCourriel['error_message']) ?>
+                        <small class="form-helper">Adhérents et administrateurs : numéro de licence ou email. Autres comptes : email.</small>
+                        <?php if ($champConnexionIdentifiant['error_message'] !== ''): ?>
+                            <span id="<?= e($champConnexionIdentifiant['error_id']) ?>" class="form-error">
+                                <?= e($champConnexionIdentifiant['error_message']) ?>
                             </span>
                         <?php endif; ?>
                     </label>
@@ -315,6 +323,28 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                         <?php if ($champInscriptionCourriel['error_message'] !== ''): ?>
                             <span id="<?= e($champInscriptionCourriel['error_id']) ?>" class="form-error">
                                 <?= e($champInscriptionCourriel['error_message']) ?>
+                            </span>
+                        <?php endif; ?>
+                    </label>
+
+                    <label class="form-group">
+                        <span id="<?= e($champInscriptionNumeroLicence['label_id']) ?>">Numéro de licence FFE facultatif</span>
+                        <input
+                            id="<?= e($champInscriptionNumeroLicence['id']) ?>"
+                            type="text"
+                            name="numero_licence"
+                            maxlength="30"
+                            autocomplete="off"
+                            autocapitalize="characters"
+                            value="<?= e((string) ($anciennesValeurs['numero_licence'] ?? '')) ?>"
+                            aria-labelledby="<?= e($champInscriptionNumeroLicence['label_id']) ?>"
+                            <?= $champInscriptionNumeroLicence['describedby'] !== '' ? 'aria-describedby="' . e($champInscriptionNumeroLicence['describedby']) . '"' : '' ?>
+                            <?= $champInscriptionNumeroLicence['invalid'] ? 'aria-invalid="true"' : '' ?>
+                        >
+                        <small class="form-helper">À remplir seulement si la fédération vous a déjà attribué un numéro de licence.</small>
+                        <?php if ($champInscriptionNumeroLicence['error_message'] !== ''): ?>
+                            <span id="<?= e($champInscriptionNumeroLicence['error_id']) ?>" class="form-error">
+                                <?= e($champInscriptionNumeroLicence['error_message']) ?>
                             </span>
                         <?php endif; ?>
                     </label>

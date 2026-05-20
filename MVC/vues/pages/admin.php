@@ -67,6 +67,9 @@ $allOrders = $siteData['all_orders'] ?? [];
                 <p class="card-tag"><?= e((string) ($user['role'] ?? 'connecte')) ?></p>
                 <h3><?= e(trim((string) ($user['prenom'] ?? '') . ' ' . (string) ($user['nom'] ?? ''))) ?></h3>
                 <p><?= e((string) ($user['courriel'] ?? '')) ?></p>
+                <?php if (($user['numero_licence'] ?? '') !== ''): ?>
+                    <p class="card-subtitle">Licence FFE: <?= e((string) $user['numero_licence']) ?></p>
+                <?php endif; ?>
 
                 <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form">
                     <input type="hidden" name="action" value="update_user_access">

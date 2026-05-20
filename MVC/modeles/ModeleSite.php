@@ -39,7 +39,7 @@ final class ModeleSite
         ];
 
         $statistiques = [
-            $this->blocStatistique('01', 'Espace membre', "Connexion locale par email, profil personnel et réglages enregistrés."),
+            $this->blocStatistique('01', 'Espace membre', "Connexion locale par email ou numéro de licence, profil personnel et réglages enregistrés."),
             $this->blocStatistique('02', 'Cookies encadrés', "Consentement obligatoire, préférence de thème et session membre."),
             $this->blocStatistique('03', 'Publication modérée', "Les articles, photos et vidéos restent en attente de validation."),
         ];
@@ -66,7 +66,7 @@ final class ModeleSite
         ];
 
         $etapesInscription = [
-            "Créer un compte avec son nom, son prénom, son email et un mot de passe sécurisé.",
+            "Créer un compte avec son nom, son prénom, son email, un numéro de licence facultatif et un mot de passe sécurisé.",
             "Mettre à jour son profil, sa description personnelle et ses préférences une fois connecté.",
             "Utiliser les espaces guide, articles, médiathèque ou boutique selon les contenus publiquement disponibles.",
         ];
@@ -112,7 +112,7 @@ final class ModeleSite
                         "Les informations publiques de l'association doivent être complétées et validées par les responsables habilités avant publication définitive.",
                     ]),
                     $this->sectionLegale('Espace membre et modération', [
-                        "Les utilisateurs peuvent créer un compte membre via leur email et un mot de passe sécurisé.",
+                        "Les utilisateurs peuvent créer un compte membre via leur email, un numéro de licence facultatif et un mot de passe sécurisé.",
                         "Les articles, images et vidéos soumis depuis l'espace membre restent en attente de validation par un futur rôle administrateur avant publication publique.",
                     ]),
                     $this->sectionLegale("Propriété intellectuelle et droits d'exploitation", [
@@ -135,12 +135,12 @@ final class ModeleSite
                 "Données traitées, comptes membres, cookies, conservation et droits des personnes.",
                 [
                     $this->sectionLegale('Données potentiellement traitées', [
-                        "Nom, prénom, date de naissance facultative, email, mot de passe haché, description de profil et pseudo Chess.com facultatif saisis lors de l'inscription ou de la mise à jour du profil.",
+                        "Nom, prénom, date de naissance facultative, email, numéro de licence FFE facultatif, mot de passe haché, description de profil et pseudo Chess.com facultatif saisis lors de l'inscription ou de la mise à jour du profil.",
                         "Métadonnées minimales nécessaires à la sécurité du service, au consentement, à la session membre, à la modération éditoriale et aux journaux serveurs.",
                         "Le cas échéant, informations liées aux médias, à leurs ayants droit, à leur durée de diffusion et aux autorisations de publication.",
                     ]),
                     $this->sectionLegale('Finalités du traitement', [
-                        "Créer et maintenir un compte membre, permettre la connexion par email, l'édition du profil, la liaison facultative à un pseudo Chess.com public et la création d'articles en attente de modération.",
+                        "Créer et maintenir un compte membre, permettre la connexion par email ou numéro de licence, l'édition du profil, la liaison facultative à un pseudo Chess.com public et la création d'articles en attente de modération.",
                         "Administrer le site, assurer la sécurité technique, la modération et conserver la preuve du consentement lorsque cela est nécessaire.",
                         "Préparer la gestion future d'une médiathèque, d'un espace boutique et d'une base Oracle structurée pour la maintenance long terme.",
                     ]),
@@ -181,7 +181,7 @@ final class ModeleSite
             'titre' => "Validation obligatoire avant l'entrée",
             'introduction' => "Avant d'accéder au site, vous devez accepter la politique de confidentialité, les conditions d'utilisation et l'usage des cookies essentiels et de préférence.",
             'cases' => [
-                "J'ai lu la politique de confidentialité, y compris les informations sur les comptes membres, les images, les vidéos et la connexion par email.",
+                "J'ai lu la politique de confidentialité, y compris les informations sur les comptes membres, les images, les vidéos et la connexion par email ou numéro de licence.",
                 "J'accepte les cookies essentiels de session, de consentement et de préférence de thème.",
                 "J'ai pris connaissance des mentions légales, de la modération des articles, des médias et de la propriété intellectuelle.",
             ],
@@ -190,7 +190,7 @@ final class ModeleSite
             'title' => "Validation obligatoire avant l'entrée",
             'intro' => "Avant d'accéder au site, vous devez accepter la politique de confidentialité, les conditions d'utilisation et l'usage des cookies essentiels et de préférence.",
             'checks' => [
-                "J'ai lu la politique de confidentialité, y compris les informations sur les comptes membres, les images, les vidéos et la connexion par email.",
+                "J'ai lu la politique de confidentialité, y compris les informations sur les comptes membres, les images, les vidéos et la connexion par email ou numéro de licence.",
                 "J'accepte les cookies essentiels de session, de consentement et de préférence de thème.",
                 "J'ai pris connaissance des mentions légales, de la modération des articles, des médias et de la propriété intellectuelle.",
             ],
@@ -286,9 +286,9 @@ final class ModeleSite
                 'Accueil',
                 'accueil.php',
                 "Accueil, guide des pièces, connexion membre, cookies et cadre légal.",
-                "Le jeu d'échecs, pièce par pièce, membre par membre.",
-                "Ce site combine un espace membre local, un cadre de publication responsable, une gestion des cookies et des contenus accessibles après consentement.",
-                "Connexion par email, thème clair ou sombre, menu burger et articles en attente de modération."
+                "Bienvenue sur le site du club",
+                "Site officiel du club d'échecs Les Cavaliers d'Hérouville, association ayant pour but de développer la pratique du jeu d'échecs pour tous.",
+                "Connexion par email ou numéro de licence, thème clair ou sombre, menu burger et articles en attente de modération."
             ),
             'guide' => $this->page(
                 'Guide',

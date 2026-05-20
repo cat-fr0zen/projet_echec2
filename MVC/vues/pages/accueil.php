@@ -34,7 +34,17 @@ $dammierPayload = [
         <p class="lead"><?= e($pageData['hero_text']) ?></p>
 
         <div class="button-row">
-            <a class="button button-primary" href="#legal-hub">Voir le cadre légal</a>
+            <a
+                class="button button-primary"
+                href="https://www.helloasso.com/associations/les-cavaliers-d-herouville"
+                target="_blank"
+                rel="noopener noreferrer external"
+                referrerpolicy="no-referrer"
+                aria-label="Adhérer au club sur HelloAsso (nouvel onglet)"
+            >
+                Adhérer
+            </a>
+            <a class="button button-secondary" href="#legal-hub">Voir le cadre légal</a>
             <?php if ($authData['is_authenticated']): ?>
                 <a class="button button-secondary" href="<?= e(url_route('profil')) ?>">Voir mon profil</a>
             <?php endif; ?>
