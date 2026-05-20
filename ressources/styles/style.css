@@ -370,6 +370,77 @@ p {
     font-weight: 600;
 }
 
+.home-schedule-card {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 0.85rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 46%),
+        rgba(255, 255, 255, 0.05);
+}
+
+.home-schedule-card h2 {
+    margin: 0;
+    font-size: clamp(1.55rem, 3vw, 2.15rem);
+    line-height: 1.05;
+}
+
+.home-schedule-list {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0;
+}
+
+.home-schedule-row {
+    display: grid;
+    grid-template-columns: minmax(6rem, 0.55fr) minmax(0, 1fr);
+    gap: 0.7rem;
+    align-items: start;
+    padding: 0.58rem 0.7rem;
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.home-schedule-row dt {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+    color: var(--text);
+    font-weight: 800;
+}
+
+.home-schedule-row dd {
+    margin: 0;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.home-schedule-holiday {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.schedule-exception-badge {
+    display: inline-flex;
+    min-height: 1.35rem;
+    align-items: center;
+    padding: 0.12rem 0.45rem;
+    border-radius: 999px;
+    color: #1f1712;
+    background: #e4bc66;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
 .hero-board {
     position: relative;
     min-height: 30rem;
@@ -913,6 +984,79 @@ body[data-theme="dark"] .dammier_ranking_item {
     color: #fff5d8;
 }
 
+.schedule-full-card {
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.34);
+}
+
+.schedule-full-card summary {
+    display: inline-flex;
+    min-height: 2.9rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.72rem 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.54);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 800;
+    list-style: none;
+    transition:
+        transform 180ms var(--ease-out),
+        background-color 180ms ease;
+}
+
+.schedule-full-card summary::-webkit-details-marker {
+    display: none;
+}
+
+.schedule-full-card summary:hover,
+.schedule-full-card summary:focus-visible {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.76);
+}
+
+.schedule-full-content {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.schedule-full-content h3 {
+    margin-top: 0.45rem;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+}
+
+.schedule-full-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.schedule-full-item {
+    padding: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.42);
+}
+
+.schedule-full-item h4 {
+    margin-top: 0.35rem;
+    font-size: 1.35rem;
+}
+
+.schedule-full-item ul {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.7rem 0 0;
+    padding-left: 1.1rem;
+    color: var(--muted);
+}
+
 .site-footer {
     margin-top: 1.25rem;
     padding: 1.45rem;
@@ -1450,6 +1594,7 @@ body.consent-locked {
     .hero-grid,
     .split-grid,
     .card-grid--three,
+    .schedule-full-grid,
     .footer-grid,
     .legal-grid,
     .consent-docs {
@@ -1910,7 +2055,8 @@ body.modal-open {
 }
 
 .auth-form .form-group span,
-.article-form .form-group span {
+.article-form .form-group span,
+.admin-form .form-group span {
     display: block;
     margin-bottom: 0.45rem;
     font-weight: 700;
@@ -2958,6 +3104,11 @@ body[data-theme="dark"] .footer-meta-bar {
 }
 
 @media (max-width: 640px) {
+    .home-schedule-row {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+    }
+
     .chess-player-media {
         flex-direction: column;
         align-items: flex-start;
@@ -3401,13 +3552,20 @@ body[data-theme="dark"] .legal-card {
 }
 
 .article-form select,
-.admin-form select {
+.admin-form select,
+.admin-form input,
+.admin-form textarea {
     width: 100%;
     padding: 0.78rem 0.9rem;
     border: 1px solid rgba(23, 32, 27, 0.12);
     border-radius: 0.9rem;
     background: rgba(255, 255, 255, 0.92);
     color: #17201b;
+}
+
+.admin-form textarea {
+    min-height: 7rem;
+    resize: vertical;
 }
 
 .media-preview {
@@ -3450,12 +3608,51 @@ body[data-theme="dark"] .legal-card {
     gap: 0.75rem;
 }
 
+.admin-schedule-settings {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 1rem;
+}
+
+.admin-schedule-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.admin-schedule-card {
+    border: 1px solid var(--line);
+}
+
+.admin-schedule-card legend {
+    padding: 0 0.35rem;
+    color: var(--accent-dark);
+    font-weight: 800;
+}
+
+.checkbox-row {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.admin-form .checkbox-row input {
+    width: auto;
+    min-width: 1.1rem;
+    margin-top: 0.2rem;
+    accent-color: var(--accent);
+}
+
 .admin-inline-form {
     grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 @media (max-width: 900px) {
     .admin-summary-grid,
+    .admin-schedule-settings,
+    .admin-schedule-grid,
     .admin-inline-form {
         grid-template-columns: 1fr;
     }

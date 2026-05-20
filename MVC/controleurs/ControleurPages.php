@@ -25,6 +25,7 @@ final class ControleurPages
         private DepotMedias $depotMedias,
         private DepotCommandes $depotCommandes,
         private DepotDammier $depotDammier,
+        private DepotHoraires $depotHoraires,
         private ServiceChessCom $serviceChessCom,
         private ServiceGoogleAvis $serviceGoogleAvis,
         private array $messagesFlash,
@@ -69,6 +70,13 @@ final class ControleurPages
         $donneesSite['cartes_guide'] = $this->modeleSite->obtenirCartesGuide();
         $donneesSite['cartes_mediatheque'] = $this->modeleSite->obtenirCartesMediatheque();
         $donneesSite['cartes_boutique'] = $this->modeleSite->obtenirCartesBoutique();
+        $horairesClub = $this->depotHoraires->obtenir();
+        $donneesSite['horaires_club'] = $horairesClub;
+        $donneesSite['club_schedule'] = $horairesClub;
+        $donneesSite['resume_horaires_club'] = $this->depotHoraires->resumerParJour();
+        $donneesSite['club_schedule_summary'] = $donneesSite['resume_horaires_club'];
+        $donneesSite['planning'] = $this->depotHoraires->adapterPlanning();
+        $donneesSite['schedule'] = $donneesSite['planning'];
         $donneesSite['google_reviews'] = $this->serviceGoogleAvis->recupererAvisLieu(
             (string) ($donneesSite['club_google_reviews_cache_key'] ?? 'club'),
             (string) ($donneesSite['club_google_search_query'] ?? '')

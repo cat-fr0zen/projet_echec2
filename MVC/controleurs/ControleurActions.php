@@ -16,6 +16,7 @@ declare(strict_types=1);
  * - DepotArticles: soumission + moderation
  * - DepotMedias: upload + moderation (metadonnees)
  * - DepotCommandes: commandes "merch" (prototype)
+ * - DepotHoraires: horaires publics editables par l'admin
  */
 final class ControleurActions
 {
@@ -42,6 +43,7 @@ final class ControleurActions
         private DepotMedias $depotMedias,
         private DepotCommandes $depotCommandes,
         private DepotDammier $depotDammier,
+        private DepotHoraires $depotHoraires,
         private string $dossierUploadMedias
     ) {
     }
@@ -115,6 +117,10 @@ final class ControleurActions
             case 'mettre_a_jour_acces_utilisateur':
             case 'update_user_access':
                 $this->traiterMiseAJourAccesUtilisateur();
+                break;
+            case 'mettre_a_jour_horaires_club':
+            case 'update_club_schedule':
+                $this->traiterMiseAJourHorairesClub();
                 break;
             case 'soumettre_resultat_dammier':
             case 'submit_dammier_score':
@@ -581,6 +587,44 @@ final class ControleurActions
 
         ajouter_message_flash('success', "Les accès de l'utilisateur ont été mis à jour.");
         rediriger_vers(url_route('admin'));
+    }
+
+    /** Met a jour les horaires publics du club (admin). */
+    private function traiterMiseAJourHorairesClub(): void
+    {
+        $this->exigerAdmin();
+
+        $jours = is_array($_POST['horaire_jour'] ?? null) ? $_POST['horaire_jour'] : [];
+        $heures = is_array($_POST['horaire_heure'] ?? null) ? $_POST['horaire_heure'] : [];
+        $titres = is_array($_POST['horaire_titre'] ?? null) ? $_POST['horaire_titre'] : [];
+        $details = is_array($_POST['horaire_details'] ?? null) ? $_POST['horaire_details'] : [];
+        $indicesFeries = is_array($_POST['horaire_jour_ferie'] ?? null) ? $_POST['horaire_jour_ferie'] : [];
+        $creneaux = [];
+        $nombreLignes = max(count($jours), count($heures), count($titres), count($details));
+
+        for ($index = 0; $index < $nombreLignes; $index++) {
+            $creneaux[] = [
+                'day' => (string) ($jours[$index] ?? ''),
+                'time' => (string) ($heures[$index] ?? ''),
+                'title' => (string) ($titres[$index] ?? ''),
+                'details' => (string) ($details[$index] ?? ''),
+                'is_holiday' => in_array((string) $index, array_map('strval', $indicesFeries), true),
+            ];
+        }
+
+        $succes = $this->depotHoraires->mettreAJour(
+            (string) ($_POST['libelle_saison_horaires'] ?? ''),
+            (string) ($_POST['message_jour_ferie'] ?? ''),
+            $creneaux
+        );
+
+        if (!$succes) {
+            ajouter_message_flash('error', 'Au moins un créneau doit contenir un jour et un horaire.');
+            rediriger_vers(url_route('admin') . '#admin-horaires-club');
+        }
+
+        ajouter_message_flash('success', 'Les horaires publics du club ont été mis à jour.');
+        rediriger_vers(url_route('admin') . '#admin-horaires-club');
     }
 
     /**

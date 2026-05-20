@@ -17,6 +17,11 @@ $authData = $siteData['authentification'];
 $dammierPuzzle = $siteData['dammier_puzzle'] ?? [];
 $dammierClassement = $siteData['dammier_classement'] ?? [];
 $dammierPeutVoirClassement = (bool) ($siteData['dammier_peut_voir_classement'] ?? false);
+$horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horaires_club'] : [];
+$resumeHorairesClub = is_array($siteData['resume_horaires_club'] ?? null) ? $siteData['resume_horaires_club'] : [];
+$itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
+$libelleSaisonHoraires = (string) ($horairesClub['season_label'] ?? 'Horaires du club');
+$messageJourFerie = (string) ($horairesClub['holiday_notice'] ?? '');
 $dammierPayload = [
     'dammier_puzzle' => $dammierPuzzle,
     'dammier_classement' => $dammierClassement,
@@ -49,6 +54,29 @@ $dammierPayload = [
         </div>
 
         <p class="quick-note"><?= e($pageData['hero_note']) ?></p>
+
+        <?php if ($resumeHorairesClub !== []): ?>
+            <section class="home-schedule-card" aria-labelledby="home-schedule-title">
+                <p class="eyebrow">Horaires</p>
+                <h2 id="home-schedule-title"><?= e($libelleSaisonHoraires) ?></h2>
+                <dl class="home-schedule-list">
+                    <?php foreach ($resumeHorairesClub as $horaireResume): ?>
+                        <div class="home-schedule-row">
+                            <dt>
+                                <?= e((string) ($horaireResume['day'] ?? '')) ?>
+                                <?php if (!empty($horaireResume['has_holiday'])): ?>
+                                    <span class="schedule-exception-badge">Jour férié</span>
+                                <?php endif; ?>
+                            </dt>
+                            <dd><?= e((string) ($horaireResume['times'] ?? '')) ?></dd>
+                        </div>
+                    <?php endforeach; ?>
+                </dl>
+                <?php if ($messageJourFerie !== ''): ?>
+                    <p class="home-schedule-holiday"><strong>Jour férié:</strong> <?= e($messageJourFerie) ?></p>
+                <?php endif; ?>
+            </section>
+        <?php endif; ?>
     </article>
 
     <aside class="panel dammier_panel reveal reveal-3">
@@ -260,4 +288,43 @@ $dammierPayload = [
             </article>
         <?php endforeach; ?>
     </div>
+
+    <?php if ($itemsHorairesClub !== []): ?>
+        <details id="emploi-du-temps-complet" class="schedule-full-card">
+            <summary>
+                <span>Consulter l'emploi du temps complet</span>
+            </summary>
+            <div class="schedule-full-content">
+                <div class="section-head section-head--compact">
+                    <p class="eyebrow">Emploi du temps</p>
+                    <h3><?= e($libelleSaisonHoraires) ?></h3>
+                    <?php if ($messageJourFerie !== ''): ?>
+                        <p><strong>Jour férié:</strong> <?= e($messageJourFerie) ?></p>
+                    <?php endif; ?>
+                </div>
+
+                <div class="schedule-full-grid">
+                    <?php foreach ($itemsHorairesClub as $horaire): ?>
+                        <article class="schedule-full-item">
+                            <p class="card-tag">
+                                <?= e((string) ($horaire['day'] ?? '')) ?>
+                                <?php if (!empty($horaire['is_holiday'])): ?>
+                                    · Jour férié
+                                <?php endif; ?>
+                            </p>
+                            <h4><?= e((string) ($horaire['time'] ?? '')) ?></h4>
+                            <p class="card-subtitle"><?= e((string) ($horaire['title'] ?? '')) ?></p>
+                            <?php if (!empty($horaire['details_lines']) && is_array($horaire['details_lines'])): ?>
+                                <ul>
+                                    <?php foreach ($horaire['details_lines'] as $ligneDetail): ?>
+                                        <li><?= e((string) $ligneDetail) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </details>
+    <?php endif; ?>
 </section>

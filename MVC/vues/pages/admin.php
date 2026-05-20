@@ -15,6 +15,19 @@ $allUsers = $siteData['all_users'] ?? [];
 $allArticles = $siteData['all_articles'] ?? [];
 $allMedia = $siteData['all_media'] ?? [];
 $allOrders = $siteData['all_orders'] ?? [];
+$horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horaires_club'] : [];
+$itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
+$lignesHorairesAdmin = $itemsHorairesClub;
+
+while (count($lignesHorairesAdmin) < 10) {
+    $lignesHorairesAdmin[] = [
+        'day' => '',
+        'time' => '',
+        'title' => '',
+        'details' => '',
+        'is_holiday' => false,
+    ];
+}
 ?>
 
 <section class="page-banner reveal reveal-2">
@@ -52,6 +65,101 @@ $allOrders = $siteData['all_orders'] ?? [];
             <h3>Merch commande</h3>
         </article>
     </div>
+</section>
+
+<section id="admin-horaires-club" class="section-block reveal reveal-4">
+    <div class="section-head">
+        <p class="eyebrow">Horaires</p>
+        <h2>Modifier l'emploi du temps public.</h2>
+        <p>L'administrateur peut adapter les créneaux à tout moment, y compris pour un jour férié ou une fermeture exceptionnelle.</p>
+    </div>
+
+    <form method="post" action="<?= e(url_route('admin')) ?>#admin-horaires-club" class="admin-form schedule-admin-form">
+        <input type="hidden" name="action" value="update_club_schedule">
+        <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+        <div class="admin-schedule-settings">
+            <label class="form-group">
+                <span>Titre public</span>
+                <input
+                    type="text"
+                    name="libelle_saison_horaires"
+                    value="<?= e((string) ($horairesClub['season_label'] ?? 'Horaires du club')) ?>"
+                    maxlength="120"
+                    required
+                >
+            </label>
+
+            <label class="form-group">
+                <span>Message jour férié / exception</span>
+                <textarea name="message_jour_ferie" rows="3" maxlength="320"><?= e((string) ($horairesClub['holiday_notice'] ?? '')) ?></textarea>
+                <small class="form-helper">Ce message apparaît sur l'accueil avec le libellé “Jour férié”.</small>
+            </label>
+        </div>
+
+        <div class="admin-schedule-grid">
+            <?php foreach ($lignesHorairesAdmin as $indexHoraire => $horaire): ?>
+                <fieldset class="info-card admin-card admin-schedule-card">
+                    <legend>Créneau <?= e((string) ($indexHoraire + 1)) ?></legend>
+
+                    <label class="form-group">
+                        <span>Jour</span>
+                        <input
+                            type="text"
+                            name="horaire_jour[]"
+                            value="<?= e((string) ($horaire['day'] ?? '')) ?>"
+                            maxlength="60"
+                            placeholder="Exemple : Samedi"
+                        >
+                    </label>
+
+                    <label class="form-group">
+                        <span>Horaire</span>
+                        <input
+                            type="text"
+                            name="horaire_heure[]"
+                            value="<?= e((string) ($horaire['time'] ?? '')) ?>"
+                            maxlength="80"
+                            placeholder="Exemple : 10h30 à 12h00"
+                        >
+                    </label>
+
+                    <label class="form-group">
+                        <span>Activité affichée dans le détail</span>
+                        <input
+                            type="text"
+                            name="horaire_titre[]"
+                            value="<?= e((string) ($horaire['title'] ?? '')) ?>"
+                            maxlength="180"
+                            placeholder="Exemple : Parties libres"
+                        >
+                    </label>
+
+                    <label class="form-group">
+                        <span>Détails de l'emploi du temps</span>
+                        <textarea
+                            name="horaire_details[]"
+                            rows="5"
+                            maxlength="1400"
+                            placeholder="Lieu, intervenants, groupes, précisions..."
+                        ><?= e((string) ($horaire['details'] ?? '')) ?></textarea>
+                    </label>
+
+                    <label class="checkbox-row">
+                        <input
+                            type="checkbox"
+                            name="horaire_jour_ferie[]"
+                            value="<?= e((string) $indexHoraire) ?>"
+                            <?= !empty($horaire['is_holiday']) ? 'checked' : '' ?>
+                        >
+                        <span>Marquer ce créneau comme jour férié / exception</span>
+                    </label>
+                </fieldset>
+            <?php endforeach; ?>
+        </div>
+
+        <button type="submit" class="button button-primary">Enregistrer les horaires</button>
+    </form>
 </section>
 
 <section class="section-block reveal reveal-4">
