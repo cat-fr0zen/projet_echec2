@@ -235,7 +235,7 @@ final class ModeleSite
             'reseaux_sociaux' => [
                 [
                     'nom' => 'Instagram',
-                    'url' => 'https://www.instagram.com/',
+                    'url' => 'https://www.instagram.com/lescavaliersdherouville/',
                     'icone' => 'ressources/media/divers/instagram.jpg',
                 ],
                 [
