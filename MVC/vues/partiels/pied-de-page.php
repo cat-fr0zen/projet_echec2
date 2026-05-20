@@ -12,6 +12,12 @@ $credits = $donneesSite['credits'];
 $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_documents'] ?? [];
 $registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_register'] ?? [];
 $adresse = (string) ($donneesSite['adresse'] ?? $donneesSite['address'] ?? '');
+$courrielClub = (string) ($donneesSite['courriel'] ?? $donneesSite['email'] ?? '');
+$newsletterMailto = sprintf(
+    'mailto:%s?subject=%s',
+    $courrielClub,
+    rawurlencode("Abonnement newsletter Cavaliers d'Hérouville")
+);
 $googleMapsUrl = (string) ($donneesSite['google_maps_url'] ?? '');
 $googleMapsEmbedUrl = (string) ($donneesSite['google_maps_embed_url'] ?? '');
 $clubGoogleMapsUrl = (string) ($donneesSite['club_google_maps_url'] ?? '');
@@ -188,6 +194,28 @@ $renderReviewStars = static function (?float $note): string {
                             <?php endif; ?>
                         </section>
                     <?php endif; ?>
+
+                    <?php if ($courrielClub !== ''): ?>
+                        <section class="footer-newsletter-card" aria-labelledby="footer-newsletter-title">
+                            <div class="footer-newsletter-header">
+                                <p class="eyebrow">Newsletter</p>
+                                <h3 id="footer-newsletter-title" class="footer-newsletter-title">Les actualités du club</h3>
+                                <p class="footer-newsletter-copy">
+                                    Abonnez-vous à la newsletter pour suivre les actualités du club en temps réel.
+                                </p>
+                            </div>
+
+                            <div class="footer-newsletter-actions">
+                                <a
+                                    class="footer-anchor"
+                                    href="<?= e($newsletterMailto) ?>"
+                                    aria-label="S'abonner à la newsletter des Cavaliers d'Hérouville par email"
+                                >
+                                    Abonnez-vous
+                                </a>
+                            </div>
+                        </section>
+                    <?php endif; ?>
                 </div>
 
                 <div class="footer-compact-meta">
@@ -201,7 +229,7 @@ $renderReviewStars = static function (?float $note): string {
                     </p>
                     <p class="footer-inline-line">
                         <strong>Contact :</strong>
-                        <?= e($donneesSite['courriel'] ?? $donneesSite['email'] ?? '') ?>
+                        <?= e($courrielClub) ?>
                     </p>
                     <p class="footer-inline-line">
                         <strong>Adresse :</strong>

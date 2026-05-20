@@ -12,8 +12,6 @@
  * - $siteData: donnees globales (stats, schedule, etc.)
  */
 $stats = $siteData['stats'];
-$schedule = $siteData['schedule'];
-$compliancePoints = $siteData['compliance_points'];
 $pieceCarousel = $siteData['piece_carousel'];
 $authData = $siteData['authentification'];
 $dammierPuzzle = $siteData['dammier_puzzle'] ?? [];
@@ -209,37 +207,15 @@ $dammierPayload = [
 <section class="split-grid reveal reveal-5">
     <article class="panel">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Fonctionnalités</p>
-            <h2>Des cadres prêts pour les informations et l'espace membre.</h2>
-            <p>Le design reste en place sans inventer de données tant que l'association n'a rien confirmé.</p>
-        </div>
-
-        <div class="stack-list">
-            <?php foreach ($schedule as $item): ?>
-                <div class="schedule-item">
-                    <div class="schedule-topline">
-                        <span class="schedule-day"><?= e($item['day']) ?></span>
-                        <span class="schedule-slot"><?= e($item['slot']) ?></span>
-                    </div>
-                    <h3><?= e($item['title']) ?></h3>
-                    <p><?= e($item['text']) ?></p>
-                </div>
-            <?php endforeach; ?>
+            <h2>Présentation</h2>
+            <p>Bienvenue chez Les Cavaliers d’Hérouville, un club d’échecs pas comme les autres ! Notre mission ? Faire découvrir et partager la passion du jeu d’échecs à tous. Dès 5 ans jusqu’à 105 ans. Débutants curieux ou pros de la stratégie. Convivialité, apprentissage, progression… le tout dans la bonne humeur ! Que vous vouliez apprendre, progresser ou simplement jouer pour le plaisir… Venez faire travailler vos neurones avec nous dans une ambiance chaleureuse et stimulante ! Rejoignez-nous et faites partie d’une communauté passionnée !</p>
         </div>
     </article>
 
     <article class="panel panel-contrast">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Cadre juridique</p>
-            <h2>Ce que le site rend visible dès la page d'accueil.</h2>
-            <p>Confidentialité, consentement, propriété intellectuelle, droit à l'image et publication responsable restent explicites.</p>
+            <h2>Liste de liens utiles</h2>
         </div>
-
-        <ul class="bullet-list">
-            <?php foreach ($compliancePoints as $point): ?>
-                <li><?= e($point) ?></li>
-            <?php endforeach; ?>
-        </ul>
     </article>
 </section>
 

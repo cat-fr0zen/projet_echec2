@@ -2222,7 +2222,8 @@ body.modal-open {
 
 .footer-compact-brand,
 .footer-compact-meta,
-.footer-review-card {
+.footer-review-card,
+.footer-newsletter-card {
     padding: 1rem 1.1rem;
     border: 1px solid rgba(23, 32, 27, 0.08);
     border-radius: 1.05rem;
@@ -2287,6 +2288,32 @@ body.modal-open {
 .footer-review-card {
     display: grid;
     gap: 0.95rem;
+}
+
+.footer-newsletter-card {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.footer-newsletter-header {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.footer-newsletter-title {
+    margin: 0;
+    font-size: 1.42rem;
+}
+
+.footer-newsletter-copy {
+    margin: 0;
+    color: var(--muted);
+}
+
+.footer-newsletter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
 }
 
 .footer-review-header {
@@ -2618,7 +2645,8 @@ body[data-theme="dark"] .footer-detail-card,
 body[data-theme="dark"] .cookie-register,
 body[data-theme="dark"] .footer-compact-brand,
 body[data-theme="dark"] .footer-compact-meta,
-body[data-theme="dark"] .footer-review-card {
+body[data-theme="dark"] .footer-review-card,
+body[data-theme="dark"] .footer-newsletter-card {
     background: rgba(255, 255, 255, 0.05);
 }
 
@@ -4033,6 +4061,7 @@ body[data-theme="dark"] .burger-panel,
 body[data-theme="dark"] .footer-compact-brand,
 body[data-theme="dark"] .footer-compact-meta,
 body[data-theme="dark"] .footer-review-card,
+body[data-theme="dark"] .footer-newsletter-card,
 body[data-theme="dark"] .info-card,
 body[data-theme="dark"] .schedule-item,
 body[data-theme="dark"] .quick-note,
