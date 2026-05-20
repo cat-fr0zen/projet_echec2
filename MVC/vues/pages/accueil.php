@@ -138,7 +138,22 @@ $dammierPayload = [
     </aside>
 </section>
 
-<section class="section-block reveal reveal-4">
+<section class="split-grid reveal reveal-4">
+    <article class="panel">
+        <div class="section-head section-head--compact">
+            <h2>Présentation</h2>
+            <p>Bienvenue chez Les Cavaliers d’Hérouville, un club d’échecs pas comme les autres ! Notre mission ? Faire découvrir et partager la passion du jeu d’échecs à tous. Dès 5 ans jusqu’à 105 ans. Débutants curieux ou pros de la stratégie. Convivialité, apprentissage, progression… le tout dans la bonne humeur ! Que vous vouliez apprendre, progresser ou simplement jouer pour le plaisir… Venez faire travailler vos neurones avec nous dans une ambiance chaleureuse et stimulante ! Rejoignez-nous et faites partie d’une communauté passionnée !</p>
+        </div>
+    </article>
+
+    <article class="panel panel-contrast">
+        <div class="section-head section-head--compact">
+            <h2>Liste de liens utiles</h2>
+        </div>
+    </article>
+</section>
+
+<section class="section-block reveal reveal-5">
     <div class="section-head">
         <p class="eyebrow">Carrousel des pièces</p>
         <h2>Chaque pièce, son mouvement et son utilité.</h2>
@@ -202,21 +217,6 @@ $dammierPayload = [
             <button type="button" class="carousel-button" data-piece-next aria-label="Voir la pièce suivante">Suivante</button>
         </div>
     </div>
-</section>
-
-<section class="split-grid reveal reveal-5">
-    <article class="panel">
-        <div class="section-head section-head--compact">
-            <h2>Présentation</h2>
-            <p>Bienvenue chez Les Cavaliers d’Hérouville, un club d’échecs pas comme les autres ! Notre mission ? Faire découvrir et partager la passion du jeu d’échecs à tous. Dès 5 ans jusqu’à 105 ans. Débutants curieux ou pros de la stratégie. Convivialité, apprentissage, progression… le tout dans la bonne humeur ! Que vous vouliez apprendre, progresser ou simplement jouer pour le plaisir… Venez faire travailler vos neurones avec nous dans une ambiance chaleureuse et stimulante ! Rejoignez-nous et faites partie d’une communauté passionnée !</p>
-        </div>
-    </article>
-
-    <article class="panel panel-contrast">
-        <div class="section-head section-head--compact">
-            <h2>Liste de liens utiles</h2>
-        </div>
-    </article>
 </section>
 
 <section class="section-block reveal reveal-6">
