@@ -9,7 +9,7 @@ declare(strict_types=1);
  *
  * Role:
  * - recuperer le profil public et les statistiques (ratings) d'un pseudo Chess.com
- * - mettre en cache localement les reponses JSON dans `donnees/cache/chesscom/`
+ * - peut fonctionner sans cache fichier lorsque le runtime est Oracle-only
  * - retourner un "instantane" normalise consomme par la page Profil
  *
  * Important:
@@ -25,11 +25,11 @@ final class ServiceChessCom
     private const DUREE_CACHE_ERREUR = 900;
 
     public function __construct(
-        private string $dossierCache,
+        private ?string $dossierCache,
         private string $agentUtilisateur = 'association-echecs-site/1.0'
     ) {
-        if (!is_dir($this->dossierCache)) {
-            mkdir($this->dossierCache, 0777, true);
+        if ($this->dossierCache !== null && $this->dossierCache !== '' && !is_dir($this->dossierCache)) {
+            mkdir($this->dossierCache, 0755, true);
         }
     }
 
@@ -348,9 +348,13 @@ final class ServiceChessCom
         return (int) $valeur;
     }
 
-    /** Calcule le chemin de cache (fichier JSON) pour un pseudo. */
-    private function cheminCache(string $pseudo): string
+    /** Calcule le chemin de cache fichier pour un pseudo, si le cache fichier est active. */
+    private function cheminCache(string $pseudo): ?string
     {
+        if ($this->dossierCache === null || $this->dossierCache === '') {
+            return null;
+        }
+
         $nomSecurise = preg_replace('/[^a-z0-9_-]+/i', '-', $pseudo) ?: 'joueur';
 
         return rtrim($this->dossierCache, '/\\') . DIRECTORY_SEPARATOR . $nomSecurise . '.json';
@@ -364,6 +368,10 @@ final class ServiceChessCom
     private function lireCache(string $pseudo): ?array
     {
         $cheminCache = $this->cheminCache($pseudo);
+
+        if ($cheminCache === null) {
+            return null;
+        }
 
         if (!is_file($cheminCache)) {
             return null;
@@ -397,6 +405,11 @@ final class ServiceChessCom
     private function ecrireCache(string $pseudo, array $instantane, int $dureeSecondes): void
     {
         $cheminCache = $this->cheminCache($pseudo);
+
+        if ($cheminCache === null) {
+            return;
+        }
+
         $chargeUtile = [
             '_expire_le' => time() + $dureeSecondes,
             'instantane' => $instantane,

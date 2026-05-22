@@ -8,24 +8,24 @@ declare(strict_types=1);
  * Responsabilites:
  * - d?termin? l'utilisateur courant depuis la session
  * - applique les regles d'acces (visiteur/connecte/adherent/admin)
- * - assemble les donnees (site + depots JSON + service Chess.com)
+ * - assemble les donnees (site + depots de donnees + service Chess.com)
  * - selectionne la vue (fichier PHP sous `MVC/vues/pages/`)
  * - rend la mise en page complete via `MVC/vues/mise-en-page.php`
  *
  * Dependances:
- * - Depots JSON: utilisateurs, articles, medias, commandes
+ * - Depots: utilisateurs, articles, medias, commandes
  * - ServiceChessCom: lecture de stats publiques (cache local)
  */
 final class ControleurPages
 {
     public function __construct(
         private ModeleSite $modeleSite,
-        private DepotUtilisateurs $depotUtilisateurs,
-        private DepotArticles $depotArticles,
-        private DepotMedias $depotMedias,
-        private DepotCommandes $depotCommandes,
-        private DepotDammier $depotDammier,
-        private DepotHoraires $depotHoraires,
+        private DepotUtilisateurs|DepotUtilisateursOracle $depotUtilisateurs,
+        private DepotArticles|DepotArticlesOracle $depotArticles,
+        private DepotMedias|DepotMediasOracle $depotMedias,
+        private DepotCommandes|DepotCommandesOracle $depotCommandes,
+        private DepotDammier|DepotDammierOracle $depotDammier,
+        private DepotHoraires|DepotHorairesOracle $depotHoraires,
         private ServiceChessCom $serviceChessCom,
         private ServiceGoogleAvis $serviceGoogleAvis,
         private array $messagesFlash,

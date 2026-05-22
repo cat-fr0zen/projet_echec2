@@ -21,10 +21,13 @@ $cheminNormalise = '/' . ltrim(rawurldecode(is_string($cheminDemande) ? $cheminD
 
 $prefixesBloques = [
     '/MVC/',
+    '/base_de_donnees/',
     '/controleurs/',
     '/donnees/',
     '/journaux/',
     '/modeles/',
+    '/stockage_runtime/',
+    '/tests/',
     '/vues/',
 ];
 

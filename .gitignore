@@ -1,5 +1,9 @@
 # Local runtime data
 /donnees/
+/stockage_runtime/*
+!/stockage_runtime/.htaccess
+!/stockage_runtime/sessions/
+!/stockage_runtime/sessions/.gitkeep
 
 # Server logs
 /journaux/

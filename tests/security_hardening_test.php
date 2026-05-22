@@ -31,6 +31,8 @@ function contenu_fichier(string $chemin): string
 
 $index = contenu_fichier($racineProjet . '/index.php');
 $controleurActions = contenu_fichier($racineProjet . '/MVC/controleurs/ControleurActions.php');
+$serviceChessCom = contenu_fichier($racineProjet . '/MVC/modeles/ServiceChessCom.php');
+$serviceGoogleAvis = contenu_fichier($racineProjet . '/MVC/modeles/ServiceGoogleAvis.php');
 $migrationPackages = contenu_fichier($racineProjet . '/base_de_donnees/oracle/v2/migrations/2.0.5_views_and_packages.sql');
 $migrationSeed = contenu_fichier($racineProjet . '/base_de_donnees/oracle/v2/migrations/2.0.6_security_and_seed.sql');
 $migrationArticles = contenu_fichier($racineProjet . '/base_de_donnees/oracle/v2/migrations/2.0.7_article_editor_blocks.sql');
@@ -40,6 +42,8 @@ $migrationLicenceMinuscule = strtolower($migrationLicence);
 
 verifier(!str_contains($index, '0777'), 'index.php ne doit pas creer le dossier de session en 0777.');
 verifier(!str_contains($controleurActions, '0777'), 'ControleurActions ne doit pas creer les dossiers upload en 0777.');
+verifier(!str_contains($serviceChessCom, '0777'), 'ServiceChessCom ne doit pas creer de cache en 0777.');
+verifier(!str_contains($serviceGoogleAvis, '0777'), 'ServiceGoogleAvis ne doit pas creer de cache en 0777.');
 verifier(str_contains($index, 'Content-Security-Policy'), 'index.php doit envoyer une Content-Security-Policy.');
 verifier(str_contains($index, 'X-Content-Type-Options: nosniff'), 'index.php doit envoyer X-Content-Type-Options.');
 verifier(str_contains($index, 'X-Frame-Options: SAMEORIGIN'), 'index.php doit envoyer X-Frame-Options.');

@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Depot utilisateurs (stockage JSON).
  *
  * Sert de couche d'acces aux donnees pour le prototype:
- * - lit/ecrit `donnees/utilisateurs.json` via StockageJson
+ * - implementation historique fichier, conservee pour tests/migration uniquement
  * - normalise les champs (compatibilite anciennes cles)
  * - maintient roles/statuts (connecte/adherent/admin)
  */

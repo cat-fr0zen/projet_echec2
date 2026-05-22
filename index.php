@@ -9,15 +9,15 @@ declare(strict_types=1);
  * - initialise la session PHP et les cookies de session
  * - charge les classes (modeles/depots/services/controleurs)
  * - expose quelques helpers globaux (echappement, URLs, CSRF, flash)
- * - instancie les depots (stockage JSON), puis execute:
+ * - instancie les depots Oracle, puis execute:
  *   1) le controleur d'actions (POST)
  *   2) le controleur de pages (GET) pour produire le HTML
  *
  * Donnees:
- * - ce prototype utilise des fichiers JSON dans `donnees/` (pas de base Oracle en runtime)
+ * - les donnees metier persistantes sont lues/ecrites en base Oracle.
  */
 
-$dossierSessions = __DIR__ . '/donnees/sessions';
+$dossierSessions = __DIR__ . '/stockage_runtime/sessions';
 $utiliserCookiesSecurises = (
     (!empty($_SERVER['HTTPS']) && strtolower((string) $_SERVER['HTTPS']) !== 'off')
     || (isset($_SERVER['SERVER_PORT']) && (string) $_SERVER['SERVER_PORT'] === '443')
@@ -36,7 +36,7 @@ function creer_dossier_runtime(string $chemin, int $mode): bool
         chmod($chemin, $mode);
     }
 
-    return is_dir($chemin) && is_writable($chemin);
+    return is_dir($chemin);
 }
 
 /**
@@ -103,13 +103,19 @@ if (function_exists('mb_http_output')) {
 envoyer_entetes_securite($utiliserCookiesSecurises);
 
 require_once __DIR__ . '/MVC/modeles/ModeleSite.php';
-require_once __DIR__ . '/MVC/modeles/StockageJson.php';
 require_once __DIR__ . '/MVC/modeles/DepotUtilisateurs.php';
 require_once __DIR__ . '/MVC/modeles/DepotArticles.php';
 require_once __DIR__ . '/MVC/modeles/DepotMedias.php';
 require_once __DIR__ . '/MVC/modeles/DepotCommandes.php';
 require_once __DIR__ . '/MVC/modeles/DepotDammier.php';
 require_once __DIR__ . '/MVC/modeles/DepotHoraires.php';
+require_once __DIR__ . '/MVC/modeles/BaseDeDonneesOracle.php';
+require_once __DIR__ . '/MVC/modeles/DepotUtilisateursOracle.php';
+require_once __DIR__ . '/MVC/modeles/DepotArticlesOracle.php';
+require_once __DIR__ . '/MVC/modeles/DepotMediasOracle.php';
+require_once __DIR__ . '/MVC/modeles/DepotCommandesOracle.php';
+require_once __DIR__ . '/MVC/modeles/DepotDammierOracle.php';
+require_once __DIR__ . '/MVC/modeles/DepotHorairesOracle.php';
 require_once __DIR__ . '/MVC/modeles/ServiceChessCom.php';
 require_once __DIR__ . '/MVC/modeles/ServiceGoogleAvis.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurActions.php';
@@ -348,57 +354,74 @@ function recuperer_etat_formulaire(): array
     return is_array($etat) ? $etat : [];
 }
 
-$stockageUtilisateurs = new StockageJson(__DIR__ . '/donnees/utilisateurs.json');
-$stockageArticles = new StockageJson(__DIR__ . '/donnees/articles.json');
-$stockageMedias = new StockageJson(__DIR__ . '/donnees/medias.json');
-$stockageCommandes = new StockageJson(__DIR__ . '/donnees/commandes.json');
-$stockageDammierPuzzles = new StockageJson(__DIR__ . '/donnees/dammier_puzzles.json');
-$stockageDammierClassements = new StockageJson(__DIR__ . '/donnees/dammier_classements.json');
-$stockageHoraires = new StockageJson(__DIR__ . '/donnees/horaires.json');
+/**
+ * Termine proprement si Oracle n'est pas configure.
+ *
+ * Le detail exact reste dans les logs PHP pour ne pas exposer la configuration.
+ *
+ * @return never
+ */
+function terminer_sur_erreur_configuration_base(Throwable $exception): never
+{
+    error_log('[oracle-runtime] ' . $exception->getMessage());
+    http_response_code(500);
 
-$depotUtilisateurs = new DepotUtilisateurs($stockageUtilisateurs);
-$depotArticles = new DepotArticles($stockageArticles);
-$depotMedias = new DepotMedias($stockageMedias);
-$depotCommandes = new DepotCommandes($stockageCommandes);
-$depotDammier = new DepotDammier($stockageDammierPuzzles, $stockageDammierClassements);
-$depotHoraires = new DepotHoraires($stockageHoraires);
-$controleurActions = new ControleurActions($depotUtilisateurs, $depotArticles, $depotMedias, $depotCommandes, $depotDammier, $depotHoraires, __DIR__ . '/ressources/media/uploads');
-$controleurActions->traiter();
+    echo '<!doctype html><html lang="fr"><head><meta charset="UTF-8"><title>Base indisponible</title></head>';
+    echo '<body style="font-family: sans-serif; padding: 2rem; line-height: 1.5;">';
+    echo '<h1>Base de donnees indisponible</h1>';
+    echo '<p>Le site est configure pour fonctionner uniquement avec Oracle. Verifie l extension PHP oci8 et les variables ORACLE_HOST, ORACLE_SERVICE, ORACLE_USER et ORACLE_PASSWORD dans XAMPP.</p>';
+    echo '</body></html>';
 
-$pageDemandee = isset($_GET['page']) ? (string) $_GET['page'] : 'accueil';
-$aliasPages = [
-    'merch' => 'boutique',
-];
-
-if (isset($aliasPages[$pageDemandee])) {
-    $pageDemandee = $aliasPages[$pageDemandee];
+    exit;
 }
 
-$messagesFlash = recuperer_messages_flash();
-$etatFormulaire = recuperer_etat_formulaire();
-$serviceChessCom = new ServiceChessCom(
-    __DIR__ . '/donnees/cache/chesscom',
-    'association-echecs-site/1.0'
-);
-$cleGooglePlaces = getenv('GOOGLE_PLACES_API_KEY');
-$serviceGoogleAvis = new ServiceGoogleAvis(
-    __DIR__ . '/donnees/cache/google-avis',
-    is_string($cleGooglePlaces) ? $cleGooglePlaces : '',
-    'association-echecs-site/1.0'
-);
+try {
+    $baseDeDonnees = BaseDeDonneesOracle::depuisEnvironnement();
 
-$controleurPages = new ControleurPages(
-    new ModeleSite(),
-    $depotUtilisateurs,
-    $depotArticles,
-    $depotMedias,
-    $depotCommandes,
-    $depotDammier,
-    $depotHoraires,
-    $serviceChessCom,
-    $serviceGoogleAvis,
-    $messagesFlash,
-    $etatFormulaire
-);
+    $depotUtilisateurs = new DepotUtilisateursOracle($baseDeDonnees);
+    $depotArticles = new DepotArticlesOracle($baseDeDonnees);
+    $depotMedias = new DepotMediasOracle($baseDeDonnees);
+    $depotCommandes = new DepotCommandesOracle($baseDeDonnees);
+    $depotDammier = new DepotDammierOracle($baseDeDonnees);
+    $depotHoraires = new DepotHorairesOracle($baseDeDonnees);
 
-echo $controleurPages->afficher($pageDemandee);
+    $controleurActions = new ControleurActions($depotUtilisateurs, $depotArticles, $depotMedias, $depotCommandes, $depotDammier, $depotHoraires, __DIR__ . '/ressources/media/uploads');
+    $controleurActions->traiter();
+
+    $pageDemandee = isset($_GET['page']) ? (string) $_GET['page'] : 'accueil';
+    $aliasPages = [
+        'merch' => 'boutique',
+    ];
+
+    if (isset($aliasPages[$pageDemandee])) {
+        $pageDemandee = $aliasPages[$pageDemandee];
+    }
+
+    $messagesFlash = recuperer_messages_flash();
+    $etatFormulaire = recuperer_etat_formulaire();
+    $serviceChessCom = new ServiceChessCom(null, 'association-echecs-site/1.0');
+    $cleGooglePlaces = getenv('GOOGLE_PLACES_API_KEY');
+    $serviceGoogleAvis = new ServiceGoogleAvis(
+        null,
+        is_string($cleGooglePlaces) ? $cleGooglePlaces : '',
+        'association-echecs-site/1.0'
+    );
+
+    $controleurPages = new ControleurPages(
+        new ModeleSite(),
+        $depotUtilisateurs,
+        $depotArticles,
+        $depotMedias,
+        $depotCommandes,
+        $depotDammier,
+        $depotHoraires,
+        $serviceChessCom,
+        $serviceGoogleAvis,
+        $messagesFlash,
+        $etatFormulaire
+    );
+
+    echo $controleurPages->afficher($pageDemandee);
+} catch (Throwable $exception) {
+    terminer_sur_erreur_configuration_base($exception);
+}

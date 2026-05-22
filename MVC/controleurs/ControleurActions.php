@@ -8,7 +8,7 @@ declare(strict_types=1);
  * Role:
  * - traiter les formulaires du site (inscription, login, profil, depot article/media, etc.)
  * - appliquer les regles de securite (CSRF) et d'autorisation (roles/statuts)
- * - ecrire dans les depots JSON (utilisateurs/articles/medias/commandes)
+ * - ecrire dans les depots de donnees (Oracle en production)
  * - rediriger vers la page cible avec message flash
  *
  * Dependances:
@@ -38,12 +38,12 @@ final class ControleurActions
     ];
 
     public function __construct(
-        private DepotUtilisateurs $depotUtilisateurs,
-        private DepotArticles $depotArticles,
-        private DepotMedias $depotMedias,
-        private DepotCommandes $depotCommandes,
-        private DepotDammier $depotDammier,
-        private DepotHoraires $depotHoraires,
+        private DepotUtilisateurs|DepotUtilisateursOracle $depotUtilisateurs,
+        private DepotArticles|DepotArticlesOracle $depotArticles,
+        private DepotMedias|DepotMediasOracle $depotMedias,
+        private DepotCommandes|DepotCommandesOracle $depotCommandes,
+        private DepotDammier|DepotDammierOracle $depotDammier,
+        private DepotHoraires|DepotHorairesOracle $depotHoraires,
         private string $dossierUploadMedias
     ) {
     }

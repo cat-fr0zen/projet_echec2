@@ -11,7 +11,7 @@ declare(strict_types=1);
  * Sécurité:
  * - clé API lue uniquement depuis l'environnement
  * - aucun secret en dur dans le code
- * - cache local pour limiter les appels externes
+ * - cache fichier optionnel; en runtime Oracle-only il peut etre desactive
  */
 final class ServiceGoogleAvis
 {
@@ -21,14 +21,14 @@ final class ServiceGoogleAvis
     private const DUREE_CACHE_ERREUR = 1800;
 
     public function __construct(
-        private string $dossierCache,
+        private ?string $dossierCache,
         private string $cleApi = '',
         private string $agentUtilisateur = 'association-echecs-site/1.0'
     ) {
         $this->cleApi = trim($this->cleApi);
 
-        if (!is_dir($this->dossierCache)) {
-            mkdir($this->dossierCache, 0777, true);
+        if ($this->dossierCache !== null && $this->dossierCache !== '' && !is_dir($this->dossierCache)) {
+            mkdir($this->dossierCache, 0755, true);
         }
     }
 
@@ -341,14 +341,22 @@ final class ServiceGoogleAvis
         return trim($identifiantNettoye, '-');
     }
 
-    private function cheminCache(string $identifiant): string
+    private function cheminCache(string $identifiant): ?string
     {
+        if ($this->dossierCache === null || $this->dossierCache === '') {
+            return null;
+        }
+
         return rtrim($this->dossierCache, '/\\') . DIRECTORY_SEPARATOR . $identifiant . '.json';
     }
 
     private function lireCache(string $identifiant): ?array
     {
         $cheminCache = $this->cheminCache($identifiant);
+
+        if ($cheminCache === null) {
+            return null;
+        }
 
         if (!is_file($cheminCache)) {
             return null;
@@ -381,6 +389,11 @@ final class ServiceGoogleAvis
     private function ecrireCache(string $identifiant, array $instantane, int $dureeSecondes): void
     {
         $cheminCache = $this->cheminCache($identifiant);
+
+        if ($cheminCache === null) {
+            return;
+        }
+
         $chargeUtile = [
             '_expire_le' => time() + $dureeSecondes,
             'instantane' => $instantane,

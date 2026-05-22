@@ -23,7 +23,7 @@ final class StockageJson
         $dossier = dirname($this->cheminFichier);
 
         if (!is_dir($dossier)) {
-            mkdir($dossier, 0777, true);
+            mkdir($dossier, 0755, true);
         }
 
         if (!file_exists($this->cheminFichier)) {
