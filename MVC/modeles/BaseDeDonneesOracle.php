@@ -18,7 +18,8 @@ final class BaseDeDonneesOracle
         private string $chaineConnexion,
         private string $utilisateur,
         private string $motDePasse,
-        private string $charset
+        private string $charset,
+        private int $versionMajeureClientMinimale
     ) {
     }
 
@@ -30,6 +31,7 @@ final class BaseDeDonneesOracle
         $utilisateur = self::envObligatoire('ORACLE_USER');
         $motDePasse = self::envObligatoire('ORACLE_PASSWORD');
         $charset = getenv('ORACLE_CHARSET');
+        $versionMajeureClientMinimale = getenv('ORACLE_CLIENT_MIN_VERSION');
 
         $chaineConnexion = sprintf('//%s:%s/%s', $hote, $port !== false && $port !== '' ? $port : '1521', $service);
 
@@ -37,7 +39,8 @@ final class BaseDeDonneesOracle
             $chaineConnexion,
             $utilisateur,
             $motDePasse,
-            $charset !== false && $charset !== '' ? $charset : 'AL32UTF8'
+            $charset !== false && $charset !== '' ? $charset : 'AL32UTF8',
+            self::normaliserVersionMajeureClient($versionMajeureClientMinimale)
         );
     }
 
@@ -136,8 +139,47 @@ final class BaseDeDonneesOracle
         }
 
         $this->connexion = $connexion;
+        $this->verifierVersionClientOracle();
 
         return $this->connexion;
+    }
+
+    private static function normaliserVersionMajeureClient(string|false $version): int
+    {
+        if ($version === false || trim($version) === '') {
+            return 19;
+        }
+
+        $version = trim($version);
+
+        if (!ctype_digit($version)) {
+            throw new RuntimeException('ORACLE_CLIENT_MIN_VERSION doit etre un entier, par exemple 19.');
+        }
+
+        return max(1, (int) $version);
+    }
+
+    private function verifierVersionClientOracle(): void
+    {
+        if (!function_exists('oci_client_version')) {
+            return;
+        }
+
+        $versionClient = (string) oci_client_version();
+
+        if (!preg_match('/^(\d+)/', $versionClient, $matches)) {
+            return;
+        }
+
+        $versionMajeure = (int) $matches[1];
+
+        if ($versionMajeure < $this->versionMajeureClientMinimale) {
+            throw new RuntimeException(sprintf(
+                'Client Oracle trop ancien: %s detecte, version majeure minimale attendue: %d.',
+                $versionClient,
+                $this->versionMajeureClientMinimale
+            ));
+        }
     }
 
     /**

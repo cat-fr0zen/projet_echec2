@@ -1,14 +1,14 @@
 /*
-    Schema Oracle 10g - Cavaliers d'Herouville
+    Schema Oracle 19c - Cavaliers d'Herouville
     ------------------------------------------------------------
     Objectif:
     - remplacer le stockage metier JSON par une base relationnelle;
     - garder des cles publiques compatibles avec le site PHP;
-    - rester compatible Oracle 10g: aucune syntaxe moderne non supportee.
+    - cible officielle Oracle 19c pour PHP oci8_19.
 
     Execution:
     - a lancer sur un schema Oracle vide ou dedie;
-    - les scripts de migration et de verification sont dans ce dossier.
+    - le baseline et les scripts de verification sont dans ce dossier.
 */
 
 CREATE TABLE schema_migration (
@@ -263,6 +263,139 @@ CREATE TABLE cache_api_externe (
     CONSTRAINT ck_cache_api_service CHECK (service_nom IN ('chesscom', 'google_avis'))
 );
 
+CREATE TABLE newsletter_abonnement (
+    identifiant_abonnement VARCHAR2(50) NOT NULL,
+    courriel               VARCHAR2(254) NOT NULL,
+    courriel_normalise     VARCHAR2(254) NOT NULL,
+    statut                 VARCHAR2(20) DEFAULT 'actif' NOT NULL,
+    jeton_desabonnement    VARCHAR2(80) NOT NULL,
+    consentement_version   VARCHAR2(40) NOT NULL,
+    adresse_ip_hachee      VARCHAR2(128),
+    agent_utilisateur      VARCHAR2(255),
+    source_inscription     VARCHAR2(80) DEFAULT 'footer' NOT NULL,
+    cree_le                DATE DEFAULT SYSDATE NOT NULL,
+    confirme_le            DATE DEFAULT SYSDATE NOT NULL,
+    desabonne_le           DATE,
+    CONSTRAINT pk_newsletter_abonnement PRIMARY KEY (identifiant_abonnement),
+    CONSTRAINT uq_newsletter_email UNIQUE (courriel_normalise),
+    CONSTRAINT uq_newsletter_token UNIQUE (jeton_desabonnement),
+    CONSTRAINT ck_newsletter_statut CHECK (statut IN ('actif', 'desabonne')),
+    CONSTRAINT ck_newsletter_email CHECK (INSTR(courriel_normalise, '@') > 1)
+);
+
+CREATE INDEX ix_newsletter_statut ON newsletter_abonnement (statut, cree_le);
+
+CREATE TABLE newsletter_envoi (
+    identifiant_envoi       VARCHAR2(60) NOT NULL,
+    identifiant_abonnement  VARCHAR2(50) NOT NULL,
+    type_evenement          VARCHAR2(30) NOT NULL,
+    titre_evenement         VARCHAR2(220) NOT NULL,
+    url_evenement           VARCHAR2(500),
+    sujet                   VARCHAR2(220) NOT NULL,
+    statut_envoi            VARCHAR2(20) NOT NULL,
+    erreur_envoi            VARCHAR2(1000),
+    envoye_le               DATE DEFAULT SYSDATE NOT NULL,
+    CONSTRAINT pk_newsletter_envoi PRIMARY KEY (identifiant_envoi),
+    CONSTRAINT fk_newsletter_envoi_abonnement FOREIGN KEY (identifiant_abonnement) REFERENCES newsletter_abonnement (identifiant_abonnement),
+    CONSTRAINT ck_newsletter_envoi_type CHECK (type_evenement IN ('article', 'cours', 'boutique', 'confirmation')),
+    CONSTRAINT ck_newsletter_envoi_statut CHECK (statut_envoi IN ('envoye', 'echec', 'ignore'))
+);
+
+CREATE INDEX ix_newsletter_envoi_event ON newsletter_envoi (type_evenement, envoye_le);
+
+MERGE INTO ref_role_compte cible
+USING (
+    SELECT 'connecte' code_role, 'Compte connecte' libelle_role, 10 niveau_acces FROM dual
+    UNION ALL SELECT 'adherent', 'Adherent', 50 FROM dual
+    UNION ALL SELECT 'admin', 'Administrateur', 100 FROM dual
+) source
+ON (cible.code_role = source.code_role)
+WHEN MATCHED THEN UPDATE SET cible.libelle_role = source.libelle_role, cible.niveau_acces = source.niveau_acces
+WHEN NOT MATCHED THEN INSERT (code_role, libelle_role, niveau_acces)
+VALUES (source.code_role, source.libelle_role, source.niveau_acces);
+
+MERGE INTO ref_statut_compte cible
+USING (
+    SELECT 'actif' code_statut, 'Actif' libelle_statut FROM dual
+    UNION ALL SELECT 'suspendu', 'Suspendu' FROM dual
+) source
+ON (cible.code_statut = source.code_statut)
+WHEN MATCHED THEN UPDATE SET cible.libelle_statut = source.libelle_statut
+WHEN NOT MATCHED THEN INSERT (code_statut, libelle_statut)
+VALUES (source.code_statut, source.libelle_statut);
+
+MERGE INTO ref_statut_adhesion cible
+USING (
+    SELECT 'aucune' code_statut, 'Non adherent' libelle_statut FROM dual
+    UNION ALL SELECT 'active', 'Adhesion active' FROM dual
+) source
+ON (cible.code_statut = source.code_statut)
+WHEN MATCHED THEN UPDATE SET cible.libelle_statut = source.libelle_statut
+WHEN NOT MATCHED THEN INSERT (code_statut, libelle_statut)
+VALUES (source.code_statut, source.libelle_statut);
+
+MERGE INTO ref_statut_publication cible
+USING (
+    SELECT 'en_attente_validation' code_statut, 'En attente' libelle_statut FROM dual
+    UNION ALL SELECT 'publie', 'Publie' FROM dual
+    UNION ALL SELECT 'refuse', 'Refuse' FROM dual
+) source
+ON (cible.code_statut = source.code_statut)
+WHEN MATCHED THEN UPDATE SET cible.libelle_statut = source.libelle_statut
+WHEN NOT MATCHED THEN INSERT (code_statut, libelle_statut)
+VALUES (source.code_statut, source.libelle_statut);
+
+MERGE INTO ref_type_media cible
+USING (
+    SELECT 'photo' code_type, 'Photo' libelle_type FROM dual
+    UNION ALL SELECT 'video', 'Video' FROM dual
+) source
+ON (cible.code_type = source.code_type)
+WHEN MATCHED THEN UPDATE SET cible.libelle_type = source.libelle_type
+WHEN NOT MATCHED THEN INSERT (code_type, libelle_type)
+VALUES (source.code_type, source.libelle_type);
+
+MERGE INTO ref_statut_commande cible
+USING (
+    SELECT 'en_attente' code_statut, 'En attente' libelle_statut FROM dual
+    UNION ALL SELECT 'validee', 'Validee' FROM dual
+    UNION ALL SELECT 'annulee', 'Annulee' FROM dual
+) source
+ON (cible.code_statut = source.code_statut)
+WHEN MATCHED THEN UPDATE SET cible.libelle_statut = source.libelle_statut
+WHEN NOT MATCHED THEN INSERT (code_statut, libelle_statut)
+VALUES (source.code_statut, source.libelle_statut);
+
+MERGE INTO ref_type_bloc_article cible
+USING (
+    SELECT 'paragraphe' code_type, 'Paragraphe' libelle_type FROM dual
+    UNION ALL SELECT 'sous_titre', 'Sous-titre' FROM dual
+    UNION ALL SELECT 'image', 'Image' FROM dual
+    UNION ALL SELECT 'video', 'Video' FROM dual
+) source
+ON (cible.code_type = source.code_type)
+WHEN MATCHED THEN UPDATE SET cible.libelle_type = source.libelle_type
+WHEN NOT MATCHED THEN INSERT (code_type, libelle_type)
+VALUES (source.code_type, source.libelle_type);
+
+MERGE INTO horaire_club cible
+USING (
+    SELECT
+        'club_schedule' schedule_id,
+        'Horaires 2025/2026 - Club d''Echecs' season_label,
+        'Les horaires peuvent etre adaptes les jours feries. Consultez l''emploi du temps complet avant de vous deplacer.' holiday_notice
+    FROM dual
+) source
+ON (cible.schedule_id = source.schedule_id)
+WHEN MATCHED THEN UPDATE SET
+    cible.season_label = source.season_label,
+    cible.holiday_notice = source.holiday_notice
+WHEN NOT MATCHED THEN INSERT (
+    schedule_id, season_label, holiday_notice
+) VALUES (
+    source.schedule_id, source.season_label, source.holiday_notice
+);
+
 INSERT INTO schema_migration (
     version_schema,
     nom_migration,
@@ -270,11 +403,11 @@ INSERT INTO schema_migration (
     checksum,
     commentaire
 ) VALUES (
-    '10g.0.0',
-    'schema_initial_oracle_10g',
+    '19c.0.0',
+    'schema_initial_oracle_19c',
     'foundation',
     NULL,
-    'Schema relationnel initial compatible Oracle 10g.'
+    'Schema relationnel initial cible Oracle 19c avec donnees de reference.'
 );
 
 COMMIT;

@@ -36,6 +36,30 @@ while (count($lignesHorairesAdmin) < 10) {
     <p><?= e($pageData['intro']) ?></p>
 </section>
 
+<section id="admin-newsletter-boutique" class="section-block reveal reveal-6">
+    <div class="section-head">
+        <p class="eyebrow">Newsletter</p>
+        <h2>Informer les abonnes d'une nouveaute boutique.</h2>
+        <p>Ce bouton envoie une actualite email aux personnes inscrites a la newsletter lorsque le club ajoute un nouvel objet ou une information boutique.</p>
+    </div>
+
+    <form method="post" action="<?= e(url_route('admin')) ?>#admin-newsletter-boutique" class="article-form">
+        <input type="hidden" name="action" value="notify_shop_item">
+        <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+        <label for="titre-objet-boutique">Nom de l'objet ou de l'information boutique</label>
+        <input
+            id="titre-objet-boutique"
+            type="text"
+            name="titre_objet_boutique"
+            maxlength="150"
+            required
+        >
+
+        <button type="submit" class="button button-primary">Envoyer l'actualite boutique</button>
+    </form>
+</section>
+
 <section class="section-block reveal reveal-3">
     <div class="section-head">
         <p class="eyebrow">Tableau de bord</p>

@@ -1,5 +1,5 @@
 /*
-    Modele de changement futur - Oracle 10g
+    Modele de changement futur - Oracle 19c
     Copier ce fichier avant toute evolution de base:
     YYYY.MM.DD_categorie_description.sql
 
@@ -24,7 +24,7 @@ PLAN
 Description:
 - demandeur: <NOM>
 - raison: <RAISON_METIER>
-- categorie: <accounts|content|media|commerce|game|schedule|security>
+- categorie: <accounts|content|media|commerce|game|schedule|newsletter|security>
 - risque principal: <RISQUE>
 - fenetre d'application: <DATE_HEURE>
 */
@@ -33,8 +33,9 @@ Description:
 APPLY
 -----
 Regles:
-- preferer ALTER/INSERT/UPDATE ciblés;
+- preferer les changements forward-only;
 - pour UPDATE/DELETE, faire un SELECT preview avec le meme filtre;
+- garder les secrets hors SQL et hors Git;
 - utiliser des variables liees dans l'application, jamais de concatenation SQL.
 */
 

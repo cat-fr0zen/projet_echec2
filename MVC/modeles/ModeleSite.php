@@ -156,6 +156,21 @@ final class ModeleSite
                 ]
             ),
             $this->documentLegal(
+                'newsletter-privacy',
+                'Newsletter',
+                "Inscription, consentement, emails automatiques et desabonnement.",
+                [
+                    $this->sectionLegale('Donnees newsletter', [
+                        "La newsletter traite uniquement l'adresse email, la date d'inscription, la version du consentement, un jeton de desabonnement et une preuve technique minimisee.",
+                        "L'adresse IP peut etre hachee avec un sel serveur pour prouver le consentement sans conserver l'adresse en clair.",
+                    ]),
+                    $this->sectionLegale('Finalite et retrait', [
+                        "Les emails servent a annoncer les nouveaux articles, les mises a jour de cours ou horaires, et les informations boutique publiees par le club.",
+                        "Chaque email contient un lien de desabonnement automatique; la demande peut aussi etre faite au contact officiel du club.",
+                    ]),
+                ]
+            ),
+            $this->documentLegal(
                 'terms-of-use',
                 "Conditions d'utilisation",
                 "Usage du site, espace membre, articles, médias, boutique et cadre associatif lié au jeu d'échecs.",

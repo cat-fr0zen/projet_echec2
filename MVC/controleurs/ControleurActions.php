@@ -44,7 +44,9 @@ final class ControleurActions
         private DepotCommandes|DepotCommandesOracle $depotCommandes,
         private DepotDammier|DepotDammierOracle $depotDammier,
         private DepotHoraires|DepotHorairesOracle $depotHoraires,
-        private string $dossierUploadMedias
+        private string $dossierUploadMedias,
+        private ?DepotNewsletterOracle $depotNewsletter = null,
+        private ?ServiceNewsletterMailer $newsletterMailer = null
     ) {
     }
 
@@ -121,6 +123,14 @@ final class ControleurActions
             case 'mettre_a_jour_horaires_club':
             case 'update_club_schedule':
                 $this->traiterMiseAJourHorairesClub();
+                break;
+            case 'notifier_objet_boutique':
+            case 'notify_shop_item':
+                $this->traiterNotificationObjetBoutique();
+                break;
+            case 'inscription_newsletter':
+            case 'newsletter_subscribe':
+                $this->traiterInscriptionNewsletter();
                 break;
             case 'soumettre_resultat_dammier':
             case 'submit_dammier_score':
@@ -257,6 +267,47 @@ final class ControleurActions
         $_SESSION['identifiant_utilisateur'] = $utilisateur['identifiant'];
         ajouter_message_flash('success', 'Connexion réussie.');
         rediriger_vers(url_route('profil'));
+    }
+
+    /** Inscrit une adresse a la newsletter avec consentement explicite. */
+    private function traiterInscriptionNewsletter(): void
+    {
+        $pageRedirection = $this->resoudrePageRedirection('accueil');
+
+        if ($this->depotNewsletter === null || $this->newsletterMailer === null) {
+            ajouter_message_flash('error', "La newsletter n'est pas disponible pour le moment.");
+            rediriger_vers(url_route($pageRedirection) . '#footer-newsletter-title');
+        }
+
+        $courriel = trim((string) ($_POST['newsletter_email'] ?? ''));
+        $courriel = function_exists('mb_strtolower') ? mb_strtolower($courriel) : strtolower($courriel);
+        $consentementAccepte = (string) ($_POST['newsletter_consentement'] ?? '') === '1';
+
+        if ($courriel === '' || strlen($courriel) > 254 || !filter_var($courriel, FILTER_VALIDATE_EMAIL)) {
+            ajouter_message_flash('error', 'Veuillez saisir une adresse email valide pour la newsletter.');
+            rediriger_vers(url_route($pageRedirection) . '#footer-newsletter-title');
+        }
+
+        if (!$consentementAccepte) {
+            ajouter_message_flash('error', 'Le consentement est obligatoire pour recevoir la newsletter.');
+            rediriger_vers(url_route($pageRedirection) . '#footer-newsletter-title');
+        }
+
+        $abonnement = $this->depotNewsletter->inscrire(
+            $courriel,
+            $this->hacherAdresseIp(),
+            $this->nettoyerAgentUtilisateur(),
+            'footer'
+        );
+
+        try {
+            $this->newsletterMailer->envoyerConfirmation($abonnement);
+        } catch (Throwable $exception) {
+            error_log('[newsletter-confirmation] ' . $exception->getMessage());
+        }
+
+        ajouter_message_flash('success', 'Inscription newsletter enregistree. Un email de confirmation va etre envoye si la messagerie du serveur est configuree.');
+        rediriger_vers(url_route($pageRedirection) . '#footer-newsletter-title');
     }
 
     /** Traite la deconnexion (session). */
@@ -465,7 +516,22 @@ final class ControleurActions
         $identifiantArticle = trim((string) ($_POST['identifiant_article'] ?? ''));
         $statut = trim((string) ($_POST['statut_article'] ?? ''));
 
-        if ($identifiantArticle === '' || $this->depotArticles->changerStatut($identifiantArticle, $statut) === null) {
+        $articleAvantModeration = $identifiantArticle !== ''
+            ? $this->depotArticles->trouverParIdentifiant($identifiantArticle)
+            : null;
+        $articleMisAJour = $identifiantArticle !== ''
+            ? $this->depotArticles->changerStatut($identifiantArticle, $statut)
+            : null;
+
+        if (
+            $articleMisAJour !== null
+            && $statut === DepotArticles::STATUT_PUBLIE
+            && ($articleAvantModeration['statut'] ?? '') !== DepotArticles::STATUT_PUBLIE
+        ) {
+            $this->notifierArticlePublie($articleMisAJour);
+        }
+
+        if ($articleMisAJour === null) {
             ajouter_message_flash('error', "Impossible de mettre à jour l'article.");
             rediriger_vers(url_route('admin'));
         }
@@ -618,6 +684,10 @@ final class ControleurActions
             $creneaux
         );
 
+        if ($succes) {
+            $this->notifierHorairesMisAJour((string) ($_POST['libelle_saison_horaires'] ?? 'Horaires du club'));
+        }
+
         if (!$succes) {
             ajouter_message_flash('error', 'Au moins un créneau doit contenir un jour et un horaire.');
             rediriger_vers(url_route('admin') . '#admin-horaires-club');
@@ -625,6 +695,23 @@ final class ControleurActions
 
         ajouter_message_flash('success', 'Les horaires publics du club ont été mis à jour.');
         rediriger_vers(url_route('admin') . '#admin-horaires-club');
+    }
+
+    private function traiterNotificationObjetBoutique(): void
+    {
+        $this->exigerAdmin();
+
+        $titreProduit = trim((string) ($_POST['titre_objet_boutique'] ?? ''));
+
+        if ($titreProduit === '' || mb_strlen($titreProduit) > 150) {
+            ajouter_message_flash('error', "Le titre de l'objet boutique est obligatoire et doit rester court.");
+            rediriger_vers(url_route('admin') . '#admin-newsletter-boutique');
+        }
+
+        $this->notifierNouvelObjetBoutique($titreProduit);
+
+        ajouter_message_flash('success', 'Les abonnes newsletter ont ete informes de la nouveaute boutique.');
+        rediriger_vers(url_route('admin') . '#admin-newsletter-boutique');
     }
 
     /**
@@ -685,6 +772,45 @@ final class ControleurActions
         ]);
     }
 
+    private function notifierArticlePublie(array $article): void
+    {
+        if ($this->newsletterMailer === null) {
+            return;
+        }
+
+        try {
+            $this->newsletterMailer->notifierArticlePublie($article);
+        } catch (Throwable $exception) {
+            error_log('[newsletter-article] ' . $exception->getMessage());
+        }
+    }
+
+    private function notifierHorairesMisAJour(string $libelleSaison): void
+    {
+        if ($this->newsletterMailer === null) {
+            return;
+        }
+
+        try {
+            $this->newsletterMailer->notifierHorairesMisAJour($libelleSaison);
+        } catch (Throwable $exception) {
+            error_log('[newsletter-horaires] ' . $exception->getMessage());
+        }
+    }
+
+    private function notifierNouvelObjetBoutique(string $titreProduit): void
+    {
+        if ($this->newsletterMailer === null) {
+            return;
+        }
+
+        try {
+            $this->newsletterMailer->notifierNouvelObjetBoutique($titreProduit);
+        } catch (Throwable $exception) {
+            error_log('[newsletter-boutique] ' . $exception->getMessage());
+        }
+    }
+
     /**
      * Recupere l'utilisateur courant depuis la session.
      *
@@ -695,6 +821,25 @@ final class ControleurActions
         $identifiantUtilisateur = isset($_SESSION['identifiant_utilisateur']) ? (string) $_SESSION['identifiant_utilisateur'] : '';
 
         return $this->depotUtilisateurs->trouverParIdentifiant($identifiantUtilisateur);
+    }
+
+    private function hacherAdresseIp(): string
+    {
+        $adresseIp = trim((string) ($_SERVER['REMOTE_ADDR'] ?? ''));
+        $selConsentement = trim((string) (getenv('NEWSLETTER_CONSENT_SALT') ?: ''));
+
+        if ($adresseIp === '' || $selConsentement === '') {
+            return '';
+        }
+
+        return hash('sha256', $adresseIp . '|' . $selConsentement);
+    }
+
+    private function nettoyerAgentUtilisateur(): string
+    {
+        $agentUtilisateur = trim(strip_tags((string) ($_SERVER['HTTP_USER_AGENT'] ?? '')));
+
+        return function_exists('mb_substr') ? mb_substr($agentUtilisateur, 0, 255) : substr($agentUtilisateur, 0, 255);
     }
 
     /**

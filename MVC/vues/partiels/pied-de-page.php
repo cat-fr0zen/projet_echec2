@@ -13,11 +13,6 @@ $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_docum
 $registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_register'] ?? [];
 $adresse = (string) ($donneesSite['adresse'] ?? $donneesSite['address'] ?? '');
 $courrielClub = (string) ($donneesSite['courriel'] ?? $donneesSite['email'] ?? '');
-$newsletterMailto = sprintf(
-    'mailto:%s?subject=%s',
-    $courrielClub,
-    rawurlencode("Abonnement newsletter Cavaliers d'Hérouville")
-);
 $googleMapsUrl = (string) ($donneesSite['google_maps_url'] ?? '');
 $googleMapsEmbedUrl = (string) ($donneesSite['google_maps_embed_url'] ?? '');
 $clubGoogleMapsUrl = (string) ($donneesSite['club_google_maps_url'] ?? '');
@@ -205,15 +200,51 @@ $renderReviewStars = static function (?float $note): string {
                                 </p>
                             </div>
 
-                            <div class="footer-newsletter-actions">
-                                <a
-                                    class="footer-anchor"
-                                    href="<?= e($newsletterMailto) ?>"
+                            <form
+                                method="post"
+                                action="<?= e(url_route((string) ($donneesSite['page_courante'] ?? 'accueil'))) ?>#footer-newsletter-title"
+                                class="footer-newsletter-form"
+                            >
+                                <input type="hidden" name="action" value="newsletter_subscribe">
+                                <input type="hidden" name="jeton_csrf" value="<?= e($donneesSite['jeton_csrf'] ?? '') ?>">
+                                <input type="hidden" name="page_redirection" value="<?= e((string) ($donneesSite['page_courante'] ?? 'accueil')) ?>">
+
+                                <div class="footer-newsletter-field">
+                                    <label for="newsletter-email">Adresse email</label>
+                                    <input
+                                        id="newsletter-email"
+                                        type="email"
+                                        name="newsletter_email"
+                                        maxlength="254"
+                                        autocomplete="email"
+                                        required
+                                        aria-describedby="newsletter-help newsletter-consent-help"
+                                    >
+                                    <p id="newsletter-help" class="footer-newsletter-help">
+                                        Un email de confirmation est envoye apres inscription.
+                                    </p>
+                                </div>
+
+                                <label class="footer-newsletter-consent" for="newsletter-consentement">
+                                    <input
+                                        id="newsletter-consentement"
+                                        type="checkbox"
+                                        name="newsletter_consentement"
+                                        value="1"
+                                        required
+                                    >
+                                    <span id="newsletter-consent-help">
+                                        J'accepte de recevoir les actualites du club. Un lien de desabonnement est present dans chaque email.
+                                    </span>
+                                </label>
+                                <button
+                                    class="footer-anchor footer-newsletter-submit"
+                                    type="submit"
                                     aria-label="S'abonner à la newsletter des Cavaliers d'Hérouville par email"
                                 >
                                     Abonnez-vous
-                                </a>
-                            </div>
+                                </button>
+                            </form>
                         </section>
                     <?php endif; ?>
                 </div>

@@ -116,8 +116,10 @@ require_once __DIR__ . '/MVC/modeles/DepotMediasOracle.php';
 require_once __DIR__ . '/MVC/modeles/DepotCommandesOracle.php';
 require_once __DIR__ . '/MVC/modeles/DepotDammierOracle.php';
 require_once __DIR__ . '/MVC/modeles/DepotHorairesOracle.php';
+require_once __DIR__ . '/MVC/modeles/DepotNewsletterOracle.php';
 require_once __DIR__ . '/MVC/modeles/ServiceChessCom.php';
 require_once __DIR__ . '/MVC/modeles/ServiceGoogleAvis.php';
+require_once __DIR__ . '/MVC/modeles/ServiceNewsletterMailer.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurActions.php';
 require_once __DIR__ . '/MVC/controleurs/ControleurPages.php';
 
@@ -369,7 +371,7 @@ function terminer_sur_erreur_configuration_base(Throwable $exception): never
     echo '<!doctype html><html lang="fr"><head><meta charset="UTF-8"><title>Base indisponible</title></head>';
     echo '<body style="font-family: sans-serif; padding: 2rem; line-height: 1.5;">';
     echo '<h1>Base de donnees indisponible</h1>';
-    echo '<p>Le site est configure pour fonctionner uniquement avec Oracle. Verifie l extension PHP oci8 et les variables ORACLE_HOST, ORACLE_SERVICE, ORACLE_USER et ORACLE_PASSWORD dans XAMPP.</p>';
+    echo '<p>Le site est configure pour fonctionner uniquement avec Oracle 19c. Verifie l extension PHP oci8_19, Instant Client 19c et les variables ORACLE_HOST, ORACLE_SERVICE, ORACLE_USER et ORACLE_PASSWORD dans XAMPP.</p>';
     echo '</body></html>';
 
     exit;
@@ -384,8 +386,37 @@ try {
     $depotCommandes = new DepotCommandesOracle($baseDeDonnees);
     $depotDammier = new DepotDammierOracle($baseDeDonnees);
     $depotHoraires = new DepotHorairesOracle($baseDeDonnees);
+    $depotNewsletter = new DepotNewsletterOracle($baseDeDonnees);
+    $serviceNewsletterMailer = new ServiceNewsletterMailer(
+        $depotNewsletter,
+        (string) (getenv('MAIL_FROM_ADDRESS') ?: 'noreply@cavaliers-herouville.fr'),
+        (string) (getenv('MAIL_FROM_NAME') ?: "Cavaliers d'Herouville"),
+        (string) (getenv('NEWSLETTER_PUBLIC_BASE_URL') ?: '/')
+    );
 
-    $controleurActions = new ControleurActions($depotUtilisateurs, $depotArticles, $depotMedias, $depotCommandes, $depotDammier, $depotHoraires, __DIR__ . '/ressources/media/uploads');
+    $jetonDesabonnementNewsletter = trim((string) ($_GET['newsletter_unsubscribe'] ?? ''));
+    if ($jetonDesabonnementNewsletter !== '') {
+        $desabonnementEffectue = $depotNewsletter->desabonner($jetonDesabonnementNewsletter);
+        ajouter_message_flash(
+            $desabonnementEffectue ? 'success' : 'error',
+            $desabonnementEffectue
+                ? 'Votre desabonnement a bien ete pris en compte.'
+                : 'Le lien de desabonnement est invalide ou deja utilise.'
+        );
+        rediriger_vers(url_route('accueil') . '#footer-newsletter-title');
+    }
+
+    $controleurActions = new ControleurActions(
+        $depotUtilisateurs,
+        $depotArticles,
+        $depotMedias,
+        $depotCommandes,
+        $depotDammier,
+        $depotHoraires,
+        __DIR__ . '/ressources/media/uploads',
+        $depotNewsletter,
+        $serviceNewsletterMailer
+    );
     $controleurActions->traiter();
 
     $pageDemandee = isset($_GET['page']) ? (string) $_GET['page'] : 'accueil';

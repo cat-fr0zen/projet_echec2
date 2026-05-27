@@ -39,12 +39,13 @@ Projet_echec2/
 |-- README.md
 |-- base_de_donnees/
 |   `-- oracle/
-|       `-- v2/
-|           |-- install_v2.sql
-|           |-- verify_v2.sql
-|           |-- dev_only_drop_v2.sql
-|           |-- README.md
-|           `-- migrations/
+|       `-- 19c/
+|           |-- install_19c.sql
+|           |-- precheck_19c.sql
+|           |-- schema.sql
+|           |-- security_verify.sql
+|           |-- change_journal_template.sql
+|           `-- README.md
 |-- donnees/
 |   |-- articles.json
 |   |-- utilisateurs.json
@@ -88,7 +89,7 @@ Projet_echec2/
 - Visual Studio Code (ou IDE equivalent): developpement.
 - PHP (serveur local): execution du site.
 - Oracle Database: base de donnees cible.
-- Oracle v2 modulaire: nouvelle cible versionnee avec vues/packages d'administration.
+- Oracle 19c avec PHP `oci8_19`: cible unique de base de donnees du site.
 - Git: versioning du code.
 - Navigateur web: test et validation du rendu.
 
