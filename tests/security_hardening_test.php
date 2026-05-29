@@ -33,6 +33,9 @@ $index = contenu_fichier($racineProjet . '/index.php');
 $controleurActions = contenu_fichier($racineProjet . '/MVC/controleurs/ControleurActions.php');
 $serviceChessCom = contenu_fichier($racineProjet . '/MVC/modeles/ServiceChessCom.php');
 $serviceGoogleAvis = contenu_fichier($racineProjet . '/MVC/modeles/ServiceGoogleAvis.php');
+$htaccessRacine = contenu_fichier($racineProjet . '/.htaccess');
+$lanceurBat = contenu_fichier($racineProjet . '/lancement/lancer_site_usb.bat');
+$verificateurOracle = contenu_fichier($racineProjet . '/lancement/verifier_connexion_oracle.php');
 $schemaOracle19c = contenu_fichier($racineProjet . '/base_de_donnees/oracle/19c/schema.sql');
 $verificationOracle19c = contenu_fichier($racineProjet . '/base_de_donnees/oracle/19c/security_verify.sql');
 $journalOracle19c = contenu_fichier($racineProjet . '/base_de_donnees/oracle/19c/change_journal_template.sql');
@@ -49,6 +52,13 @@ verifier(str_contains($index, 'X-Content-Type-Options: nosniff'), 'index.php doi
 verifier(str_contains($index, 'X-Frame-Options: SAMEORIGIN'), 'index.php doit envoyer X-Frame-Options.');
 verifier(str_contains($index, 'Referrer-Policy: strict-origin-when-cross-origin'), 'index.php doit envoyer Referrer-Policy.');
 verifier(str_contains($index, 'Permissions-Policy: camera=(), microphone=(), geolocation=()'), 'index.php doit envoyer Permissions-Policy.');
+verifier(str_contains($index, "charger_fichier_env_local(__DIR__ . '/.env')"), 'index.php doit charger .env pour Apache/XAMPP.');
+verifier(str_contains($htaccessRacine, 'env|ini|json'), '.htaccess doit bloquer les fichiers de configuration.');
+verifier(str_contains($lanceurBat, 'verifier_connexion_oracle.php'), 'Le .bat doit verifier Oracle avant de lancer le site.');
+verifier(str_contains($lanceurBat, 'C:\xampp'), 'Le .bat doit privilegier le PHP de XAMPP.');
+verifier(str_contains($verificateurOracle, "PHP_SAPI !== 'cli'"), 'Le controle Oracle ne doit pas etre executable en HTTP.');
+verifier(str_contains($verificateurOracle, "extension_loaded('oci8')"), 'Le controle CLI doit verifier oci8.');
+verifier(str_contains($verificateurOracle, 'NEWSLETTER_CONSENT_SALT'), 'Le controle CLI doit bloquer le salt newsletter par defaut.');
 
 verifier(str_contains($schemaOracle19c, 'MERGE INTO ref_role_compte'), 'Le schema 19c doit installer les roles de reference.');
 verifier(str_contains($schemaOracle19c, 'MERGE INTO ref_type_bloc_article'), 'Le schema 19c doit installer les types de blocs article.');
@@ -61,8 +71,10 @@ verifier(str_contains($installOracle19c, '@@precheck_19c.sql'), 'Oracle 19c doit
 verifier(str_contains($installOracle19c, '@@security_verify.sql'), 'Oracle 19c doit lancer la verification securite apres installation.');
 verifier(str_contains($readmeOracle19c, 'extension=oci8_19'), 'La documentation Oracle 19c doit expliquer l extension oci8_19.');
 verifier(!str_contains(strtolower($readmeOracle19c), 'grant dba to'), 'La documentation Oracle 19c ne doit pas recommander GRANT DBA.');
-verifier(!is_dir($racineProjet . '/base_de_donnees/oracle/10g'), 'Le dossier Oracle 10g obsolete doit etre supprime.');
-verifier(!is_dir($racineProjet . '/base_de_donnees/oracle/v2'), 'Le dossier Oracle v2 obsolete doit etre supprime.');
+
+$dossiersOracle = array_map('basename', glob($racineProjet . '/base_de_donnees/oracle/*', GLOB_ONLYDIR) ?: []);
+sort($dossiersOracle);
+verifier($dossiersOracle === ['19c'], 'Un seul dossier Oracle actif doit rester.');
 
 if ($echecs !== []) {
     fwrite(STDERR, "Echecs de durcissement:\n");

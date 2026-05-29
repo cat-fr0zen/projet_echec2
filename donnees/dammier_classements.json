@@ -1,0 +1,34 @@
+[
+    {
+        "dammier_score_id": "dammier_score_0b50b05db39d89f0",
+        "dammier_week_key": "2026-W19",
+        "dammier_puzzle_id": "dammier_mate_file",
+        "dammier_user_id": "utilisateur_ee43634960ac89fa",
+        "dammier_display_name": "MULLOIS Matthéo",
+        "dammier_moves_count": 1,
+        "dammier_elapsed_seconds": 2,
+        "dammier_solved_at": "2026-05-06T13:28:04+00:00"
+    },
+    {
+        "dammier_score_id": "dammier_score_1a132b15980b431f",
+        "dammier_week_key": "2026-W20",
+        "dammier_puzzle_id": "dammier_back_rank",
+        "dammier_user_id": "utilisateur_653a2fed212c0474",
+        "dammier_display_name": "MULLOIS Matthéo",
+        "dammier_moves_count": 2,
+        "dammier_elapsed_seconds": 4,
+        "dammier_solved_at": "2026-05-13T12:15:14+00:00",
+        "dammier_record_status": "created"
+    },
+    {
+        "dammier_score_id": "dammier_score_4e0d6ddf6022e86e",
+        "dammier_week_key": "2026-W21",
+        "dammier_puzzle_id": "dammier_rook_lift",
+        "dammier_user_id": "utilisateur_653a2fed212c0474",
+        "dammier_display_name": "MULLOIS Matthéo",
+        "dammier_moves_count": 8,
+        "dammier_elapsed_seconds": 81,
+        "dammier_solved_at": "2026-05-20T12:03:02+00:00",
+        "dammier_record_status": "created"
+    }
+]

@@ -377,6 +377,64 @@ function terminer_sur_erreur_configuration_base(Throwable $exception): never
     exit;
 }
 
+/**
+ * Charge un fichier .env local si Apache/XAMPP ne fournit pas deja les variables.
+ *
+ * Les secrets restent proteges par .htaccess et ne sont jamais affiches.
+ */
+function charger_fichier_env_local(string $chemin): void
+{
+    if (!is_file($chemin) || !is_readable($chemin)) {
+        return;
+    }
+
+    $lignes = file($chemin, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+    if ($lignes === false) {
+        return;
+    }
+
+    foreach ($lignes as $ligne) {
+        $ligne = trim($ligne);
+
+        if ($ligne === '' || str_starts_with($ligne, '#')) {
+            continue;
+        }
+
+        $positionSeparateur = strpos($ligne, '=');
+
+        if ($positionSeparateur === false) {
+            continue;
+        }
+
+        $cle = trim(substr($ligne, 0, $positionSeparateur));
+        $valeur = trim(substr($ligne, $positionSeparateur + 1));
+
+        $valeurProcessus = getenv($cle);
+
+        if (
+            !preg_match('/^[A-Z0-9_]+$/', $cle)
+            || (is_string($valeurProcessus) && $valeurProcessus !== '')
+        ) {
+            continue;
+        }
+
+        if (
+            strlen($valeur) >= 2
+            && (($valeur[0] === '"' && str_ends_with($valeur, '"'))
+                || ($valeur[0] === "'" && str_ends_with($valeur, "'")))
+        ) {
+            $valeur = substr($valeur, 1, -1);
+        }
+
+        putenv($cle . '=' . $valeur);
+        $_ENV[$cle] = $valeur;
+        $_SERVER[$cle] = $_SERVER[$cle] ?? $valeur;
+    }
+}
+
+charger_fichier_env_local(__DIR__ . '/.env');
+
 try {
     $baseDeDonnees = BaseDeDonneesOracle::depuisEnvironnement();
 

@@ -1,0 +1,18 @@
+[
+    {
+        "identifiant": "utilisateur_653a2fed212c0474",
+        "nom": "Matthéo",
+        "prenom": "MULLOIS",
+        "date_naissance": "2002-02-21",
+        "courriel": "mattheoducret86@gmail.com",
+        "numero_licence": "",
+        "mot_de_passe_hache": "$2y$10$6dj/k/vOPHm675djl9132eTf2OujZiYWMJWYwzAehap22gS4HKXiG",
+        "description_profil": "ingénieur informaticien",
+        "pseudo_chess": "imran142",
+        "role": "admin",
+        "statut_compte": "actif",
+        "statut_adhesion": "active",
+        "cree_le": "2026-05-12T16:57:35+00:00",
+        "mis_a_jour_le": "2026-05-20T20:49:25+00:00"
+    }
+]
