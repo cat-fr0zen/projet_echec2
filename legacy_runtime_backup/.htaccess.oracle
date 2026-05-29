@@ -1,0 +1,11 @@
+Options -Indexes
+AddDefaultCharset UTF-8
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(\.git|MVC|base_de_donnees|donnees|journaux|lancement|stockage_runtime|tests)(/|$) - [R=404,L]
+</IfModule>
+
+<FilesMatch "\.(?:env|ini|json|log|md|sql|bak|backup|tmp|old|orig|lock|key|pem|p12|ps1|bat)$">
+    Require all denied
+</FilesMatch>
