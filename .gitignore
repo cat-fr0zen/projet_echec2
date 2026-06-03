@@ -9,3 +9,5 @@
 /.env
 /runtime/mysql-data/*
 !/runtime/mysql-data/.gitignore
+/runtime/mysql-local.ini
+/runtime/mysql-data-archive-*/
