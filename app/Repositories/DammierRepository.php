@@ -13,8 +13,12 @@ final class DammierRepository
 {
     public function obtenirPuzzleHebdomadaire(): array
     {
+        return $this->obtenirPuzzlePourDate(new DateTimeImmutable('now'));
+    }
+
+    public function obtenirPuzzlePourDate(DateTimeImmutable $dateReference): array
+    {
         $puzzles = $this->listerPuzzlesActifs();
-        $dateReference = new DateTimeImmutable('now');
         $semaineIso = $dateReference->format('o-\WW');
 
         if ($puzzles === []) {
@@ -25,8 +29,9 @@ final class DammierRepository
             return $puzzle;
         }
 
-        $seed = ((int) $dateReference->format('o')) * 53 + (int) $dateReference->format('W');
-        $puzzle = $puzzles[$seed % count($puzzles)];
+        $puzzles = $this->ordonnerPuzzlesPourRotation($puzzles);
+        $indexHebdomadaire = (((int) $dateReference->format('o')) * 53 + (int) $dateReference->format('W')) % count($puzzles);
+        $puzzle = $puzzles[$indexHebdomadaire];
         $puzzle['dammier_week_key'] = $semaineIso;
         $puzzle['dammier_generated_at'] = gmdate('c');
 
@@ -116,7 +121,7 @@ final class DammierRepository
 
     public function verifierPuzzleHebdomadaire(string $weekKey, string $puzzleId): bool
     {
-        $puzzle = $this->obtenirPuzzleHebdomadaire();
+        $puzzle = $this->obtenirPuzzlePourDate(new DateTimeImmutable('now'));
 
         return $weekKey === (string) ($puzzle['dammier_week_key'] ?? '')
             && $puzzleId === (string) ($puzzle['dammier_id'] ?? '');
@@ -125,8 +130,13 @@ final class DammierRepository
     private function listerPuzzlesActifs(): array
     {
         $rows = DB::table('dammier_puzzle')
+            ->leftJoin('ref_difficulte_dammier as difficulte', 'difficulte.code_difficulte', '=', 'dammier_puzzle.code_difficulte')
             ->where('actif', 1)
-            ->orderBy('dammier_id')
+            ->orderBy('dammier_puzzle.dammier_id')
+            ->select(
+                'dammier_puzzle.*',
+                'difficulte.libelle_difficulte as libelle_difficulte_dammier'
+            )
             ->get()
             ->all();
 
@@ -144,6 +154,8 @@ final class DammierRepository
             'dammier_instruction' => (string) ($row['instruction'] ?? ''),
             'dammier_fen' => (string) ($row['fen'] ?? '8/8/8/8/8/8/8/8 w - - 0 1'),
             'dammier_side_to_move' => (string) ($row['trait'] ?? 'w'),
+            'dammier_difficulty_code' => (string) ($row['code_difficulte'] ?? 'medium'),
+            'dammier_difficulty_label' => (string) ($row['libelle_difficulte_dammier'] ?? 'Medium'),
             'dammier_solution' => $this->chargerListePuzzle(
                 'dammier_solution_etape',
                 'ordre_etape',
@@ -166,6 +178,13 @@ final class DammierRepository
                 (string) ($row['indices'] ?? '')
             ),
             'dammier_source' => (string) ($row['source_puzzle'] ?? 'pool_local'),
+            'dammier_white_moves_count' => count($this->chargerListePuzzle(
+                'dammier_solution_etape',
+                'ordre_etape',
+                'coup',
+                $dammierId,
+                (string) ($row['solution'] ?? '')
+            )),
         ];
     }
 
@@ -243,14 +262,40 @@ final class DammierRepository
             'dammier_id' => 'dammier_secours',
             'dammier_title' => 'Puzzle de secours',
             'dammier_description' => "Un puzzle local reste disponible meme si la base n'a pas encore ete peuplee.",
-            'dammier_instruction' => 'Les Blancs jouent et mattent en un coup.',
-            'dammier_fen' => '7k/8/5KQ1/8/8/8/8/8 w - - 0 1',
+            'dammier_instruction' => 'Trouve la suite theorique en 2 coups blancs.',
+            'dammier_fen' => 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1',
             'dammier_side_to_move' => 'w',
-            'dammier_solution' => ['g6g7'],
-            'dammier_replies' => [],
-            'dammier_hints' => ['La case finale de la dame doit etre protegee par le roi blanc.'],
+            'dammier_difficulty_code' => 'facile',
+            'dammier_difficulty_label' => 'Facile',
+            'dammier_solution' => ['e2e4', 'g1f3'],
+            'dammier_replies' => ['e7e5', 'b8c6'],
+            'dammier_hints' => [
+                'Commence par prendre le centre.',
+                'Ensuite, developpe un cavalier vers une case active.',
+            ],
             'dammier_source' => 'fallback_local',
+            'dammier_white_moves_count' => 2,
         ];
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $puzzles
+     * @return array<int, array<string, mixed>>
+     */
+    private function ordonnerPuzzlesPourRotation(array $puzzles): array
+    {
+        usort($puzzles, static function (array $gauche, array $droite): int {
+            $poidsGauche = sprintf('%u', crc32((string) ($gauche['dammier_id'] ?? '')));
+            $poidsDroite = sprintf('%u', crc32((string) ($droite['dammier_id'] ?? '')));
+
+            if ($poidsGauche === $poidsDroite) {
+                return strcmp((string) ($gauche['dammier_id'] ?? ''), (string) ($droite['dammier_id'] ?? ''));
+            }
+
+            return $poidsGauche <=> $poidsDroite;
+        });
+
+        return $puzzles;
     }
 
     private function texteVersListe(string $valeur): array

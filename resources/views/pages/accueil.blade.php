@@ -22,6 +22,8 @@ $resumeHorairesClub = is_array($siteData['resume_horaires_club'] ?? null) ? $sit
 $itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
 $libelleSaisonHoraires = (string) ($horairesClub['season_label'] ?? 'Horaires du club');
 $messageJourFerie = (string) ($horairesClub['holiday_notice'] ?? '');
+$libelleDifficulteDammier = (string) ($dammierPuzzle['dammier_difficulty_label'] ?? 'Medium');
+$nombreCoupsBlancsDammier = (int) ($dammierPuzzle['dammier_white_moves_count'] ?? count((array) ($dammierPuzzle['dammier_solution'] ?? [])));
 $dammierPayload = [
     'dammier_puzzle' => $dammierPuzzle,
     'dammier_classement' => $dammierClassement,
@@ -91,6 +93,7 @@ $dammierPayload = [
                 <div>
                     <p class="eyebrow">Casse-tête hebdomadaire</p>
                     <h2><?= e((string) ($dammierPuzzle['dammier_title'] ?? 'Puzzle hebdomadaire')) ?></h2>
+                    <p class="card-tag">Difficulte: <?= e($libelleDifficulteDammier) ?> · <?= e((string) $nombreCoupsBlancsDammier) ?> coups blancs</p>
                 </div>
             </div>
 

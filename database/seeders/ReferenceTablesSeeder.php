@@ -68,5 +68,12 @@ final class ReferenceTablesSeeder extends Seeder
             ['code_statut_envoi' => 'echec', 'libelle_statut_envoi' => 'Echec'],
             ['code_statut_envoi' => 'ignore', 'libelle_statut_envoi' => 'Ignore'],
         ]);
+
+        DB::table('ref_difficulte_dammier')->insertOrIgnore([
+            ['code_difficulte' => 'facile', 'libelle_difficulte' => 'Facile', 'ordre_affichage' => 1],
+            ['code_difficulte' => 'medium', 'libelle_difficulte' => 'Medium', 'ordre_affichage' => 2],
+            ['code_difficulte' => 'difficile', 'libelle_difficulte' => 'Difficile', 'ordre_affichage' => 3],
+            ['code_difficulte' => 'extreme', 'libelle_difficulte' => 'Extreme', 'ordre_affichage' => 4],
+        ]);
     }
 }

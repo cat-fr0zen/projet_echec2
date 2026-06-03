@@ -13,6 +13,7 @@ WHERE table_schema = DATABASE()
     'media_publication',
     'commande_locale',
     'dammier_puzzle',
+    'ref_difficulte_dammier',
     'dammier_solution_etape',
     'dammier_reponse_attendue',
     'dammier_indice',
@@ -33,6 +34,7 @@ WHERE table_schema = DATABASE()
   AND (
     (table_name = 'compte_membre' AND column_name = 'date_naissance')
     OR (table_name = 'article' AND column_name = 'contenu_plat_cache')
+    OR (table_name = 'dammier_puzzle' AND column_name = 'code_difficulte')
     OR (table_name = 'horaire_creneau' AND column_name IN ('heure_debut', 'heure_fin'))
     OR (table_name = 'newsletter_abonnement' AND column_name = 'code_statut')
     OR (table_name = 'newsletter_envoi' AND column_name IN ('code_type_evenement', 'code_statut_envoi'))
