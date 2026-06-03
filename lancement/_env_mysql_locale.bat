@@ -8,9 +8,19 @@ set "MYSQL_DATABASE=projet_echec2"
 set "MYSQL_USERNAME=root"
 set "MYSQL_PASSWORD="
 set "MYSQL_DATA_DIR=%PROJECT_ROOT%\runtime\mysql-data"
-set "MYSQL_INI=%MYSQL_DATA_DIR%\my.ini"
+set "MYSQL_INI=%PROJECT_ROOT%\runtime\mysql-local.ini"
 set "MYSQL_BIN="
 set "MYSQL_FLAVOR="
+set "MYSQL_DATA_ENGINE="
+
+if exist "%MYSQL_DATA_DIR%\aria_log_control" set "MYSQL_DATA_ENGINE=MariaDB"
+if exist "%MYSQL_DATA_DIR%\multi-master.info" set "MYSQL_DATA_ENGINE=MariaDB"
+if exist "%MYSQL_DATA_DIR%\mysql\global_priv.frm" set "MYSQL_DATA_ENGINE=MariaDB"
+
+if /I "%MYSQL_DATA_ENGINE%"=="MariaDB" if exist "C:\xampp\mysql\bin\mysqld.exe" (
+    set "MYSQL_BIN=C:\xampp\mysql\bin"
+    set "MYSQL_FLAVOR=MariaDB (XAMPP, compatible avec runtime/mysql-data)"
+)
 
 for /f "delims=" %%D in ('dir /ad /b /o-n "C:\laragon\bin\mysql\mariadb*" 2^>nul') do (
     if not defined MYSQL_BIN if exist "C:\laragon\bin\mysql\%%D\bin\mysqld.exe" (

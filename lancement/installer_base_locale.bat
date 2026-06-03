@@ -15,12 +15,21 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo Lancement des migrations et seeders...
-php artisan migrate --seed
+echo Application des migrations...
+php artisan migrate
 
 if errorlevel 1 (
     echo.
     echo Les migrations Laravel ont echoue.
+    exit /b 1
+)
+
+echo Initialisation des donnees de reference...
+php artisan db:seed --class="Database\Seeders\DatabaseSeeder"
+
+if errorlevel 1 (
+    echo.
+    echo Le seeding Laravel a echoue.
     exit /b 1
 )
 
