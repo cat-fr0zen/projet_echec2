@@ -7,3 +7,5 @@
 /storage/framework/sessions/*
 /storage/framework/views/*
 /.env
+/runtime/mysql-data/*
+!/runtime/mysql-data/.gitignore

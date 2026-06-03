@@ -253,12 +253,12 @@ final class SiteContent
                 [
                     'nom' => 'Instagram',
                     'url' => 'https://www.instagram.com/lescavaliersdherouville/',
-                    'icone' => 'ressources/media/divers/instagram.jpg',
+                    'icone' => 'assets/media/divers/instagram.jpg',
                 ],
                 [
                     'nom' => 'Facebook',
                     'url' => 'https://www.facebook.com/profile.php?id=61576317887170',
-                    'icone' => 'ressources/media/divers/facebook.jpg',
+                    'icone' => 'assets/media/divers/facebook.jpg',
                 ],
             ],
             'navigation_principale' => $navigationPrincipale,

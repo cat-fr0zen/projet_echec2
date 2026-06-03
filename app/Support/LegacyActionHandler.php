@@ -512,7 +512,7 @@ final class LegacyActionHandler
             'description' => $description,
             'nom_fichier_original' => (string) ($fichier['name'] ?? ''),
             'nom_fichier_stocke' => $nomStocke,
-            'chemin_public' => 'ressources/media/uploads/' . $nomStocke,
+            'chemin_public' => 'assets/media/uploads/' . $nomStocke,
             'type_mime' => $validationFichier['mime'],
             'taille_octets' => (int) ($fichier['size'] ?? 0),
         ]);
@@ -1076,7 +1076,7 @@ final class LegacyActionHandler
         return [
             'bloc' => [
                 'type' => $type,
-                'chemin_public' => 'ressources/media/uploads/articles/' . $nomStocke,
+                'chemin_public' => 'assets/media/uploads/articles/' . $nomStocke,
                 'type_mime' => $validation['mime'],
                 'texte_alternatif' => $texteAlternatif,
                 'legende' => $legende,
@@ -1125,7 +1125,7 @@ final class LegacyActionHandler
     private function supprimerMediasArticleTeleverses(array $blocs): void
     {
         $dossierArticles = rtrim($this->dossierUploadMedias, '/\\') . DIRECTORY_SEPARATOR . 'articles';
-        $prefixePublic = 'ressources/media/uploads/articles/';
+        $prefixePublic = 'assets/media/uploads/articles/';
 
         foreach ($blocs as $bloc) {
             if (!in_array((string) ($bloc['type'] ?? ''), [DepotArticles::TYPE_BLOC_IMAGE, DepotArticles::TYPE_BLOC_VIDEO], true)) {

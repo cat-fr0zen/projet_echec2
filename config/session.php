@@ -10,7 +10,7 @@ return [
     'table' => 'sessions',
     'store' => null,
     'lottery' => [2, 100],
-    'cookie' => env('SESSION_COOKIE', 'projet_ecnec2_session'),
+    'cookie' => env('SESSION_COOKIE', 'projet_echec2_session'),
     'path' => '/',
     'domain' => env('SESSION_DOMAIN'),
     'secure' => env('SESSION_SECURE_COOKIE', false),

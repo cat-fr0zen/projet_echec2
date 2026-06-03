@@ -15,5 +15,5 @@ return [
         ],
     ],
 
-    'prefix' => env('CACHE_PREFIX', 'projet_ecnec2_cache'),
+    'prefix' => env('CACHE_PREFIX', 'projet_echec2_cache'),
 ];

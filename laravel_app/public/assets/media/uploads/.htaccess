@@ -1,5 +1,0 @@
-Options -Indexes -ExecCGI
-
-<FilesMatch "\.(?:php|phtml|phar|cgi|pl|py|rb|asp|aspx|jsp|sh|bat|cmd)$">
-    Require all denied
-</FilesMatch>

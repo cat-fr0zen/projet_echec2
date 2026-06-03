@@ -1,99 +1,75 @@
 # Projet Echec 2
 
-## Description du projet
+Site Laravel du club d'echecs "Les Cavaliers d'Herouville".
 
-Ce projet est un site web de club d'echecs.
-Il permet de presenter le club, de publier des contenus, de gerer des comptes membres et de poser une base solide pour une vraie exploitation (activites, adhesion, mediatheque, boutique, conformite).
+Le depot a ete consolide pour ne garder qu'une seule base de travail :
 
+- l'application Laravel active
+- la structure de base MySQL ou MariaDB locale
+- les migrations et seeders
+- les sources Oracle conservees en archive documentaire
 
-## Objectifs principaux
+## Cible technique
 
-1. Donner une presence web claire au club.
-2. Permettre aux membres de creer un compte et gerer leur profil.
-3. Encadrer la publication d'articles avec moderation.
-4. Gerer les contenus medias avec suivi des droits de diffusion.
-5. Preparer une vraie gestion club: saisons, adhesions, activites, tournois, interclubs.
-6. Poser un socle juridique et technique reutilisable en production.
+- Application : Laravel
+- Base locale : MySQL ou MariaDB
+- Port base locale recommande : `3307`
+- Nom de base recommande : `projet_echec2`
+- Serveur web local : `php artisan serve`
 
-## Pour qui ce projet est utilise
-
-- Les visiteurs du site: consulter les pages publiques du club.
-- Les membres: se connecter, modifier leur profil, proposer des articles.
-- Les responsables du club: organiser les activites et la vie du club.
-- Les administrateurs: moderer les contenus et piloter les donnees.
-
-## A quelle fin il est utilise
-
-- Communication du club (presentation, contact, infos utiles).
-- Gestion de la relation membres (comptes, profils, consentements).
-- Publication de contenu (articles, medias) avec workflow controle.
-- Preparation d'une exploitation reelle type club de sport (adhesions, paiements, activites, tournois, rencontres interclubs).
-
-## Arborescence du projet
+## Organisation du projet
 
 ```text
 Projet_echec2/
-|-- .gitignore
-|-- index.php
-|-- routeur.php
-|-- README.md
-|-- base_de_donnees/
-|   `-- oracle/
-|       `-- 19c/
-|           |-- install_19c.sql
-|           |-- precheck_19c.sql
-|           |-- schema.sql
-|           |-- security_verify.sql
-|           |-- change_journal_template.sql
-|           `-- README.md
-|-- donnees/
-|   |-- articles.json
-|   |-- utilisateurs.json
-|   |-- cache/
-|   `-- sessions/
-|-- journaux/
-|   |-- server-error.log
-|   `-- server-output.log
-|-- MVC/
-|   |-- controleurs/
-|   |   |-- ControleurActions.php
-|   |   `-- ControleurPages.php
-|   |-- modeles/
-|   |   |-- DepotArticles.php
-|   |   |-- DepotUtilisateurs.php
-|   |   |-- ModeleSite.php
-|   |   |-- ServiceChessCom.php
-|   |   `-- StockageJson.php
-|   `-- vues/
-|       |-- mise-en-page.php
-|       |-- pages/
-|       `-- partiels/
-`-- ressources/
-    |-- media/
-    |-- scripts/
-    |   `-- site.js
-    `-- styles/
-        `-- style.css
+|-- app/                         Code applicatif Laravel
+|-- config/                      Configuration du projet
+|-- database/
+|   |-- archives/
+|   |   `-- oracle-19c-source/  Anciennes sources Oracle conservees en reference
+|   |-- migrations/             Schema MySQL ou MariaDB versionne
+|   |-- seeders/                Donnees de reference
+|   |-- sql/                    Scripts SQL utilitaires
+|   |-- README.md
+|   `-- oracle_to_mysql_review.md
+|-- docs/                       Documentation projet et exploitation locale
+|-- lancement/                  Scripts de demarrage local
+|-- public/                     Assets servis par Laravel
+|-- resources/                  Vues Blade et ressources Laravel
+|-- routes/                     Routes HTTP
+|-- runtime/
+|   `-- mysql-data/             Dossier local de donnees MySQL ou MariaDB
+|-- storage/                    Stockage Laravel
+|-- tests/                      Tests de structure du projet
+|-- .env.example
+|-- artisan
+|-- composer.json
+`-- README.md
 ```
 
-## Langages utilises
+## Flux local recommande
 
-- PHP: logique serveur (routing, controllers, modeles, vues).
-- JavaScript: interactions front-end.
-- CSS: styles et mise en forme.
-- SQL / PL-SQL (Oracle): schema de base de donnees, vues, triggers, maintenance.
-- Markdown: documentation projet.
+1. Demarrer la base locale avec `lancement\\demarrer_mysql_locale.bat`
+2. Installer ou mettre a jour la base avec `lancement\\installer_base_locale.bat`
+3. Lancer le site avec `lancement\\lancer_site_local.bat`
+4. Ouvrir `http://127.0.0.1:8000`
 
-## Logiciels et outils utilises
+Les scripts cherchent d'abord Laragon, puis XAMPP.
 
-- Visual Studio Code (ou IDE equivalent): developpement.
-- PHP (serveur local): execution du site.
-- Oracle Database: base de donnees cible.
-- Oracle 19c avec PHP `oci8_19`: cible unique de base de donnees du site.
-- Git: versioning du code.
-- Navigateur web: test et validation du rendu.
+## Dossiers importants
+
+- `database/migrations` : schema Laravel versionne
+- `database/sql/create_database_mysql_mariadb.sql` : creation de la base locale
+- `database/sql/mysql_security_verify.sql` : controles de verification apres migration
+- `database/archives/oracle-19c-source` : archive de l'ancien schema Oracle
+- `runtime/mysql-data` : donnees locales MySQL ou MariaDB sur cette machine
+
+## Notes
+
+- Le projet n'utilise plus Oracle comme base active.
+- Les fichiers Oracle restants sont gardes uniquement comme reference de migration.
+- Les anciens doublons de workspace et les anciennes couches MVC ou JSON ne sont plus la source de verite.
 
 ## Credits
 
-- Matthéo Mullois
-- Association Les Cavaliers d'Hérouville
+- Mattheo Mullois
+- Association Les Cavaliers d'Herouville

@@ -99,12 +99,24 @@ if (!function_exists('url_ressource')) {
     {
         $cheminNormalise = ltrim(str_replace('\\', '/', $chemin), '/');
 
+        if (str_starts_with($cheminNormalise, 'assets/styles/')) {
+            return asset($cheminNormalise);
+        }
+
         if (str_starts_with($cheminNormalise, 'ressources/styles/')) {
             return asset('assets/styles/' . basename($cheminNormalise));
         }
 
+        if (str_starts_with($cheminNormalise, 'assets/scripts/')) {
+            return asset($cheminNormalise);
+        }
+
         if (str_starts_with($cheminNormalise, 'ressources/scripts/')) {
             return asset('assets/scripts/' . basename($cheminNormalise));
+        }
+
+        if (str_starts_with($cheminNormalise, 'assets/media/')) {
+            return asset($cheminNormalise);
         }
 
         if (str_starts_with($cheminNormalise, 'ressources/media/')) {
