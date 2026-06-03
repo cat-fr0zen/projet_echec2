@@ -11,6 +11,7 @@ use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ScheduleRepository;
 use Database\Seeders\ClubScheduleSeeder;
+use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\ReferenceTablesSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -208,6 +209,20 @@ final class SchemaNormalisationTest extends TestCase
             'tests'
         );
         self::assertSame('actif', $abonnement['statut']);
+    }
+
+    public function test_le_seeding_standard_fournit_un_vrai_puzzle_hebdomadaire(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        self::assertGreaterThan(0, DB::table('dammier_puzzle')->count());
+
+        $puzzle = (new DammierRepository())->obtenirPuzzleHebdomadaire();
+
+        self::assertNotSame('dammier_placeholder', $puzzle['dammier_id']);
+        self::assertNotSame('Puzzle en preparation', $puzzle['dammier_title']);
+        self::assertNotSame('8/8/8/8/8/8/8/8 w - - 0 1', $puzzle['dammier_fen']);
+        self::assertNotEmpty($puzzle['dammier_solution']);
     }
 
     private function colonneEstTexteLegacyPourDateNaissance(): bool
