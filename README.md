@@ -32,7 +32,7 @@ Projet_echec2/
 |   |-- README.md
 |   `-- oracle_to_mysql_review.md
 |-- docs/                       Documentation projet et exploitation locale
-|-- lancement/                  Scripts de demarrage local
+|-- lancement/                  Documentation de lancement local
 |-- public/                     Assets servis par Laravel
 |-- resources/                  Vues Blade et ressources Laravel
 |-- routes/                     Routes HTTP
@@ -48,12 +48,11 @@ Projet_echec2/
 
 ## Flux local recommande
 
-1. Demarrer la base locale avec `lancement\\demarrer_mysql_locale.bat`
-2. Installer ou mettre a jour la base avec `lancement\\installer_base_locale.bat`
-3. Lancer le site avec `lancement\\lancer_site_local.bat`
-4. Ouvrir `http://127.0.0.1:8000`
-
-Les scripts cherchent d'abord Laragon, puis XAMPP.
+1. Demarrer MySQL ou MariaDB depuis Laragon, XAMPP ou ton service local prefere
+2. Creer la base locale avec `database/sql/create_database_mysql_mariadb.sql`
+3. Lancer `php artisan migrate --seed`
+4. Lancer `php artisan serve`
+5. Ouvrir `http://127.0.0.1:8000`
 
 ## Dossiers importants
 
@@ -62,6 +61,7 @@ Les scripts cherchent d'abord Laragon, puis XAMPP.
 - `database/sql/mysql_security_verify.sql` : controles de verification apres migration
 - `database/archives/oracle-19c-source` : archive de l'ancien schema Oracle
 - `runtime/mysql-data` : donnees locales MySQL ou MariaDB sur cette machine
+- `lancement/README.md` : rappel des commandes locales sans scripts versionnes
 
 ## Notes
 

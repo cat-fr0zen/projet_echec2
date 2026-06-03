@@ -50,5 +50,23 @@ final class ReferenceTablesSeeder extends Seeder
             ['code_type' => 'image', 'libelle_type' => 'Image'],
             ['code_type' => 'video', 'libelle_type' => 'Video'],
         ]);
+
+        DB::table('ref_statut_newsletter_abonnement')->insertOrIgnore([
+            ['code_statut' => 'actif', 'libelle_statut' => 'Actif'],
+            ['code_statut' => 'desabonne', 'libelle_statut' => 'Desabonne'],
+        ]);
+
+        DB::table('ref_type_evenement_newsletter')->insertOrIgnore([
+            ['code_type_evenement' => 'article', 'libelle_type_evenement' => 'Article'],
+            ['code_type_evenement' => 'cours', 'libelle_type_evenement' => 'Cours'],
+            ['code_type_evenement' => 'boutique', 'libelle_type_evenement' => 'Boutique'],
+            ['code_type_evenement' => 'confirmation', 'libelle_type_evenement' => 'Confirmation'],
+        ]);
+
+        DB::table('ref_statut_envoi_newsletter')->insertOrIgnore([
+            ['code_statut_envoi' => 'envoye', 'libelle_statut_envoi' => 'Envoye'],
+            ['code_statut_envoi' => 'echec', 'libelle_statut_envoi' => 'Echec'],
+            ['code_statut_envoi' => 'ignore', 'libelle_statut_envoi' => 'Ignore'],
+        ]);
     }
 }

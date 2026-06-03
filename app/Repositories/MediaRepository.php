@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\MediaPublication;
+use App\Support\NomAffichageUtilisateur;
 use DateTimeImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -13,15 +15,15 @@ final class MediaRepository
 {
     public function listerTous(): array
     {
-        return $this->chargerMedias(DB::table('media_publication')->orderByDesc('cree_le')->get()->all());
+        return $this->chargerMedias($this->requeteMedias()->orderByDesc('media_publication.cree_le')->get()->all());
     }
 
     public function trouverPublies(): array
     {
         return $this->chargerMedias(
-            DB::table('media_publication')
-                ->where('code_statut', MediaPublication::STATUT_PUBLIE)
-                ->orderByDesc('cree_le')
+            $this->requeteMedias()
+                ->where('media_publication.code_statut', MediaPublication::STATUT_PUBLIE)
+                ->orderByDesc('media_publication.cree_le')
                 ->get()
                 ->all()
         );
@@ -30,9 +32,9 @@ final class MediaRepository
     public function trouverParIdentifiantAuteur(string $identifiantAuteur): array
     {
         return $this->chargerMedias(
-            DB::table('media_publication')
-                ->where('identifiant_auteur', $identifiantAuteur)
-                ->orderByDesc('cree_le')
+            $this->requeteMedias()
+                ->where('media_publication.identifiant_auteur', $identifiantAuteur)
+                ->orderByDesc('media_publication.cree_le')
                 ->get()
                 ->all()
         );
@@ -45,7 +47,6 @@ final class MediaRepository
         DB::table('media_publication')->insert([
             'identifiant' => $identifiant,
             'identifiant_auteur' => (string) ($donnees['identifiant_auteur'] ?? ''),
-            'nom_auteur' => (string) ($donnees['nom_auteur'] ?? ''),
             'code_type_media' => (string) ($donnees['type_media'] ?? MediaPublication::TYPE_PHOTO),
             'titre' => (string) ($donnees['titre'] ?? ''),
             'description' => (string) ($donnees['description'] ?? ''),
@@ -83,7 +84,7 @@ final class MediaRepository
 
     public function trouverParIdentifiant(string $identifiant): ?array
     {
-        $row = DB::table('media_publication')->where('identifiant', $identifiant)->first();
+        $row = $this->requeteMedias()->where('media_publication.identifiant', $identifiant)->first();
 
         return $row !== null ? $this->normaliserMedia((array) $row) : null;
     }
@@ -99,12 +100,18 @@ final class MediaRepository
 
     private function normaliserMedia(array $row): array
     {
+        $nomAuteur = NomAffichageUtilisateur::depuisValeurs(
+            $row['auteur_prenom_compte'] ?? '',
+            $row['auteur_nom_compte'] ?? '',
+            $row['auteur_courriel_compte'] ?? '',
+            'Auteur'
+        );
         $statut = (string) ($row['code_statut'] ?? MediaPublication::STATUT_EN_ATTENTE);
 
         return [
             'identifiant' => (string) ($row['identifiant'] ?? ''),
             'identifiant_auteur' => (string) ($row['identifiant_auteur'] ?? ''),
-            'nom_auteur' => (string) ($row['nom_auteur'] ?? ''),
+            'nom_auteur' => $nomAuteur,
             'type_media' => (string) ($row['code_type_media'] ?? MediaPublication::TYPE_PHOTO),
             'titre' => (string) ($row['titre'] ?? ''),
             'description' => (string) ($row['description'] ?? ''),
@@ -122,6 +129,18 @@ final class MediaRepository
             'cree_le' => $this->formaterDateIso($row['cree_le'] ?? null),
             'mis_a_jour_le' => $this->formaterDateIso($row['mis_a_jour_le'] ?? null),
         ];
+    }
+
+    private function requeteMedias(): Builder
+    {
+        return DB::table('media_publication')
+            ->leftJoin('compte_membre as auteur', 'auteur.identifiant', '=', 'media_publication.identifiant_auteur')
+            ->select(
+                'media_publication.*',
+                'auteur.nom as auteur_nom_compte',
+                'auteur.prenom as auteur_prenom_compte',
+                'auteur.courriel as auteur_courriel_compte'
+            );
     }
 
     private function formaterDateIso(mixed $value): string

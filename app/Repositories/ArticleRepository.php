@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\Article;
+use App\Support\NomAffichageUtilisateur;
 use DateTimeImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -14,25 +16,33 @@ final class ArticleRepository
     public function trouverPublies(): array
     {
         return $this->chargerArticles(
-            DB::table('article')->where('code_statut', Article::STATUT_PUBLIE)->orderByDesc('cree_le')->get()->all()
+            $this->requeteArticles()
+                ->where('article.code_statut', Article::STATUT_PUBLIE)
+                ->orderByDesc('article.cree_le')
+                ->get()
+                ->all()
         );
     }
 
     public function trouverParIdentifiantAuteur(string $identifiantAuteur): array
     {
         return $this->chargerArticles(
-            DB::table('article')->where('identifiant_auteur', $identifiantAuteur)->orderByDesc('cree_le')->get()->all()
+            $this->requeteArticles()
+                ->where('article.identifiant_auteur', $identifiantAuteur)
+                ->orderByDesc('article.cree_le')
+                ->get()
+                ->all()
         );
     }
 
     public function listerTous(): array
     {
-        return $this->chargerArticles(DB::table('article')->orderByDesc('cree_le')->get()->all());
+        return $this->chargerArticles($this->requeteArticles()->orderByDesc('article.cree_le')->get()->all());
     }
 
     public function trouverParIdentifiant(string $identifiant): ?array
     {
-        $row = DB::table('article')->where('identifiant', $identifiant)->first();
+        $row = $this->requeteArticles()->where('article.identifiant', $identifiant)->first();
 
         return $row !== null ? $this->normaliserArticle((array) $row) : null;
     }
@@ -45,11 +55,9 @@ final class ArticleRepository
             DB::table('article')->insert([
                 'identifiant' => $identifiant,
                 'identifiant_auteur' => (string) ($donnees['identifiant_auteur'] ?? ''),
-                'nom_auteur' => (string) ($donnees['nom_auteur'] ?? ''),
-                'auteur_affiche' => (string) ($donnees['auteur_affiche'] ?? $donnees['nom_auteur'] ?? ''),
                 'titre' => (string) ($donnees['titre'] ?? ''),
                 'resume' => (string) ($donnees['resume'] ?? ''),
-                'contenu' => $this->limiter((string) ($donnees['contenu'] ?? ''), 4000),
+                'contenu_plat_cache' => $this->limiter((string) ($donnees['contenu'] ?? ''), 4000),
                 'code_statut' => Article::STATUT_EN_ATTENTE,
                 'cree_le' => date('Y-m-d H:i:s'),
             ]);
@@ -92,17 +100,23 @@ final class ArticleRepository
 
     private function normaliserArticle(array $row): array
     {
+        $nomAuteur = NomAffichageUtilisateur::depuisValeurs(
+            $row['auteur_prenom_compte'] ?? '',
+            $row['auteur_nom_compte'] ?? '',
+            $row['auteur_courriel_compte'] ?? '',
+            'Auteur'
+        );
         $status = (string) ($row['code_statut'] ?? Article::STATUT_EN_ATTENTE);
         $createdAt = $this->formaterDateIso($row['cree_le'] ?? null);
 
         return [
             'identifiant' => (string) ($row['identifiant'] ?? ''),
             'identifiant_auteur' => (string) ($row['identifiant_auteur'] ?? ''),
-            'nom_auteur' => (string) ($row['nom_auteur'] ?? ''),
-            'auteur_affiche' => (string) ($row['auteur_affiche'] ?? $row['nom_auteur'] ?? ''),
+            'nom_auteur' => $nomAuteur,
+            'auteur_affiche' => $nomAuteur,
             'titre' => (string) ($row['titre'] ?? ''),
             'resume' => (string) ($row['resume'] ?? ''),
-            'contenu' => (string) ($row['contenu'] ?? ''),
+            'contenu' => (string) ($row['contenu_plat_cache'] ?? ''),
             'blocs' => $this->chargerBlocs((string) ($row['identifiant'] ?? '')),
             'statut' => $status,
             'libelle_statut' => match ($status) {
@@ -114,6 +128,18 @@ final class ArticleRepository
             'date_creation_libelle' => $this->formaterDateArticle($createdAt),
             'mis_a_jour_le' => $this->formaterDateIso($row['mis_a_jour_le'] ?? null),
         ];
+    }
+
+    private function requeteArticles(): Builder
+    {
+        return DB::table('article')
+            ->leftJoin('compte_membre as auteur', 'auteur.identifiant', '=', 'article.identifiant_auteur')
+            ->select(
+                'article.*',
+                'auteur.nom as auteur_nom_compte',
+                'auteur.prenom as auteur_prenom_compte',
+                'auteur.courriel as auteur_courriel_compte'
+            );
     }
 
     private function chargerBlocs(string $identifiantArticle): array

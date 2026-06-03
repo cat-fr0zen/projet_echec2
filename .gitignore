@@ -1,12 +1,17 @@
 /vendor
 /node_modules
 /bootstrap/cache/*.php
+/.phpunit.result.cache
 /storage/*.key
 /storage/logs/*.log
 /storage/framework/cache/*
 /storage/framework/sessions/*
+/storage/framework/testing/*
 /storage/framework/views/*
 /.env
+/lancement/*.bat
+/public/assets/media/uploads/articles/*
+!/public/assets/media/uploads/.htaccess
 /runtime/mysql-data/*
 !/runtime/mysql-data/.gitignore
 /runtime/mysql-local.ini

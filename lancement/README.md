@@ -1,34 +1,38 @@
 # Lancement local
 
-Scripts locaux pour faire tourner le projet avec MySQL ou MariaDB.
+Repere local pour faire tourner le projet avec MySQL ou MariaDB sans versionner de scripts machine-specifiques.
 
 ## Cible locale
 
 - hote : `127.0.0.1`
 - port : `3307`
 - base : `projet_echec2`
-- utilisateur : `root`
-- mot de passe : vide
+- utilisateur recommande pour le dev : un compte dedie au projet
+- mot de passe : garde-le dans `.env`, jamais dans Git
 
 ## Ordre recommande
 
-1. `lancement\\demarrer_mysql_locale.bat`
-2. `lancement\\installer_base_locale.bat`
-3. `lancement\\lancer_site_local.bat`
+1. Demarrer MySQL ou MariaDB depuis Laragon, XAMPP ou le service local de ton choix
+2. Executer `database\\sql\\create_database_mysql_mariadb.sql`
+3. Lancer `php artisan migrate --seed`
+4. Lancer `php artisan serve`
 
-## Detection des binaires
+## Commandes utiles
 
-Les scripts cherchent automatiquement :
-
-1. MariaDB Laragon
-2. MySQL Laragon
-3. MySQL ou MariaDB XAMPP
+```powershell
+php artisan migrate --seed
+php artisan serve
+```
 
 ## Donnees locales
 
-Le dossier de donnees local est :
+Le dossier de donnees local suivi pour l'installation locale est :
 
 `runtime\\mysql-data`
 
-Il est garde dans le projet pour que l'environnement local soit lisible,
-mais son contenu est ignore par Git.
+Le contenu de ce dossier est ignore par Git.
+
+## Scripts locaux non versionnes
+
+Si tu veux garder des `.bat` ou `.ps1` pour ta machine, place-les dans `lancement\\`.
+Ils sont maintenant ignores par Git pour eviter de versionner de l'automatisation locale.

@@ -82,7 +82,7 @@ final class UserRepository
             'identifiant' => $identifiant,
             'nom' => (string) ($donnees['nom'] ?? ''),
             'prenom' => (string) ($donnees['prenom'] ?? ''),
-            'date_naissance' => (string) ($donnees['date_naissance'] ?? ''),
+            'date_naissance' => $this->normaliserDateNaissance($donnees['date_naissance'] ?? null),
             'courriel' => $email,
             'courriel_normalise' => $email,
             'numero_licence_federale' => $license !== '' ? $license : null,
@@ -107,7 +107,7 @@ final class UserRepository
             ->update([
                 'nom' => (string) ($donnees['nom'] ?? ''),
                 'prenom' => (string) ($donnees['prenom'] ?? ''),
-                'date_naissance' => (string) ($donnees['date_naissance'] ?? ''),
+                'date_naissance' => $this->normaliserDateNaissance($donnees['date_naissance'] ?? null),
                 'numero_licence_federale' => $license !== '' ? $license : null,
                 'description_profil' => (string) ($donnees['description_profil'] ?? ''),
                 'pseudo_chess' => $this->normaliserPseudoChess($donnees['pseudo_chess'] ?? ''),
@@ -165,7 +165,7 @@ final class UserRepository
             'identifiant' => (string) ($row['identifiant'] ?? ''),
             'nom' => (string) ($row['nom'] ?? ''),
             'prenom' => (string) ($row['prenom'] ?? ''),
-            'date_naissance' => (string) ($row['date_naissance'] ?? ''),
+            'date_naissance' => $this->formaterDateNaissance($row['date_naissance'] ?? null),
             'courriel' => mb_strtolower((string) ($row['courriel'] ?? '')),
             'numero_licence' => $this->normaliserNumeroLicenceFederale($row['numero_licence_federale'] ?? ''),
             'mot_de_passe_hache' => (string) ($row['mot_de_passe_hache'] ?? ''),
@@ -182,6 +182,26 @@ final class UserRepository
     private function normaliserPseudoChess(mixed $valeur): string
     {
         return mb_strtolower(trim((string) $valeur));
+    }
+
+    private function normaliserDateNaissance(mixed $valeur): ?string
+    {
+        $date = trim((string) $valeur);
+
+        return preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) === 1 ? $date : null;
+    }
+
+    private function formaterDateNaissance(mixed $valeur): string
+    {
+        if ($valeur === null || $valeur === '') {
+            return '';
+        }
+
+        try {
+            return (new DateTimeImmutable((string) $valeur))->format('Y-m-d');
+        } catch (\Throwable) {
+            return '';
+        }
     }
 
     private function compterAdministrateurs(): int

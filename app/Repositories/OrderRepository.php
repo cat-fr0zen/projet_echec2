@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use App\Models\CommandeLocale;
+use App\Support\NomAffichageUtilisateur;
 use DateTimeImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -13,15 +15,15 @@ final class OrderRepository
 {
     public function listerToutes(): array
     {
-        return $this->chargerCommandes(DB::table('commande_locale')->orderByDesc('cree_le')->get()->all());
+        return $this->chargerCommandes($this->requeteCommandes()->orderByDesc('commande_locale.cree_le')->get()->all());
     }
 
     public function listerParIdentifiantUtilisateur(string $identifiantUtilisateur): array
     {
         return $this->chargerCommandes(
-            DB::table('commande_locale')
-                ->where('identifiant_utilisateur', $identifiantUtilisateur)
-                ->orderByDesc('cree_le')
+            $this->requeteCommandes()
+                ->where('commande_locale.identifiant_utilisateur', $identifiantUtilisateur)
+                ->orderByDesc('commande_locale.cree_le')
                 ->get()
                 ->all()
         );
@@ -34,7 +36,6 @@ final class OrderRepository
         DB::table('commande_locale')->insert([
             'identifiant' => $identifiant,
             'identifiant_utilisateur' => (string) ($donnees['identifiant_utilisateur'] ?? ''),
-            'nom_utilisateur' => (string) ($donnees['nom_utilisateur'] ?? ''),
             'produit' => (string) ($donnees['produit'] ?? ''),
             'categorie' => (string) ($donnees['categorie'] ?? ''),
             'code_statut' => CommandeLocale::STATUT_EN_ATTENTE,
@@ -66,7 +67,7 @@ final class OrderRepository
 
     public function trouverParIdentifiant(string $identifiant): ?array
     {
-        $row = DB::table('commande_locale')->where('identifiant', $identifiant)->first();
+        $row = $this->requeteCommandes()->where('commande_locale.identifiant', $identifiant)->first();
 
         return $row !== null ? $this->normaliserCommande((array) $row) : null;
     }
@@ -82,12 +83,18 @@ final class OrderRepository
 
     private function normaliserCommande(array $row): array
     {
+        $nomUtilisateur = NomAffichageUtilisateur::depuisValeurs(
+            $row['utilisateur_prenom_compte'] ?? '',
+            $row['utilisateur_nom_compte'] ?? '',
+            $row['utilisateur_courriel_compte'] ?? '',
+            'Membre'
+        );
         $statut = (string) ($row['code_statut'] ?? CommandeLocale::STATUT_EN_ATTENTE);
 
         return [
             'identifiant' => (string) ($row['identifiant'] ?? ''),
             'identifiant_utilisateur' => (string) ($row['identifiant_utilisateur'] ?? ''),
-            'nom_utilisateur' => (string) ($row['nom_utilisateur'] ?? ''),
+            'nom_utilisateur' => $nomUtilisateur,
             'produit' => (string) ($row['produit'] ?? ''),
             'categorie' => (string) ($row['categorie'] ?? ''),
             'statut' => $statut,
@@ -99,6 +106,18 @@ final class OrderRepository
             'cree_le' => $this->formaterDateIso($row['cree_le'] ?? null),
             'mis_a_jour_le' => $this->formaterDateIso($row['mis_a_jour_le'] ?? null),
         ];
+    }
+
+    private function requeteCommandes(): Builder
+    {
+        return DB::table('commande_locale')
+            ->leftJoin('compte_membre as utilisateur', 'utilisateur.identifiant', '=', 'commande_locale.identifiant_utilisateur')
+            ->select(
+                'commande_locale.*',
+                'utilisateur.nom as utilisateur_nom_compte',
+                'utilisateur.prenom as utilisateur_prenom_compte',
+                'utilisateur.courriel as utilisateur_courriel_compte'
+            );
     }
 
     private function formaterDateIso(mixed $value): string

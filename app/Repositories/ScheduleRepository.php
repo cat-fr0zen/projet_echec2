@@ -34,7 +34,11 @@ final class ScheduleRepository
             'updated_at' => $schedule->updated_at,
             'items' => array_map(static fn (object $item): array => [
                 'day' => (string) ($item->jour ?? ''),
-                'time' => (string) ($item->horaire ?? ''),
+                'time' => self::formaterPlageHoraire(
+                    $item->heure_debut ?? null,
+                    $item->heure_fin ?? null,
+                    $item->horaire ?? null
+                ),
                 'title' => (string) ($item->titre ?? ''),
                 'details' => (string) ($item->details ?? ''),
                 'is_holiday' => (int) ($item->jour_ferie ?? 0) === 1,
@@ -64,9 +68,16 @@ final class ScheduleRepository
                 continue;
             }
 
+            [$heureDebut, $heureFin] = $this->decomposerPlageHoraire($time);
+            if ($heureDebut === null || $heureFin === null) {
+                continue;
+            }
+
             $items[] = [
                 'day' => $day,
                 'time' => $time,
+                'heure_debut' => $heureDebut,
+                'heure_fin' => $heureFin,
                 'title' => $title !== '' ? $title : 'Activite du club',
                 'details' => $details,
                 'is_holiday' => (bool) ($creneau['is_holiday'] ?? false),
@@ -98,7 +109,8 @@ final class ScheduleRepository
                     'schedule_id' => self::IDENTIFIANT,
                     'ordre_affichage' => $index + 1,
                     'jour' => $item['day'],
-                    'horaire' => $item['time'],
+                    'heure_debut' => $item['heure_debut'],
+                    'heure_fin' => $item['heure_fin'],
                     'titre' => $item['title'],
                     'details' => $item['details'],
                     'jour_ferie' => $item['is_holiday'] ? 1 : 0,
@@ -169,7 +181,15 @@ final class ScheduleRepository
             }
 
             $day = $this->nettoyerTexteCourt((string) ($item['day'] ?? $item['jour'] ?? ''), 60);
-            $time = $this->nettoyerTexteCourt((string) ($item['time'] ?? $item['horaire'] ?? ''), 80);
+            $time = $this->nettoyerTexteCourt((string) ($item['time'] ?? ''), 80);
+
+            if ($time === '') {
+                $time = self::formaterPlageHoraire(
+                    $item['heure_debut'] ?? null,
+                    $item['heure_fin'] ?? null,
+                    $item['horaire'] ?? null
+                );
+            }
 
             if ($day === '' || $time === '') {
                 continue;
@@ -228,6 +248,39 @@ final class ScheduleRepository
             'details' => $details,
             'is_holiday' => $isHoliday,
         ];
+    }
+
+    /**
+     * @return array{0: string|null, 1: string|null}
+     */
+    private function decomposerPlageHoraire(string $plage): array
+    {
+        if (preg_match('/(\d{1,2})[h:](\d{2})\s*a\s*(\d{1,2})[h:](\d{2})/i', $plage, $captures) !== 1) {
+            return [null, null];
+        }
+
+        return [
+            sprintf('%02d:%02d:00', (int) $captures[1], (int) $captures[2]),
+            sprintf('%02d:%02d:00', (int) $captures[3], (int) $captures[4]),
+        ];
+    }
+
+    private static function formaterPlageHoraire(mixed $heureDebut, mixed $heureFin, mixed $fallback = null): string
+    {
+        $heureDebut = trim((string) ($heureDebut ?? ''));
+        $heureFin = trim((string) ($heureFin ?? ''));
+
+        if ($heureDebut !== '' && $heureFin !== '' && strlen($heureDebut) >= 5 && strlen($heureFin) >= 5) {
+            return sprintf(
+                '%sh%s a %sh%s',
+                substr($heureDebut, 0, 2),
+                substr($heureDebut, 3, 2),
+                substr($heureFin, 0, 2),
+                substr($heureFin, 3, 2)
+            );
+        }
+
+        return trim((string) ($fallback ?? ''));
     }
 
     private function nettoyerTexteCourt(string $valeur, int $limite): string

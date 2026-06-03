@@ -63,15 +63,15 @@ final class SchemaNormalisationTest extends TestCase
     {
         $this->seed([ReferenceTablesSeeder::class, ClubScheduleSeeder::class]);
 
-        DB::table('ref_statut_newsletter_abonnement')->insert([
+        DB::table('ref_statut_newsletter_abonnement')->insertOrIgnore([
             'code_statut' => 'actif',
             'libelle_statut' => 'Actif',
         ]);
-        DB::table('ref_type_evenement_newsletter')->insert([
+        DB::table('ref_type_evenement_newsletter')->insertOrIgnore([
             'code_type_evenement' => 'article',
             'libelle_type_evenement' => 'Article',
         ]);
-        DB::table('ref_statut_envoi_newsletter')->insert([
+        DB::table('ref_statut_envoi_newsletter')->insertOrIgnore([
             'code_statut_envoi' => 'envoye',
             'libelle_statut_envoi' => 'Envoye',
         ]);
@@ -212,6 +212,18 @@ final class SchemaNormalisationTest extends TestCase
 
     private function colonneEstTexteLegacyPourDateNaissance(): bool
     {
+        if (DB::getDriverName() === 'sqlite') {
+            $colonnes = DB::select("PRAGMA table_info('compte_membre')");
+
+            foreach ($colonnes as $colonne) {
+                if (($colonne->name ?? null) === 'date_naissance') {
+                    return strtolower((string) ($colonne->type ?? '')) === 'varchar';
+                }
+            }
+
+            return true;
+        }
+
         $colonne = DB::selectOne("
             SELECT data_type
             FROM information_schema.columns

@@ -12,12 +12,12 @@ final class SchemaMigrationSeeder extends Seeder
     public function run(): void
     {
         DB::table('schema_migration')->updateOrInsert(
-            ['version_schema' => 'mysql.0.0'],
+            ['version_schema' => 'mysql.1.0'],
             [
-                'nom_migration' => 'schema_initial_mysql_laravel',
-                'categorie' => 'foundation',
+                'nom_migration' => 'schema_normalise_mysql_laravel',
+                'categorie' => 'normalisation',
                 'checksum' => null,
-                'commentaire' => 'Schema relationnel initial cible MySQL/MariaDB via migrations Laravel.',
+                'commentaire' => 'Schema relationnel normalise vers une forme proche Boyce-Codd pour MySQL/MariaDB.',
                 'applique_le' => now(),
             ]
         );

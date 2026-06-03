@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use App\Support\NomAffichageUtilisateur;
 use DateTimeImmutable;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 final class DammierRepository
@@ -42,7 +44,7 @@ final class DammierRepository
 
     public function listerClassementHebdomadaire(string $weekKey, string $puzzleId): array
     {
-        $rows = DB::table('dammier_score')
+        $rows = $this->requeteScores()
             ->where('dammier_week_key', $weekKey)
             ->where('dammier_puzzle_id', $puzzleId)
             ->orderBy('dammier_moves_count')
@@ -81,7 +83,6 @@ final class DammierRepository
             DB::table('dammier_score')
                 ->where('dammier_score_id', $score['dammier_score_id'])
                 ->update([
-                    'dammier_display_name' => $nomAffichage !== '' ? $nomAffichage : (string) ($utilisateur['courriel'] ?? 'Membre'),
                     'dammier_moves_count' => $movesCount,
                     'dammier_elapsed_seconds' => $elapsedSeconds,
                     'dammier_solved_at' => date('Y-m-d H:i:s'),
@@ -104,7 +105,6 @@ final class DammierRepository
             'dammier_week_key' => $weekKey,
             'dammier_puzzle_id' => $puzzleId,
             'dammier_user_id' => $identifiantUtilisateur,
-            'dammier_display_name' => $displayName,
             'dammier_moves_count' => $movesCount,
             'dammier_elapsed_seconds' => $elapsedSeconds,
             'dammier_solved_at' => date('Y-m-d H:i:s'),
@@ -144,33 +144,106 @@ final class DammierRepository
 
     private function normaliserPuzzle(array $row): array
     {
+        $dammierId = (string) ($row['dammier_id'] ?? '');
+
         return [
-            'dammier_id' => (string) ($row['dammier_id'] ?? ''),
+            'dammier_id' => $dammierId,
             'dammier_title' => (string) ($row['titre'] ?? 'Puzzle hebdomadaire'),
             'dammier_description' => (string) ($row['description'] ?? ''),
             'dammier_instruction' => (string) ($row['instruction'] ?? ''),
             'dammier_fen' => (string) ($row['fen'] ?? '8/8/8/8/8/8/8/8 w - - 0 1'),
             'dammier_side_to_move' => (string) ($row['trait'] ?? 'w'),
-            'dammier_solution' => $this->texteVersListe((string) ($row['solution'] ?? '')),
-            'dammier_replies' => $this->texteVersListe((string) ($row['reponses'] ?? '')),
-            'dammier_hints' => $this->texteVersListe((string) ($row['indices'] ?? '')),
+            'dammier_solution' => $this->chargerListePuzzle(
+                'dammier_solution_etape',
+                'ordre_etape',
+                'coup',
+                $dammierId,
+                (string) ($row['solution'] ?? '')
+            ),
+            'dammier_replies' => $this->chargerListePuzzle(
+                'dammier_reponse_attendue',
+                'ordre_reponse',
+                'coup',
+                $dammierId,
+                (string) ($row['reponses'] ?? '')
+            ),
+            'dammier_hints' => $this->chargerListePuzzle(
+                'dammier_indice',
+                'ordre_indice',
+                'texte_indice',
+                $dammierId,
+                (string) ($row['indices'] ?? '')
+            ),
             'dammier_source' => (string) ($row['source_puzzle'] ?? 'pool_local'),
         ];
     }
 
     private function normaliserScore(array $row): array
     {
+        $displayName = $row['dammier_display_name'] ?? null;
+
+        if ($displayName === null || trim((string) $displayName) === '') {
+            $displayName = NomAffichageUtilisateur::depuisValeurs(
+                $row['utilisateur_prenom_compte'] ?? '',
+                $row['utilisateur_nom_compte'] ?? '',
+                $row['utilisateur_courriel_compte'] ?? '',
+                'Membre'
+            );
+        }
+
         return [
             'dammier_score_id' => (string) ($row['dammier_score_id'] ?? ''),
             'dammier_week_key' => (string) ($row['dammier_week_key'] ?? ''),
             'dammier_puzzle_id' => (string) ($row['dammier_puzzle_id'] ?? ''),
             'dammier_user_id' => (string) ($row['dammier_user_id'] ?? ''),
-            'dammier_display_name' => (string) ($row['dammier_display_name'] ?? 'Membre'),
+            'dammier_display_name' => (string) $displayName,
             'dammier_moves_count' => max(1, (int) ($row['dammier_moves_count'] ?? 0)),
             'dammier_elapsed_seconds' => max(1, (int) ($row['dammier_elapsed_seconds'] ?? 0)),
             'dammier_solved_at' => $this->formaterDateIso($row['dammier_solved_at'] ?? null),
             'dammier_record_status' => (string) ($row['dammier_record_status'] ?? ''),
         ];
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function chargerListePuzzle(
+        string $table,
+        string $orderColumn,
+        string $valueColumn,
+        string $puzzleId,
+        string $fallbackLegacy = ''
+    ): array {
+        if ($puzzleId === '') {
+            return $this->texteVersListe($fallbackLegacy);
+        }
+
+        $lignes = DB::table($table)
+            ->where('dammier_puzzle_id', $puzzleId)
+            ->orderBy($orderColumn)
+            ->pluck($valueColumn)
+            ->all();
+
+        if ($lignes === []) {
+            return $this->texteVersListe($fallbackLegacy);
+        }
+
+        return array_values(array_filter(
+            array_map(static fn (mixed $item): string => trim((string) $item), $lignes),
+            static fn (string $item): bool => $item !== ''
+        ));
+    }
+
+    private function requeteScores(): Builder
+    {
+        return DB::table('dammier_score')
+            ->leftJoin('compte_membre as utilisateur', 'utilisateur.identifiant', '=', 'dammier_score.dammier_user_id')
+            ->select(
+                'dammier_score.*',
+                'utilisateur.nom as utilisateur_nom_compte',
+                'utilisateur.prenom as utilisateur_prenom_compte',
+                'utilisateur.courriel as utilisateur_courriel_compte'
+            );
     }
 
     private function texteVersListe(string $valeur): array

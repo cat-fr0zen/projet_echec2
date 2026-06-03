@@ -33,16 +33,34 @@ final class ClubScheduleSeeder extends Seeder
         ];
 
         foreach ($items as $index => [$jour, $horaire, $titre, $details]) {
+            [$heureDebut, $heureFin] = $this->decomposerPlageHoraire($horaire);
+
             DB::table('horaire_creneau')->insert([
                 'identifiant_creneau' => 'horaire_seed_' . str_pad((string) ($index + 1), 2, '0', STR_PAD_LEFT),
                 'schedule_id' => 'club_schedule',
                 'ordre_affichage' => $index + 1,
                 'jour' => $jour,
-                'horaire' => $horaire,
+                'heure_debut' => $heureDebut,
+                'heure_fin' => $heureFin,
                 'titre' => $titre,
                 'details' => $details,
                 'jour_ferie' => false,
             ]);
         }
+    }
+
+    /**
+     * @return array{0: string|null, 1: string|null}
+     */
+    private function decomposerPlageHoraire(string $plage): array
+    {
+        if (preg_match('/(\d{1,2})[h:](\d{2})\s*a\s*(\d{1,2})[h:](\d{2})/i', $plage, $captures) !== 1) {
+            return [null, null];
+        }
+
+        return [
+            sprintf('%02d:%02d:00', (int) $captures[1], (int) $captures[2]),
+            sprintf('%02d:%02d:00', (int) $captures[3], (int) $captures[4]),
+        ];
     }
 }
