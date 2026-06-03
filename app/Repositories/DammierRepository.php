@@ -18,20 +18,11 @@ final class DammierRepository
         $semaineIso = $dateReference->format('o-\WW');
 
         if ($puzzles === []) {
-            return [
-                'dammier_id' => 'dammier_placeholder',
-                'dammier_week_key' => $semaineIso,
-                'dammier_title' => 'Puzzle en preparation',
-                'dammier_description' => 'Le prochain casse-tete sera bientot disponible.',
-                'dammier_instruction' => 'Le puzzle hebdomadaire arrive bientot.',
-                'dammier_fen' => '8/8/8/8/8/8/8/8 w - - 0 1',
-                'dammier_side_to_move' => 'w',
-                'dammier_solution' => [],
-                'dammier_replies' => [],
-                'dammier_hints' => [],
-                'dammier_source' => 'pool_local',
-                'dammier_generated_at' => gmdate('c'),
-            ];
+            $puzzle = $this->puzzleDeSecours();
+            $puzzle['dammier_week_key'] = $semaineIso;
+            $puzzle['dammier_generated_at'] = gmdate('c');
+
+            return $puzzle;
         }
 
         $seed = ((int) $dateReference->format('o')) * 53 + (int) $dateReference->format('W');
@@ -244,6 +235,22 @@ final class DammierRepository
                 'utilisateur.prenom as utilisateur_prenom_compte',
                 'utilisateur.courriel as utilisateur_courriel_compte'
             );
+    }
+
+    private function puzzleDeSecours(): array
+    {
+        return [
+            'dammier_id' => 'dammier_secours',
+            'dammier_title' => 'Puzzle de secours',
+            'dammier_description' => "Un puzzle local reste disponible meme si la base n'a pas encore ete peuplee.",
+            'dammier_instruction' => 'Les Blancs jouent et mattent en un coup.',
+            'dammier_fen' => '7k/8/5KQ1/8/8/8/8/8 w - - 0 1',
+            'dammier_side_to_move' => 'w',
+            'dammier_solution' => ['g6g7'],
+            'dammier_replies' => [],
+            'dammier_hints' => ['La case finale de la dame doit etre protegee par le roi blanc.'],
+            'dammier_source' => 'fallback_local',
+        ];
     }
 
     private function texteVersListe(string $valeur): array

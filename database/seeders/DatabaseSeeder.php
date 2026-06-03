@@ -13,6 +13,7 @@ final class DatabaseSeeder extends Seeder
         $this->call([
             ReferenceTablesSeeder::class,
             ClubScheduleSeeder::class,
+            DammierPuzzleSeeder::class,
             SchemaMigrationSeeder::class,
         ]);
     }
