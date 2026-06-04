@@ -14,6 +14,7 @@ final class DatabaseSeeder extends Seeder
             ReferenceTablesSeeder::class,
             ClubScheduleSeeder::class,
             DammierPuzzleSeeder::class,
+            ConstructeurAccueilSeeder::class,
             SchemaMigrationSeeder::class,
         ]);
     }

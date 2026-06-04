@@ -107,7 +107,7 @@ final class ConstructeurAccueilTest extends TestCase
         $reponseAdmin->assertSeeText('Constructeur');
         $reponseAdmin->assertSeeText("Bandeau d'accueil");
         $reponseAdmin->assertSeeText('Liens utiles');
-        $reponseAdmin->assertDontSeeText('Hero');
+        $reponseAdmin->assertDontSeeText('hero_title');
 
         $reponseAccueil->assertOk();
         $reponseAccueil->assertDontSee('data-accueil-slot="pieces_echecs"', false);

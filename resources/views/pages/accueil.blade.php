@@ -3,13 +3,13 @@
  * Vue: Accueil.
  *
  * Page vitrine du club:
- * - hero + liens d'acces
- * - puzzle hebdomadaire "dammier"
- * - carrousel et blocs d'informations
+ * - bandeau d'accueil + liens d'acces
+ * - casse-tete hebdomadaire
+ * - blocs interchangeables administres via le constructeur
  *
  * Donnees attendues:
- * - $pageData: textes de la page (hero_title, hero_text, etc.)
- * - $siteData: donnees globales (stats, schedule, etc.)
+ * - $pageData: textes de la page
+ * - $siteData: donnees globales (stats, horaires, etc.)
  */
 $stats = $siteData['stats'];
 $pieceCarousel = $siteData['piece_carousel'];
@@ -17,6 +17,7 @@ $authData = $siteData['authentification'];
 $dammierPuzzle = $siteData['dammier_puzzle'] ?? [];
 $dammierClassement = $siteData['dammier_classement'] ?? [];
 $dammierPeutVoirClassement = (bool) ($siteData['dammier_peut_voir_classement'] ?? false);
+$blocsAccueilActifs = is_array($siteData['constructeur_accueil_blocs_actifs'] ?? null) ? $siteData['constructeur_accueil_blocs_actifs'] : [];
 $horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horaires_club'] : [];
 $resumeHorairesClub = is_array($siteData['resume_horaires_club'] ?? null) ? $siteData['resume_horaires_club'] : [];
 $itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
@@ -30,13 +31,19 @@ $dammierPayload = [
     'dammier_submit_url' => url_route('accueil'),
     'dammier_is_authenticated' => (bool) ($authData['is_authenticated'] ?? false),
 ];
+$blocsAccueilMobilesActifs = array_values(
+    array_filter(
+        $blocsAccueilActifs,
+        static fn (array $bloc): bool => !in_array((string) ($bloc['code_bloc'] ?? ''), ['bandeau_accueil', 'casse_tete_hebdomadaire'], true)
+    )
+);
 ?>
 
 <section class="hero-grid">
-    <article class="panel hero-copy reveal reveal-2">
+    <article class="panel hero-copy reveal reveal-2" data-accueil-slot="bandeau_accueil">
         <p class="eyebrow">Site officiel</p>
-        <h1><?= e($pageData['hero_title']) ?></h1>
-        <p class="lead"><?= e($pageData['hero_text']) ?></p>
+        <h1><?= e((string) ($pageData['titre_bandeau_accueil'] ?? $pageData['hero_title'] ?? '')) ?></h1>
+        <p class="lead"><?= e((string) ($pageData['texte_bandeau_accueil'] ?? $pageData['hero_text'] ?? '')) ?></p>
 
         <div class="button-row">
             <a
@@ -45,17 +52,17 @@ $dammierPayload = [
                 target="_blank"
                 rel="noopener noreferrer external"
                 referrerpolicy="no-referrer"
-                aria-label="Adhérer au club sur HelloAsso (nouvel onglet)"
+                aria-label="Adherer au club sur HelloAsso (nouvel onglet)"
             >
-                Adhérer
+                Adherer
             </a>
-            <a class="button button-secondary" href="#legal-hub">Voir le cadre légal</a>
+            <a class="button button-secondary" href="#legal-hub">Voir le cadre legal</a>
             <?php if ($authData['is_authenticated']): ?>
                 <a class="button button-secondary" href="<?= e(url_route('profil')) ?>">Voir mon profil</a>
             <?php endif; ?>
         </div>
 
-        <p class="quick-note"><?= e($pageData['hero_note']) ?></p>
+        <p class="quick-note"><?= e((string) ($pageData['note_bandeau_accueil'] ?? $pageData['hero_note'] ?? '')) ?></p>
 
         <?php if ($resumeHorairesClub !== []): ?>
             <section class="home-schedule-card" aria-labelledby="home-schedule-title">
@@ -67,7 +74,7 @@ $dammierPayload = [
                             <dt>
                                 <?= e((string) ($horaireResume['day'] ?? '')) ?>
                                 <?php if (!empty($horaireResume['has_holiday'])): ?>
-                                    <span class="schedule-exception-badge">Jour férié</span>
+                                    <span class="schedule-exception-badge">Jour ferie</span>
                                 <?php endif; ?>
                             </dt>
                             <dd><?= e((string) ($horaireResume['times'] ?? '')) ?></dd>
@@ -75,13 +82,13 @@ $dammierPayload = [
                     <?php endforeach; ?>
                 </dl>
                 <?php if ($messageJourFerie !== ''): ?>
-                    <p class="home-schedule-holiday"><strong>Jour férié:</strong> <?= e($messageJourFerie) ?></p>
+                    <p class="home-schedule-holiday"><strong>Jour ferie:</strong> <?= e($messageJourFerie) ?></p>
                 <?php endif; ?>
             </section>
         <?php endif; ?>
     </article>
 
-    <aside class="panel dammier_panel reveal reveal-3">
+    <aside class="panel dammier_panel reveal reveal-3" data-accueil-slot="casse_tete_hebdomadaire">
         <div
             class="dammier_widget"
             data-dammier-root
@@ -91,7 +98,7 @@ $dammierPayload = [
         >
             <div class="dammier_header">
                 <div>
-                    <p class="eyebrow">Casse-tête hebdomadaire</p>
+                    <p class="eyebrow">Casse-tete hebdomadaire</p>
                     <h2><?= e((string) ($dammierPuzzle['dammier_title'] ?? 'Puzzle hebdomadaire')) ?></h2>
                     <p class="card-tag">Difficulte: <?= e($libelleDifficulteDammier) ?> · <?= e((string) $nombreCoupsBlancsDammier) ?> coups blancs</p>
                 </div>
@@ -103,8 +110,8 @@ $dammierPayload = [
             <div class="dammier_layout">
                 <div class="dammier_board_panel">
                     <p id="dammier-board-help" class="sr-only">
-                        Utilise Tab ou les flèches pour parcourir le damier. Sélectionne d'abord une pièce de ton camp,
-                        puis sa case d'arrivée pour proposer le coup.
+                        Utilise Tab ou les fleches pour parcourir le damier. Selectionne d'abord une piece de ton camp,
+                        puis sa case d'arrivee pour proposer le coup.
                     </p>
                     <div
                         class="dammier_board"
@@ -120,11 +127,11 @@ $dammierPayload = [
                 </div>
 
                 <div class="dammier_play_panel">
-                    <p class="dammier_prompt" data-dammier-prompt>Clique sur une pièce, puis sur sa case d'arrivée.</p>
+                    <p class="dammier_prompt" data-dammier-prompt>Clique sur une piece, puis sur sa case d'arrivee.</p>
                     <div class="dammier_status">
-                        <span class="dammier_status_chip" data-dammier-selection role="status" aria-live="polite">Aucune pièce sélectionnée.</span>
+                        <span class="dammier_status_chip" data-dammier-selection role="status" aria-live="polite">Aucune piece selectionnee.</span>
                     </div>
-                    <p id="dammier-feedback" class="dammier_feedback" data-dammier-feedback role="status" aria-live="polite">Le score compte le nombre total de tentatives jusqu’à la résolution.</p>
+                    <p id="dammier-feedback" class="dammier_feedback" data-dammier-feedback role="status" aria-live="polite">Le score compte le nombre total de tentatives jusqu'a la resolution.</p>
                     <p id="dammier-hint-text" class="dammier_hint_text" data-dammier-hint-text hidden aria-live="polite"></p>
 
                     <div class="dammier_actions">
@@ -151,9 +158,9 @@ $dammierPayload = [
                                         <?php endforeach; ?>
                                     </ol>
                                     <?php if ($dammierClassement === []): ?>
-                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty>Aucun score enregistr? cette semaine.</p>
+                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty>Aucun score enregistre cette semaine.</p>
                                     <?php else: ?>
-                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty hidden>Aucun score enregistr? cette semaine.</p>
+                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty hidden>Aucun score enregistre cette semaine.</p>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <p class="dammier_ranking_locked">Connecte-toi pour voir le classement hebdomadaire.</p>
@@ -169,165 +176,12 @@ $dammierPayload = [
     </aside>
 </section>
 
-<section class="split-grid reveal reveal-4">
-    <article class="panel">
-        <div class="section-head section-head--compact">
-            <h2>Présentation</h2>
-            <p>Bienvenue chez Les Cavaliers d’Hérouville, un club d’échecs pas comme les autres ! Notre mission ? Faire découvrir et partager la passion du jeu d’échecs à tous. Dès 5 ans jusqu’à 105 ans. Débutants curieux ou pros de la stratégie. Convivialité, apprentissage, progression… le tout dans la bonne humeur ! Que vous vouliez apprendre, progresser ou simplement jouer pour le plaisir… Venez faire travailler vos neurones avec nous dans une ambiance chaleureuse et stimulante ! Rejoignez-nous et faites partie d’une communauté passionnée !</p>
-        </div>
-    </article>
-
-    <article class="panel panel-contrast">
-        <div class="section-head section-head--compact">
-            <h2>Liste de liens utiles</h2>
-        </div>
-
-        <ul class="bullet-list useful-links-list">
-            <li>
-                <a
-                    class="useful-link"
-                    href="https://www.echecs.asso.fr/ListeJoueurs.aspx?Action=JOUEURCLUBREF&amp;ClubRef=3012"
-                    target="_blank"
-                    rel="noopener noreferrer external"
-                    referrerpolicy="no-referrer"
-                >
-                    Fédération Française D'Échecs(FFE)
-                </a>
-            </li>
-            <li>
-                <a
-                    class="useful-link"
-                    href="https://www.normandie-echecs.fr/cdje14"
-                    target="_blank"
-                    rel="noopener noreferrer external"
-                    referrerpolicy="no-referrer"
-                >
-                    Ligue de Normandie des échecs
-                </a>
-            </li>
-        </ul>
-    </article>
-</section>
-
-<section class="section-block reveal reveal-5">
-    <div class="section-head">
-        <p class="eyebrow">Carrousel des pièces</p>
-        <h2>Chaque pièce, son mouvement et son utilité.</h2>
-        <p>
-            Le carrousel tourne automatiquement pour rappeler les fondamentaux du jeu d'échecs.
-            Les commandes restent accessibles si l'utilisateur veut reprendre la main.
-        </p>
-    </div>
-
-    <div
-        class="piece-carousel"
-        data-piece-carousel
-        data-autoplay-ms="6800"
-        style="--piece-turn-duration: 6800ms;"
-        tabindex="0"
-        aria-roledescription="carousel"
-        aria-label="Carrousel des pièces d'échecs"
-    >
-        <div class="piece-stage">
-            <?php foreach ($pieceCarousel as $index => $piece): ?>
-                <article
-                    class="piece-slide<?= $index === 0 ? ' is-active' : '' ?>"
-                    data-piece-slide
-                    aria-hidden="<?= $index === 0 ? 'false' : 'true' ?>"
-                >
-                    <div class="piece-visual">
-                        <div class="piece-stage-3d" data-piece-tilt>
-                            <span class="piece-aura" aria-hidden="true"></span>
-                            <span class="piece-shadow-disc" aria-hidden="true"></span>
-                            <span class="piece-figure" aria-hidden="true">
-                                <span class="piece-figure-core">
-                                    <span class="piece-glyph-shell">
-                                        <span class="piece-glyph"><?= e($piece['glyph']) ?></span>
-                                    </span>
-                                </span>
-                            </span>
-                            <span class="piece-plinth" aria-hidden="true"></span>
-                        </div>
-                    </div>
-                    <div class="piece-meta">
-                        <p class="card-tag">Pièce <?= e((string) ($index + 1)) ?></p>
-                        <h3><?= e($piece['name']) ?></h3>
-                        <p class="piece-role"><?= e($piece['role']) ?></p>
-                    </div>
-                </article>
-            <?php endforeach; ?>
-        </div>
-
-        <div class="piece-controls">
-            <button type="button" class="carousel-button" data-piece-prev aria-label="Voir la pièce précédente">Précédente</button>
-            <div class="piece-indicators" aria-label="Sélection des pièces">
-                <?php foreach ($pieceCarousel as $index => $piece): ?>
-                    <button
-                        type="button"
-                        class="piece-indicator<?= $index === 0 ? ' is-active' : '' ?>"
-                        data-piece-indicator="<?= e((string) $index) ?>"
-                        aria-label="Afficher <?= e($piece['name']) ?>"
-                    ></button>
-                <?php endforeach; ?>
-            </div>
-            <button type="button" class="carousel-button" data-piece-next aria-label="Voir la pièce suivante">Suivante</button>
-        </div>
-    </div>
-</section>
-
-<section class="section-block reveal reveal-6">
-    <div class="section-head">
-        <p class="eyebrow">Informations essentielles</p>
-        <h2>Trois blocs sans contenu fictif.</h2>
-        <p>Les cartes conservent le design du site tout en affichant uniquement un cadre générique et vérifiable.</p>
-    </div>
-
-    <div class="card-grid card-grid--three">
-        <?php foreach ($stats as $stat): ?>
-            <article class="info-card">
-                <p class="metric-value"><?= e($stat['value']) ?></p>
-                <h3><?= e($stat['label']) ?></h3>
-                <p><?= e($stat['text']) ?></p>
-            </article>
-        <?php endforeach; ?>
-    </div>
-
-    <?php if ($itemsHorairesClub !== []): ?>
-        <details id="emploi-du-temps-complet" class="schedule-full-card">
-            <summary>
-                <span>Consulter l'emploi du temps complet</span>
-            </summary>
-            <div class="schedule-full-content">
-                <div class="section-head section-head--compact">
-                    <p class="eyebrow">Emploi du temps</p>
-                    <h3><?= e($libelleSaisonHoraires) ?></h3>
-                    <?php if ($messageJourFerie !== ''): ?>
-                        <p><strong>Jour férié:</strong> <?= e($messageJourFerie) ?></p>
-                    <?php endif; ?>
-                </div>
-
-                <div class="schedule-full-grid">
-                    <?php foreach ($itemsHorairesClub as $horaire): ?>
-                        <article class="schedule-full-item">
-                            <p class="card-tag">
-                                <?= e((string) ($horaire['day'] ?? '')) ?>
-                                <?php if (!empty($horaire['is_holiday'])): ?>
-                                    · Jour férié
-                                <?php endif; ?>
-                            </p>
-                            <h4><?= e((string) ($horaire['time'] ?? '')) ?></h4>
-                            <p class="card-subtitle"><?= e((string) ($horaire['title'] ?? '')) ?></p>
-                            <?php if (!empty($horaire['details_lines']) && is_array($horaire['details_lines'])): ?>
-                                <ul>
-                                    <?php foreach ($horaire['details_lines'] as $ligneDetail): ?>
-                                        <li><?= e((string) $ligneDetail) ?></li>
-                                    <?php endforeach; ?>
-                                </ul>
-                            <?php endif; ?>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </details>
+<?php foreach ($blocsAccueilMobilesActifs as $blocAccueil): ?>
+    <?php
+    $codeBlocAccueil = (string) ($blocAccueil['code_bloc'] ?? '');
+    $vueBlocAccueil = resource_path('views/pages/accueil/blocs/' . $codeBlocAccueil . '.blade.php');
+    ?>
+    <?php if (is_file($vueBlocAccueil)): ?>
+        <?php require $vueBlocAccueil; ?>
     <?php endif; ?>
-</section>
+<?php endforeach; ?>

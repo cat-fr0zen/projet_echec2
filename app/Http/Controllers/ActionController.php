@@ -21,6 +21,7 @@ final class ActionController extends Controller
             new \App\Repositories\OrderRepository(),
             new \App\Repositories\DammierRepository(),
             new \App\Repositories\ScheduleRepository(),
+            new \App\Repositories\ConstructeurPagesRepository(),
             public_path('assets/media/uploads'),
             $newsletterRepository,
             NewsletterMailerService::depuisEnvironnement($newsletterRepository)

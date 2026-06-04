@@ -34,6 +34,7 @@
 /bootstrap/cache/*.php
 /storage/*.key
 /storage/logs/*
+/storage/logs/*.log
 !/storage/logs/.gitignore
 /storage/framework/cache/*
 /storage/framework/sessions/*
@@ -59,6 +60,7 @@
 !/runtime/mysql-data/.gitignore
 /runtime/mysql-data-archive-*/
 /runtime/*.ini
+/runtime/mysql-local.ini
 /runtime/*.log
 /runtime/*.pid
 /runtime/*.sock

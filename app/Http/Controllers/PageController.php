@@ -21,6 +21,7 @@ final class PageController extends Controller
             new \App\Repositories\OrderRepository(),
             new \App\Repositories\DammierRepository(),
             new \App\Repositories\ScheduleRepository(),
+            new \App\Repositories\ConstructeurPagesRepository(),
             new \App\Repositories\TraficVisiteursRepository(),
             new ChessComService(storage_path('app/cache/chesscom')),
             new \App\Services\GoogleReviewsService(

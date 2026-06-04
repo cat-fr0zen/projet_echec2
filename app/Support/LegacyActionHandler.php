@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Repositories\ArticleRepository;
+use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\NewsletterRepository;
@@ -57,6 +58,7 @@ final class LegacyActionHandler
         private OrderRepository $depotCommandes,
         private DammierRepository $depotDammier,
         private ScheduleRepository $depotHoraires,
+        private ConstructeurPagesRepository $depotConstructeurPages,
         private string $dossierUploadMedias,
         private ?NewsletterRepository $depotNewsletter = null,
         private ?NewsletterMailerService $newsletterMailer = null
@@ -140,6 +142,10 @@ final class LegacyActionHandler
             case 'mettre_a_jour_horaires_club':
             case 'update_club_schedule':
                 $this->traiterMiseAJourHorairesClub();
+                break;
+            case 'mettre_a_jour_constructeur_accueil':
+            case 'update_home_builder':
+                $this->traiterMiseAJourConstructeurAccueil();
                 break;
             case 'notifier_objet_boutique':
             case 'notify_shop_item':
@@ -284,6 +290,40 @@ final class LegacyActionHandler
         $_SESSION['identifiant_utilisateur'] = $utilisateur['identifiant'];
         ajouter_message_flash('success', 'Connexion réussie.');
         rediriger_vers(url_route('profil'));
+    }
+
+    /** Permet a l'admin d'organiser les blocs visibles de l'accueil. */
+    private function traiterMiseAJourConstructeurAccueil(): void
+    {
+        $utilisateur = $this->depotUtilisateurs->trouverParIdentifiant(
+            isset($_SESSION['identifiant_utilisateur']) ? (string) $_SESSION['identifiant_utilisateur'] : null
+        );
+
+        if (($utilisateur['role'] ?? '') !== 'admin') {
+            ajouter_message_flash('error', "Seul l'administrateur peut modifier le constructeur.");
+            rediriger_vers(url_route('admin') . '#admin-constructeur');
+        }
+
+        $ordres = is_array($_POST['ordre_bloc'] ?? null) ? $_POST['ordre_bloc'] : [];
+        $actifs = is_array($_POST['bloc_actif'] ?? null) ? $_POST['bloc_actif'] : [];
+        $donnees = [];
+
+        foreach ($ordres as $codeBloc => $ordreBloc) {
+            $codeBlocNormalise = trim((string) $codeBloc);
+
+            if ($codeBlocNormalise === '') {
+                continue;
+            }
+
+            $donnees[$codeBlocNormalise] = [
+                'ordre_affichage' => max(1, (int) $ordreBloc),
+                'est_actif' => isset($actifs[$codeBlocNormalise]) && (string) $actifs[$codeBlocNormalise] === '1',
+            ];
+        }
+
+        $this->depotConstructeurPages->mettreAJourBlocsAccueil($donnees);
+        ajouter_message_flash('success', "Le constructeur de l'accueil a ete mis a jour.");
+        rediriger_vers(url_route('admin') . '#admin-constructeur');
     }
 
     /** Inscrit une adresse a la newsletter avec consentement explicite. */

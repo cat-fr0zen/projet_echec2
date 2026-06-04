@@ -26,6 +26,7 @@ $popularPages = is_array($trafficSummary['pages_populaires'] ?? null) ? $traffic
 $latestVisits = is_array($trafficSummary['dernieres_visites'] ?? null) ? $trafficSummary['dernieres_visites'] : [];
 $horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horaires_club'] : [];
 $itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
+$blocsConstructeurAccueil = is_array($siteData['constructeur_accueil_blocs'] ?? null) ? $siteData['constructeur_accueil_blocs'] : [];
 $lignesHorairesAdmin = $itemsHorairesClub;
 
 while (count($lignesHorairesAdmin) < 10) {
@@ -108,6 +109,68 @@ while (count($lignesHorairesAdmin) < 10) {
             <h3>Visiteurs uniques sur 7 jours</h3>
         </article>
     </div>
+</section>
+
+<section id="admin-constructeur" class="section-block reveal reveal-3">
+    <div class="section-head">
+        <p class="eyebrow">Constructeur</p>
+        <h2>Organiser l'accueil avec des blocs interchangeables.</h2>
+        <p>Les blocs verrouilles restent a leur place. Les autres peuvent etre deplaces ou masques sans toucher au code.</p>
+    </div>
+
+    <form method="post" action="<?= e(url_route('admin')) ?>#admin-constructeur" class="admin-form">
+        <input type="hidden" name="action" value="update_home_builder">
+        <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+        <div class="admin-list">
+            <?php foreach ($blocsConstructeurAccueil as $blocConstructeur): ?>
+                <?php
+                $codeBlocConstructeur = (string) ($blocConstructeur['code_bloc'] ?? '');
+                $estVerrouilleConstructeur = (bool) ($blocConstructeur['est_verrouille'] ?? false);
+                $estActifConstructeur = (bool) ($blocConstructeur['est_actif'] ?? false);
+                ?>
+                <article class="info-card admin-card">
+                    <p class="card-tag"><?= e((string) ($blocConstructeur['libelle_bloc'] ?? 'Bloc')) ?></p>
+                    <h3><?= e($estVerrouilleConstructeur ? 'Bloc fixe' : 'Bloc interchangeable') ?></h3>
+                    <p><?= e((string) ($blocConstructeur['description_bloc'] ?? '')) ?></p>
+
+                    <div class="admin-schedule-settings">
+                        <label class="form-group">
+                            <span>Position sur la page d'accueil</span>
+                            <input
+                                type="number"
+                                min="1"
+                                name="ordre_bloc[<?= e($codeBlocConstructeur) ?>]"
+                                value="<?= e((string) ($blocConstructeur['ordre_affichage'] ?? 1)) ?>"
+                                <?= $estVerrouilleConstructeur ? 'readonly' : '' ?>
+                            >
+                        </label>
+
+                        <label class="form-group">
+                            <span>Affichage public</span>
+                            <span class="checkbox-inline">
+                                <input
+                                    type="checkbox"
+                                    name="bloc_actif[<?= e($codeBlocConstructeur) ?>]"
+                                    value="1"
+                                    <?= $estActifConstructeur ? 'checked' : '' ?>
+                                    <?= $estVerrouilleConstructeur ? 'disabled' : '' ?>
+                                >
+                                <span><?= e($estVerrouilleConstructeur ? 'Toujours visible' : 'Visible sur le site') ?></span>
+                            </span>
+                            <?php if ($estVerrouilleConstructeur): ?>
+                                <small class="form-helper">Ce bloc reste visible et ne peut pas etre deplace.</small>
+                            <?php else: ?>
+                                <small class="form-helper">Decoche cette case pour masquer temporairement ce bloc.</small>
+                            <?php endif; ?>
+                        </label>
+                    </div>
+                </article>
+            <?php endforeach; ?>
+        </div>
+
+        <button type="submit" class="button button-primary">Enregistrer le constructeur</button>
+    </form>
 </section>
 
 <section class="section-block reveal reveal-3">

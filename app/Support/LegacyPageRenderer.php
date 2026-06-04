@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Models\User;
 use App\Repositories\ArticleRepository;
+use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\OrderRepository;
@@ -26,6 +27,7 @@ final class LegacyPageRenderer
         private OrderRepository $orderRepository,
         private DammierRepository $dammierRepository,
         private ScheduleRepository $scheduleRepository,
+        private ConstructeurPagesRepository $constructeurPagesRepository,
         private ?TraficVisiteursRepository $trafficRepository,
         private ChessComService $chessComService,
         private GoogleReviewsService $googleReviewsService,
@@ -69,6 +71,8 @@ final class LegacyPageRenderer
         $siteData['cartes_guide'] = $this->siteContent->obtenirCartesGuide();
         $siteData['cartes_mediatheque'] = $this->siteContent->obtenirCartesMediatheque();
         $siteData['cartes_boutique'] = $this->siteContent->obtenirCartesBoutique();
+        $siteData['constructeur_accueil_blocs'] = $this->constructeurPagesRepository->listerPourPage('accueil');
+        $siteData['constructeur_accueil_blocs_actifs'] = $this->constructeurPagesRepository->listerActifsPourPage('accueil');
 
         if (!($authData['est_connecte'] ?? false) && $this->trafficRepository !== null) {
             $this->trafficRepository->enregistrerVisitePublique($segment);
@@ -121,6 +125,9 @@ final class LegacyPageRenderer
             $pageData['titre_hero'] = (string) ($pageData['titre_hero'] ?? $pageData['hero_title'] ?? '');
             $pageData['texte_hero'] = (string) ($pageData['texte_hero'] ?? $pageData['hero_text'] ?? '');
             $pageData['note_hero'] = (string) ($pageData['note_hero'] ?? $pageData['hero_note'] ?? '');
+            $pageData['titre_bandeau_accueil'] = $pageData['titre_hero'];
+            $pageData['texte_bandeau_accueil'] = $pageData['texte_hero'];
+            $pageData['note_bandeau_accueil'] = $pageData['note_hero'];
             $pageCourante = $segment;
             $pageTitle = $pageData['titre'] !== '' ? $pageData['titre'] : 'Page';
             $viewFile = resource_path('views/pages/' . str_replace('.php', '.blade.php', $pageData['vue']));
@@ -273,6 +280,8 @@ final class LegacyPageRenderer
         $siteData['dammier_puzzle'] = $this->puzzleDeSecoursHorsBase();
         $siteData['dammier_classement'] = [];
         $siteData['dammier_peut_voir_classement'] = (bool) ($authData['est_connecte'] ?? false);
+        $siteData['constructeur_accueil_blocs'] = $this->constructeurPagesRepository->listerPourPage('accueil');
+        $siteData['constructeur_accueil_blocs_actifs'] = $this->constructeurPagesRepository->listerActifsPourPage('accueil');
 
         return $siteData;
     }
