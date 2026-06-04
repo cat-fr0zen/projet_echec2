@@ -201,8 +201,7 @@ final class LegacyActionHandler
         }
 
         $utilisateur = $this->depotUtilisateurs->creer($donnees);
-        session_regenerate_id(true);
-        $_SESSION['identifiant_utilisateur'] = $utilisateur['identifiant'];
+        $this->ouvrirSessionAuthentification((string) $utilisateur['identifiant']);
         ajouter_message_flash('success', 'Votre compte a été créé avec succès.');
         rediriger_vers(url_route('profil'));
     }
@@ -286,8 +285,7 @@ final class LegacyActionHandler
             rediriger_vers(url_route($pageRedirection));
         }
 
-        session_regenerate_id(true);
-        $_SESSION['identifiant_utilisateur'] = $utilisateur['identifiant'];
+        $this->ouvrirSessionAuthentification((string) $utilisateur['identifiant']);
         ajouter_message_flash('success', 'Connexion réussie.');
         rediriger_vers(url_route('profil'));
     }
@@ -370,10 +368,50 @@ final class LegacyActionHandler
     /** Traite la deconnexion (session). */
     private function traiterDeconnexion(): void
     {
-        unset($_SESSION['identifiant_utilisateur']);
-        session_regenerate_id(true);
+        $this->fermerSessionAuthentification();
         ajouter_message_flash('success', 'Vous avez été déconnecté.');
         rediriger_vers(url_route('accueil'));
+    }
+
+    /** Ouvre ou migre proprement la session d'authentification. */
+    private function ouvrirSessionAuthentification(string $identifiantUtilisateur): void
+    {
+        if (app()->bound('session.store')) {
+            $session = session();
+            $session->migrate(true);
+            $session->put('identifiant_utilisateur', $identifiantUtilisateur);
+
+            return;
+        }
+
+        $this->demarrerSessionNativeSiNecessaire();
+        session_regenerate_id(true);
+        $_SESSION['identifiant_utilisateur'] = $identifiantUtilisateur;
+    }
+
+    /** Ferme proprement la session d'authentification sans supposer une session PHP active. */
+    private function fermerSessionAuthentification(): void
+    {
+        if (app()->bound('session.store')) {
+            $session = session();
+            $session->forget('identifiant_utilisateur');
+            $session->migrate(true);
+
+            return;
+        }
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            unset($_SESSION['identifiant_utilisateur']);
+            session_regenerate_id(true);
+        }
+    }
+
+    /** Garantit une session native active avant les appels PHP bas niveau. */
+    private function demarrerSessionNativeSiNecessaire(): void
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            @session_start();
+        }
     }
 
     /** Met a jour le profil (nom/prenom/date/description/pseudo chess). */
