@@ -133,6 +133,10 @@ final class LegacyActionHandler
             case 'update_user_access':
                 $this->traiterMiseAJourAccesUtilisateur();
                 break;
+            case 'transferer_role_admin':
+            case 'transfer_admin_role':
+                $this->traiterTransfertRoleAdmin();
+                break;
             case 'mettre_a_jour_horaires_club':
             case 'update_club_schedule':
                 $this->traiterMiseAJourHorairesClub();
@@ -665,6 +669,35 @@ final class LegacyActionHandler
         }
 
         ajouter_message_flash('success', "Les accès de l'utilisateur ont été mis à jour.");
+        rediriger_vers(url_route('admin'));
+    }
+
+    /** Transfere le role admin vers un autre compte. */
+    private function traiterTransfertRoleAdmin(): void
+    {
+        $administrateur = $this->obtenirUtilisateurCourant();
+        $this->exigerAdmin();
+
+        $identifiantUtilisateurCible = trim((string) ($_POST['identifiant_utilisateur_cible'] ?? ''));
+        $roleApresTransfert = trim((string) ($_POST['role_apres_transfert'] ?? DepotUtilisateurs::ROLE_PROF));
+
+        if ($administrateur === null || $identifiantUtilisateurCible === '') {
+            ajouter_message_flash('error', 'Compte cible introuvable pour le transfert admin.');
+            rediriger_vers(url_route('admin'));
+        }
+
+        $utilisateurMisAJour = $this->depotUtilisateurs->transfererRoleAdmin(
+            (string) $administrateur['identifiant'],
+            $identifiantUtilisateurCible,
+            $roleApresTransfert
+        );
+
+        if ($utilisateurMisAJour === null) {
+            ajouter_message_flash('error', "Le transfert du role admin a echoue.");
+            rediriger_vers(url_route('admin'));
+        }
+
+        ajouter_message_flash('success', "Le role admin a ete transfere vers un autre compte.");
         rediriger_vers(url_route('admin'));
     }
 
@@ -1235,7 +1268,7 @@ final class LegacyActionHandler
 
         return in_array(
             (string) ($utilisateur['role'] ?? ''),
-            [DepotUtilisateurs::ROLE_ADHERENT, DepotUtilisateurs::ROLE_ADMIN],
+            [DepotUtilisateurs::ROLE_ADHERENT, DepotUtilisateurs::ROLE_PROF, DepotUtilisateurs::ROLE_ADMIN],
             true
         );
     }

@@ -10,7 +10,9 @@ final class DepotUtilisateurs
 {
     public const ROLE_CONNECTE = UserModel::ROLE_CONNECTE;
     public const ROLE_ADHERENT = UserModel::ROLE_ADHERENT;
+    public const ROLE_PROF = UserModel::ROLE_PROF;
     public const ROLE_ADMIN = UserModel::ROLE_ADMIN;
+    public const MAX_PROFESSEURS = UserModel::MAX_PROFESSEURS;
 
     public const STATUT_COMPTE_ACTIF = UserModel::STATUT_COMPTE_ACTIF;
     public const STATUT_COMPTE_SUSPENDU = UserModel::STATUT_COMPTE_SUSPENDU;

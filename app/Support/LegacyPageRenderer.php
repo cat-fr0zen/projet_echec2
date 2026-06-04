@@ -10,9 +10,11 @@ use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ScheduleRepository;
+use App\Repositories\TraficVisiteursRepository;
 use App\Repositories\UserRepository;
 use App\Services\ChessComService;
 use App\Services\GoogleReviewsService;
+use Throwable;
 
 final class LegacyPageRenderer
 {
@@ -24,6 +26,7 @@ final class LegacyPageRenderer
         private OrderRepository $orderRepository,
         private DammierRepository $dammierRepository,
         private ScheduleRepository $scheduleRepository,
+        private ?TraficVisiteursRepository $trafficRepository,
         private ChessComService $chessComService,
         private GoogleReviewsService $googleReviewsService,
         private array $messagesFlash,
@@ -33,9 +36,7 @@ final class LegacyPageRenderer
 
     public function afficher(string $segment): string
     {
-        $currentUser = $this->userRepository->trouverParIdentifiant(
-            isset($_SESSION['identifiant_utilisateur']) ? (string) $_SESSION['identifiant_utilisateur'] : null
-        );
+        $currentUser = $this->recupererUtilisateurCourant();
 
         if ($currentUser !== null && ($currentUser['statut_compte'] ?? '') !== User::STATUT_COMPTE_ACTIF) {
             unset($_SESSION['identifiant_utilisateur']);
@@ -69,56 +70,14 @@ final class LegacyPageRenderer
         $siteData['cartes_mediatheque'] = $this->siteContent->obtenirCartesMediatheque();
         $siteData['cartes_boutique'] = $this->siteContent->obtenirCartesBoutique();
 
-        $clubSchedule = $this->scheduleRepository->obtenir();
-        $siteData['horaires_club'] = $clubSchedule;
-        $siteData['club_schedule'] = $clubSchedule;
-        $siteData['resume_horaires_club'] = $this->scheduleRepository->resumerParJour();
-        $siteData['club_schedule_summary'] = $siteData['resume_horaires_club'];
-        $siteData['planning'] = $this->scheduleRepository->adapterPlanning();
-        $siteData['schedule'] = $siteData['planning'];
+        if (!($authData['est_connecte'] ?? false) && $this->trafficRepository !== null) {
+            $this->trafficRepository->enregistrerVisitePublique($segment);
+        }
         $siteData['google_reviews'] = $this->googleReviewsService->recupererAvisLieu(
             (string) ($siteData['club_google_reviews_cache_key'] ?? 'club'),
             (string) ($siteData['club_google_search_query'] ?? '')
         );
-
-        $publishedArticles = $this->articleRepository->trouverPublies();
-        $myArticles = $currentUser !== null
-            ? $this->articleRepository->trouverParIdentifiantAuteur((string) $currentUser['identifiant'])
-            : [];
-        $publishedMedia = $this->mediaRepository->trouverPublies();
-        $myMedia = $currentUser !== null
-            ? $this->mediaRepository->trouverParIdentifiantAuteur((string) $currentUser['identifiant'])
-            : [];
-
-        $siteData['articles_publies'] = $publishedArticles;
-        $siteData['published_articles'] = $publishedArticles;
-        $siteData['mes_articles'] = $myArticles;
-        $siteData['my_articles'] = $myArticles;
-        $siteData['medias_publies'] = $publishedMedia;
-        $siteData['published_media'] = $publishedMedia;
-        $siteData['mes_medias'] = $myMedia;
-        $siteData['my_media'] = $myMedia;
-        $siteData['tous_utilisateurs'] = $authData['est_admin'] ? $this->userRepository->listerTous() : [];
-        $siteData['all_users'] = $siteData['tous_utilisateurs'];
-        $siteData['tous_articles'] = $authData['est_admin'] ? $this->articleRepository->listerTous() : [];
-        $siteData['all_articles'] = $siteData['tous_articles'];
-        $siteData['tous_medias'] = $authData['est_admin'] ? $this->mediaRepository->listerTous() : [];
-        $siteData['all_media'] = $siteData['tous_medias'];
-        $siteData['commandes_membre'] = $currentUser !== null
-            ? $this->orderRepository->listerParIdentifiantUtilisateur((string) $currentUser['identifiant'])
-            : [];
-        $siteData['member_orders'] = $siteData['commandes_membre'];
-        $siteData['toutes_commandes'] = $authData['est_admin'] ? $this->orderRepository->listerToutes() : [];
-        $siteData['all_orders'] = $siteData['toutes_commandes'];
-
-        $dammierPuzzle = $this->dammierRepository->obtenirPuzzleHebdomadaire();
-        $dammierClassement = $this->dammierRepository->listerClassementHebdomadaire(
-            (string) ($dammierPuzzle['dammier_week_key'] ?? ''),
-            (string) ($dammierPuzzle['dammier_id'] ?? '')
-        );
-        $siteData['dammier_puzzle'] = $dammierPuzzle;
-        $siteData['dammier_classement'] = $dammierClassement;
-        $siteData['dammier_peut_voir_classement'] = (bool) ($authData['est_connecte'] ?? false);
+        $siteData = $this->chargerDonneesDynamiques($siteData, $authData, $currentUser);
 
         $siteData['chess_com'] = [
             'statut' => 'absent',
@@ -187,6 +146,163 @@ final class LegacyPageRenderer
         return (string) ob_get_clean();
     }
 
+    private function recupererUtilisateurCourant(): ?array
+    {
+        try {
+            return $this->userRepository->trouverParIdentifiant(
+                isset($_SESSION['identifiant_utilisateur']) ? (string) $_SESSION['identifiant_utilisateur'] : null
+            );
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return null;
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $siteData
+     * @param array<string, mixed> $authData
+     * @param array<string, mixed>|null $currentUser
+     * @return array<string, mixed>
+     */
+    private function chargerDonneesDynamiques(array $siteData, array $authData, ?array $currentUser): array
+    {
+        try {
+            $clubSchedule = $this->scheduleRepository->obtenir();
+            $siteData['horaires_club'] = $clubSchedule;
+            $siteData['club_schedule'] = $clubSchedule;
+            $siteData['resume_horaires_club'] = $this->scheduleRepository->resumerParJour();
+            $siteData['club_schedule_summary'] = $siteData['resume_horaires_club'];
+            $siteData['planning'] = $this->scheduleRepository->adapterPlanning();
+            $siteData['schedule'] = $siteData['planning'];
+
+            $publishedArticles = $this->articleRepository->trouverPublies();
+            $myArticles = $currentUser !== null
+                ? $this->articleRepository->trouverParIdentifiantAuteur((string) $currentUser['identifiant'])
+                : [];
+            $publishedMedia = $this->mediaRepository->trouverPublies();
+            $myMedia = $currentUser !== null
+                ? $this->mediaRepository->trouverParIdentifiantAuteur((string) $currentUser['identifiant'])
+                : [];
+
+            $siteData['articles_publies'] = $publishedArticles;
+            $siteData['published_articles'] = $publishedArticles;
+            $siteData['mes_articles'] = $myArticles;
+            $siteData['my_articles'] = $myArticles;
+            $siteData['medias_publies'] = $publishedMedia;
+            $siteData['published_media'] = $publishedMedia;
+            $siteData['mes_medias'] = $myMedia;
+            $siteData['my_media'] = $myMedia;
+            $siteData['tous_utilisateurs'] = $authData['est_admin'] ? $this->userRepository->listerTous() : [];
+            $siteData['all_users'] = $siteData['tous_utilisateurs'];
+            $siteData['resume_roles_compte'] = $authData['est_admin'] ? $this->userRepository->resumerRoles() : [];
+            $siteData['limite_professeurs'] = User::MAX_PROFESSEURS;
+            $siteData['tous_articles'] = $authData['est_admin'] ? $this->articleRepository->listerTous() : [];
+            $siteData['all_articles'] = $siteData['tous_articles'];
+            $siteData['tous_medias'] = $authData['est_admin'] ? $this->mediaRepository->listerTous() : [];
+            $siteData['all_media'] = $siteData['tous_medias'];
+            $siteData['commandes_membre'] = $currentUser !== null
+                ? $this->orderRepository->listerParIdentifiantUtilisateur((string) $currentUser['identifiant'])
+                : [];
+            $siteData['member_orders'] = $siteData['commandes_membre'];
+            $siteData['toutes_commandes'] = $authData['est_admin'] ? $this->orderRepository->listerToutes() : [];
+            $siteData['all_orders'] = $siteData['toutes_commandes'];
+            $siteData['resume_trafic_visiteurs'] = $authData['est_admin'] && $this->trafficRepository !== null
+                ? $this->trafficRepository->obtenirResumeAdmin()
+                : [];
+
+            $dammierPuzzle = $this->dammierRepository->obtenirPuzzleHebdomadaire();
+            $dammierClassement = $this->dammierRepository->listerClassementHebdomadaire(
+                (string) ($dammierPuzzle['dammier_week_key'] ?? ''),
+                (string) ($dammierPuzzle['dammier_id'] ?? '')
+            );
+            $siteData['dammier_puzzle'] = $dammierPuzzle;
+            $siteData['dammier_classement'] = $dammierClassement;
+            $siteData['dammier_peut_voir_classement'] = (bool) ($authData['est_connecte'] ?? false);
+
+            return $siteData;
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return $this->appliquerModeDegrade($siteData, $authData);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $siteData
+     * @param array<string, mixed> $authData
+     * @return array<string, mixed>
+     */
+    private function appliquerModeDegrade(array $siteData, array $authData): array
+    {
+        $horaires = [
+            'schedule_id' => 'club_schedule_fallback',
+            'season_label' => 'Horaires du club',
+            'holiday_notice' => '',
+            'updated_at' => '',
+            'items' => [],
+        ];
+
+        $siteData['horaires_club'] = $horaires;
+        $siteData['club_schedule'] = $horaires;
+        $siteData['resume_horaires_club'] = [];
+        $siteData['club_schedule_summary'] = [];
+        $siteData['planning'] = [];
+        $siteData['schedule'] = [];
+        $siteData['articles_publies'] = [];
+        $siteData['published_articles'] = [];
+        $siteData['mes_articles'] = [];
+        $siteData['my_articles'] = [];
+        $siteData['medias_publies'] = [];
+        $siteData['published_media'] = [];
+        $siteData['mes_medias'] = [];
+        $siteData['my_media'] = [];
+        $siteData['tous_utilisateurs'] = [];
+        $siteData['all_users'] = [];
+        $siteData['resume_roles_compte'] = [];
+        $siteData['limite_professeurs'] = User::MAX_PROFESSEURS;
+        $siteData['tous_articles'] = [];
+        $siteData['all_articles'] = [];
+        $siteData['tous_medias'] = [];
+        $siteData['all_media'] = [];
+        $siteData['commandes_membre'] = [];
+        $siteData['member_orders'] = [];
+        $siteData['toutes_commandes'] = [];
+        $siteData['all_orders'] = [];
+        $siteData['resume_trafic_visiteurs'] = [];
+        $siteData['dammier_puzzle'] = $this->puzzleDeSecoursHorsBase();
+        $siteData['dammier_classement'] = [];
+        $siteData['dammier_peut_voir_classement'] = (bool) ($authData['est_connecte'] ?? false);
+
+        return $siteData;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function puzzleDeSecoursHorsBase(): array
+    {
+        return [
+            'dammier_id' => 'dammier_hors_base',
+            'dammier_title' => 'Puzzle hors ligne',
+            'dammier_description' => 'Le puzzle interactif reste disponible même si la base locale ne répond pas.',
+            'dammier_instruction' => 'Trouve la suite théorique en 2 coups blancs.',
+            'dammier_fen' => 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1',
+            'dammier_side_to_move' => 'w',
+            'dammier_difficulty_code' => 'facile',
+            'dammier_difficulty_label' => 'Facile',
+            'dammier_solution' => ['e2e4', 'g1f3'],
+            'dammier_replies' => ['e7e5', 'b8c6'],
+            'dammier_hints' => [
+                'Commence par prendre le centre.',
+                'Ensuite, développe une pièce mineure.',
+            ],
+            'dammier_source' => 'fallback_hors_base',
+            'dammier_white_moves_count' => 2,
+            'dammier_week_key' => '',
+        ];
+    }
+
     private function autoriserAccesPage(string $segment, ?array $utilisateur): void
     {
         $estConnecte = $this->estUtilisateurActif($utilisateur);
@@ -217,6 +333,7 @@ final class LegacyPageRenderer
                 'role_label' => 'Visiteur',
                 'est_admin' => false,
                 'est_adherent' => false,
+                'est_prof' => false,
                 'peut_voir_guides' => false,
                 'peut_voir_boutique' => false,
                 'peut_publier_articles' => false,
@@ -227,6 +344,7 @@ final class LegacyPageRenderer
         $displayName = trim((string) ($utilisateur['prenom'] ?? '') . ' ' . (string) ($utilisateur['nom'] ?? ''));
         $estAdmin = $this->estAdmin($utilisateur);
         $estAdherent = $this->estAdherent($utilisateur);
+        $estProf = $this->estProf($utilisateur);
         $role = (string) ($utilisateur['role'] ?? User::ROLE_CONNECTE);
 
         return [
@@ -239,10 +357,11 @@ final class LegacyPageRenderer
             'role_label' => $this->libelleRole($role),
             'est_admin' => $estAdmin,
             'est_adherent' => $estAdherent,
+            'est_prof' => $estProf,
             'peut_voir_guides' => true,
             'peut_voir_boutique' => true,
-            'peut_publier_articles' => $estAdmin || $estAdherent,
-            'peut_soumettre_medias' => $estAdmin || $estAdherent,
+            'peut_publier_articles' => $estAdmin || $estAdherent || $estProf,
+            'peut_soumettre_medias' => $estAdmin || $estAdherent || $estProf,
             'user' => [
                 ...$utilisateur,
                 'email' => $utilisateur['courriel'] ?? '',
@@ -304,10 +423,17 @@ final class LegacyPageRenderer
             );
     }
 
+    private function estProf(?array $utilisateur): bool
+    {
+        return $this->estUtilisateurActif($utilisateur)
+            && ($utilisateur['role'] ?? '') === User::ROLE_PROF;
+    }
+
     private function libelleRole(string $role): string
     {
         return match ($role) {
             User::ROLE_ADMIN => 'Administrateur',
+            User::ROLE_PROF => 'Prof',
             User::ROLE_ADHERENT => 'Adherent',
             User::ROLE_CONNECTE => 'Compte connecte',
             default => 'Visiteur',

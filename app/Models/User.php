@@ -10,7 +10,10 @@ final class User extends Model
 {
     public const ROLE_CONNECTE = 'connecte';
     public const ROLE_ADHERENT = 'adherent';
+    public const ROLE_PROF = 'prof';
     public const ROLE_ADMIN = 'admin';
+
+    public const MAX_PROFESSEURS = 10;
 
     public const STATUT_COMPTE_ACTIF = 'actif';
     public const STATUT_COMPTE_SUSPENDU = 'suspendu';

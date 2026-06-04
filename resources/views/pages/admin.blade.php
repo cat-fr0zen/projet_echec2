@@ -15,6 +15,15 @@ $allUsers = $siteData['all_users'] ?? [];
 $allArticles = $siteData['all_articles'] ?? [];
 $allMedia = $siteData['all_media'] ?? [];
 $allOrders = $siteData['all_orders'] ?? [];
+$authData = is_array($siteData['authentification'] ?? null) ? $siteData['authentification'] : [];
+$currentAdmin = is_array($authData['user'] ?? null) ? $authData['user'] : [];
+$currentAdminId = (string) ($currentAdmin['identifiant'] ?? '');
+$roleSummary = is_array($siteData['resume_roles_compte'] ?? null) ? $siteData['resume_roles_compte'] : [];
+$profCount = (int) ($roleSummary['prof'] ?? 0);
+$profLimit = (int) ($siteData['limite_professeurs'] ?? 10);
+$trafficSummary = is_array($siteData['resume_trafic_visiteurs'] ?? null) ? $siteData['resume_trafic_visiteurs'] : [];
+$popularPages = is_array($trafficSummary['pages_populaires'] ?? null) ? $trafficSummary['pages_populaires'] : [];
+$latestVisits = is_array($trafficSummary['dernieres_visites'] ?? null) ? $trafficSummary['dernieres_visites'] : [];
 $horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horaires_club'] : [];
 $itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
 $lignesHorairesAdmin = $itemsHorairesClub;
@@ -87,6 +96,92 @@ while (count($lignesHorairesAdmin) < 10) {
             <p class="card-tag">Commandes</p>
             <span class="metric-value"><?= e((string) count($allOrders)) ?></span>
             <h3>Merch commande</h3>
+        </article>
+        <article class="info-card">
+            <p class="card-tag">Professeurs</p>
+            <span class="metric-value"><?= e((string) $profCount) ?> / <?= e((string) $profLimit) ?></span>
+            <h3>Rôles prof attribués</h3>
+        </article>
+        <article class="info-card">
+            <p class="card-tag">Visiteurs</p>
+            <span class="metric-value"><?= e((string) ($trafficSummary['visiteurs_uniques_7_jours'] ?? 0)) ?></span>
+            <h3>Visiteurs uniques sur 7 jours</h3>
+        </article>
+    </div>
+</section>
+
+<section class="section-block reveal reveal-3">
+    <div class="section-head">
+        <p class="eyebrow">Trafic visiteurs</p>
+        <h2>Surveiller le trafic des visiteurs non connectés.</h2>
+        <p>Ce suivi reste centré sur la fréquentation publique du site, sans conserver d'adresse IP brute.</p>
+    </div>
+
+    <div class="admin-summary-grid">
+        <article class="info-card">
+            <p class="card-tag">Aujourd'hui</p>
+            <span class="metric-value"><?= e((string) ($trafficSummary['visites_aujourdhui'] ?? 0)) ?></span>
+            <h3>Visites invitées</h3>
+        </article>
+        <article class="info-card">
+            <p class="card-tag">7 jours</p>
+            <span class="metric-value"><?= e((string) ($trafficSummary['visites_7_jours'] ?? 0)) ?></span>
+            <h3>Pages vues invitées</h3>
+        </article>
+        <article class="info-card">
+            <p class="card-tag">7 jours</p>
+            <span class="metric-value"><?= e((string) ($trafficSummary['visiteurs_uniques_7_jours'] ?? 0)) ?></span>
+            <h3>Visiteurs uniques</h3>
+        </article>
+    </div>
+
+    <div class="split-grid">
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Pages populaires</p>
+                <h2>Qu'est-ce qui attire le plus ?</h2>
+            </div>
+
+            <div class="admin-list">
+                <?php if ($popularPages === []): ?>
+                    <div class="empty-state">
+                        <p class="card-tag">Aucune donnée</p>
+                        <h3>Le journal visiteurs est encore vide.</h3>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($popularPages as $pagePopulaire): ?>
+                        <article class="info-card admin-card">
+                            <p class="card-tag"><?= e((string) ($pagePopulaire['page'] ?? '')) ?></p>
+                            <span class="metric-value"><?= e((string) ($pagePopulaire['total'] ?? 0)) ?></span>
+                            <h3>Visites publiques</h3>
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </article>
+
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Dernières visites</p>
+                <h2>D'où viennent les visiteurs ?</h2>
+            </div>
+
+            <div class="admin-list">
+                <?php if ($latestVisits === []): ?>
+                    <div class="empty-state">
+                        <p class="card-tag">Aucune donnée</p>
+                        <h3>Aucune visite invitée récente.</h3>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($latestVisits as $visite): ?>
+                        <article class="info-card admin-card">
+                            <p class="card-tag"><?= e((string) ($visite['page'] ?? '')) ?></p>
+                            <h3><?= e((string) (($visite['hote_referent'] ?? '') !== '' ? $visite['hote_referent'] : 'Accès direct')) ?></h3>
+                            <p><?= e((string) ($visite['visite_le'] ?? '')) ?></p>
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
         </article>
     </div>
 </section>
@@ -213,6 +308,7 @@ while (count($lignesHorairesAdmin) < 10) {
                         <select name="role_utilisateur">
                             <option value="connecte"<?= ($user['role'] ?? '') === 'connecte' ? ' selected' : '' ?>>Connect?</option>
                             <option value="adherent"<?= ($user['role'] ?? '') === 'adherent' ? ' selected' : '' ?>>Adhérent</option>
+                            <option value="prof"<?= ($user['role'] ?? '') === 'prof' ? ' selected' : '' ?>>Prof</option>
                             <option value="admin"<?= ($user['role'] ?? '') === 'admin' ? ' selected' : '' ?>>Admin</option>
                         </select>
                     </label>
@@ -235,6 +331,25 @@ while (count($lignesHorairesAdmin) < 10) {
 
                     <button type="submit" class="button button-primary">Mettre ? jour</button>
                 </form>
+
+                <?php if ($currentAdminId !== '' && (string) ($user['identifiant'] ?? '') !== $currentAdminId): ?>
+                    <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form">
+                        <input type="hidden" name="action" value="transfer_admin_role">
+                        <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                        <input type="hidden" name="identifiant_utilisateur_cible" value="<?= e((string) ($user['identifiant'] ?? '')) ?>">
+
+                        <label class="form-group">
+                            <span>Mon rôle après transfert</span>
+                            <select name="role_apres_transfert">
+                                <option value="prof">Prof</option>
+                                <option value="adherent">Adherent</option>
+                                <option value="connecte">Compte connecte</option>
+                            </select>
+                        </label>
+
+                        <button type="submit" class="button button-secondary">Transferer le role admin</button>
+                    </form>
+                <?php endif; ?>
             </article>
         <?php endforeach; ?>
     </div>

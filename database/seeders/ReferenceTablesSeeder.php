@@ -14,6 +14,7 @@ final class ReferenceTablesSeeder extends Seeder
         DB::table('ref_role_compte')->insertOrIgnore([
             ['code_role' => 'connecte', 'libelle_role' => 'Compte connecte', 'niveau_acces' => 10],
             ['code_role' => 'adherent', 'libelle_role' => 'Adherent', 'niveau_acces' => 50],
+            ['code_role' => 'prof', 'libelle_role' => 'Professeur', 'niveau_acces' => 70],
             ['code_role' => 'admin', 'libelle_role' => 'Administrateur', 'niveau_acces' => 100],
         ]);
 

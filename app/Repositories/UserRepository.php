@@ -10,6 +10,19 @@ use Illuminate\Support\Facades\DB;
 
 final class UserRepository
 {
+    /**
+     * @return array<string, int>
+     */
+    public function resumerRoles(): array
+    {
+        return [
+            'admin' => (int) DB::table('compte_membre')->where('code_role', User::ROLE_ADMIN)->count(),
+            'prof' => (int) DB::table('compte_membre')->where('code_role', User::ROLE_PROF)->count(),
+            'adherent' => (int) DB::table('compte_membre')->where('code_role', User::ROLE_ADHERENT)->count(),
+            'connecte' => (int) DB::table('compte_membre')->where('code_role', User::ROLE_CONNECTE)->count(),
+        ];
+    }
+
     public function trouverParIdentifiant(?string $identifiant): ?array
     {
         if ($identifiant === null || trim($identifiant) === '') {
@@ -119,7 +132,7 @@ final class UserRepository
 
     public function mettreAJourAcces(string $identifiant, string $role, string $statutCompte, string $statutAdhesion): ?array
     {
-        if (!in_array($role, [User::ROLE_CONNECTE, User::ROLE_ADHERENT, User::ROLE_ADMIN], true)) {
+        if (!in_array($role, [User::ROLE_CONNECTE, User::ROLE_ADHERENT, User::ROLE_PROF, User::ROLE_ADMIN], true)) {
             return null;
         }
 
@@ -133,6 +146,14 @@ final class UserRepository
 
         $user = $this->trouverParIdentifiant($identifiant);
         if ($user === null) {
+            return null;
+        }
+
+        if (
+            $role === User::ROLE_PROF
+            && $user['role'] !== User::ROLE_PROF
+            && $this->compterProfesseurs() >= User::MAX_PROFESSEURS
+        ) {
             return null;
         }
 
@@ -150,6 +171,65 @@ final class UserRepository
             ]);
 
         return $this->trouverParIdentifiant($identifiant);
+    }
+
+    public function transfererRoleAdmin(
+        string $identifiantAdministrateurSource,
+        string $identifiantUtilisateurCible,
+        string $roleApresTransfert = User::ROLE_PROF
+    ): ?array {
+        if ($identifiantAdministrateurSource === '' || $identifiantUtilisateurCible === '') {
+            return null;
+        }
+
+        if ($identifiantAdministrateurSource === $identifiantUtilisateurCible) {
+            return null;
+        }
+
+        if (!in_array($roleApresTransfert, [User::ROLE_CONNECTE, User::ROLE_ADHERENT, User::ROLE_PROF], true)) {
+            return null;
+        }
+
+        $administrateurSource = $this->trouverParIdentifiant($identifiantAdministrateurSource);
+        $utilisateurCible = $this->trouverParIdentifiant($identifiantUtilisateurCible);
+
+        if ($administrateurSource === null || $utilisateurCible === null) {
+            return null;
+        }
+
+        if ($administrateurSource['role'] !== User::ROLE_ADMIN) {
+            return null;
+        }
+
+        if ($utilisateurCible['statut_compte'] !== User::STATUT_COMPTE_ACTIF) {
+            return null;
+        }
+
+        if (
+            $roleApresTransfert === User::ROLE_PROF
+            && $administrateurSource['role'] !== User::ROLE_PROF
+            && $this->compterProfesseurs() >= User::MAX_PROFESSEURS
+        ) {
+            return null;
+        }
+
+        DB::transaction(function () use ($identifiantAdministrateurSource, $identifiantUtilisateurCible, $roleApresTransfert): void {
+            DB::table('compte_membre')
+                ->where('identifiant', $identifiantUtilisateurCible)
+                ->update([
+                    'code_role' => User::ROLE_ADMIN,
+                    'mis_a_jour_le' => date('Y-m-d H:i:s'),
+                ]);
+
+            DB::table('compte_membre')
+                ->where('identifiant', $identifiantAdministrateurSource)
+                ->update([
+                    'code_role' => $roleApresTransfert,
+                    'mis_a_jour_le' => date('Y-m-d H:i:s'),
+                ]);
+        });
+
+        return $this->trouverParIdentifiant($identifiantUtilisateurCible);
     }
 
     public function normaliserNumeroLicenceFederale(mixed $valeur): string
@@ -208,6 +288,13 @@ final class UserRepository
     {
         return (int) DB::table('compte_membre')
             ->where('code_role', User::ROLE_ADMIN)
+            ->count();
+    }
+
+    private function compterProfesseurs(): int
+    {
+        return (int) DB::table('compte_membre')
+            ->where('code_role', User::ROLE_PROF)
             ->count();
     }
 
