@@ -1,18 +1,83 @@
-/vendor
-/node_modules
-/bootstrap/cache/*.php
+# Dependances
+/vendor/
+/node_modules/
+
+# Environnement local et secrets
+/.env
+/.env.*
+!/.env.example
+/*.pem
+/*.key
+/*.crt
+/*.p12
+/*.pfx
+/*.kdbx
+/*.secret
+/*.secrets
+/*.token
+/*.tokens
+/*.credentials
+/*.password
+
+# IDE / OS
+/.idea/
+/.vscode/
+/.fleet/
+/.history/
+/.DS_Store
+/Thumbs.db
+/desktop.ini
+
+# Caches et artefacts PHP / Laravel
 /.phpunit.result.cache
+/.php-cs-fixer.cache
+/bootstrap/cache/*.php
 /storage/*.key
-/storage/logs/*.log
+/storage/logs/*
+!/storage/logs/.gitignore
 /storage/framework/cache/*
 /storage/framework/sessions/*
 /storage/framework/testing/*
 /storage/framework/views/*
-/.env
-/lancement/*.bat
-/public/assets/media/uploads/articles/*
+/storage/app/*
+!/storage/app/.gitignore
+
+# Tests et rapports locaux
+/coverage/
+/tests/_output/
+/tests/.phpunit.result.cache
+
+# Uploads et fichiers generes par le site
+/public/assets/media/uploads/*
 !/public/assets/media/uploads/.htaccess
+
+# Runtime, bases locales et archives machine
+/runtime/*
+!/runtime/mysql-data/
+!/runtime/mysql-data/.gitignore
 /runtime/mysql-data/*
 !/runtime/mysql-data/.gitignore
-/runtime/mysql-local.ini
 /runtime/mysql-data-archive-*/
+/runtime/*.ini
+/runtime/*.log
+/runtime/*.pid
+/runtime/*.sock
+/runtime/*.sql
+/runtime/*.sqlite
+/runtime/*.sqlite3
+/runtime/*.db
+
+# Scripts locaux machine-specifiques
+/lancement/*.bat
+/lancement/*.ps1
+!/lancement/README.md
+
+# Dumps et exports locaux
+/*.sql
+/*.sql.gz
+/*.dump
+/*.bak
+/*.zip
+/*.7z
+/*.tar
+/*.tar.gz

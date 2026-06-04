@@ -40,6 +40,17 @@ Ce script essaie de :
 6. lancer `migrate --seed`
 7. lancer `php artisan serve`
 
+## Lancement en plusieurs etapes
+
+Si tu preferes faire simple, lance-les dans cet ordre :
+
+1. `lancement\1_demarrer_mysql.bat`
+2. `lancement\2_preparer_projet.bat`
+3. `lancement\3_migrer_et_seed.bat`
+4. `lancement\4_lancer_site.bat`
+
+Le fichier commun `lancement\_charger_outils.bat` sert juste a detecter PHP, MySQL et lire `.env`.
+
 ## Donnees locales
 
 Le dossier de donnees local suivi pour l'installation locale est :
