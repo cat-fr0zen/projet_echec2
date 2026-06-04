@@ -91,6 +91,7 @@ $myMedia = $siteData['my_media'] ?? [];
         <?php else: ?>
             <form method="post" action="<?= e(url_route('mediatheque')) ?>" class="article-form" enctype="multipart/form-data">
                 <input type="hidden" name="action" value="submit_media">
+                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
                 <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
 
                 <label class="form-group">

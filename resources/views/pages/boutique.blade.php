@@ -38,6 +38,7 @@ $memberOrders = $siteData['member_orders'] ?? [];
 
                     <form method="post" action="<?= e(url_route('boutique')) ?>" class="article-form">
                         <input type="hidden" name="action" value="order_product">
+                        <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
                         <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
                         <input type="hidden" name="produit" value="<?= e((string) ($carteBoutique['titre'] ?? 'Produit')) ?>">
                         <input type="hidden" name="categorie" value="<?= e((string) ($carteBoutique['type'] ?? 'Produit')) ?>">

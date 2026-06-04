@@ -55,6 +55,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
     <form method="post" action="<?= e(url_route('admin')) ?>#admin-newsletter-boutique" class="article-form">
         <input type="hidden" name="action" value="notify_shop_item">
+        <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
         <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
 
         <label for="titre-objet-boutique">Nom de l'objet ou de l'information boutique</label>
@@ -120,6 +121,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
     <form method="post" action="<?= e(url_route('admin')) ?>#admin-constructeur" class="admin-form">
         <input type="hidden" name="action" value="update_home_builder">
+        <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
         <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
 
         <div class="admin-list">
@@ -258,6 +260,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
     <form method="post" action="<?= e(url_route('admin')) ?>#admin-horaires-club" class="admin-form schedule-admin-form">
         <input type="hidden" name="action" value="update_club_schedule">
+        <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
         <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
 
         <div class="admin-schedule-settings">
@@ -363,6 +366,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
                 <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form">
                     <input type="hidden" name="action" value="update_user_access">
+                    <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
                     <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
                     <input type="hidden" name="identifiant_utilisateur_cible" value="<?= e((string) ($user['identifiant'] ?? '')) ?>">
 
@@ -398,6 +402,7 @@ while (count($lignesHorairesAdmin) < 10) {
                 <?php if ($currentAdminId !== '' && (string) ($user['identifiant'] ?? '') !== $currentAdminId): ?>
                     <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form">
                         <input type="hidden" name="action" value="transfer_admin_role">
+                        <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
                         <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
                         <input type="hidden" name="identifiant_utilisateur_cible" value="<?= e((string) ($user['identifiant'] ?? '')) ?>">
 
@@ -443,6 +448,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
                         <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form admin-inline-form">
                             <input type="hidden" name="action" value="review_article">
+                            <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
                             <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
                             <input type="hidden" name="identifiant_article" value="<?= e((string) ($article['identifiant'] ?? '')) ?>">
 
@@ -453,6 +459,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
                         <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form admin-inline-form" data-confirm-delete>
                             <input type="hidden" name="action" value="delete_article">
+                            <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
                             <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
                             <input type="hidden" name="identifiant_article" value="<?= e((string) ($article['identifiant'] ?? '')) ?>">
                             <button type="submit" class="button button-secondary button-danger">Supprimer</button>
@@ -499,6 +506,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
                         <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form admin-inline-form">
                             <input type="hidden" name="action" value="review_media">
+                            <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
                             <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
                             <input type="hidden" name="identifiant_media" value="<?= e((string) ($media['identifiant'] ?? '')) ?>">
 
@@ -536,6 +544,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
                     <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form admin-inline-form">
                         <input type="hidden" name="action" value="update_order_status">
+                        <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
                         <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
                         <input type="hidden" name="identifiant_commande" value="<?= e((string) ($commande['identifiant'] ?? '')) ?>">
 

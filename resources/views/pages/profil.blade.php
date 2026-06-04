@@ -47,6 +47,7 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
 
             <form method="post" action="<?= e(url_route('profil')) ?>" class="article-form">
                 <input type="hidden" name="action" value="update_profile">
+                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
                 <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
 
                 <div class="auth-grid">

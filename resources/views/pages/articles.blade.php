@@ -108,6 +108,7 @@ $renderArticleBlocks = static function (array $article): void {
             data-article-editor-form
         >
             <input type="hidden" name="action" value="create_article">
+            <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
             <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
             <input type="hidden" name="article_blocks_payload" data-article-blocks-payload value="">
 

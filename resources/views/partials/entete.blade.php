@@ -149,6 +149,7 @@ $themeMoonIconUrl = url_ressource('assets/media/image/theme-lune.svg');
                     </div>
                     <form method="post" action="<?= e(url_route($pageCourante)) ?>" class="burger-logout-form">
                         <input type="hidden" name="action" value="deconnexion">
+                        <input type="hidden" name="_token" value="<?= e($donneesSite['jeton_csrf']) ?>">
                         <input type="hidden" name="jeton_csrf" value="<?= e($donneesSite['jeton_csrf']) ?>">
                         <button type="submit" class="button button-secondary burger-logout-button">Deconnexion</button>
                     </form>

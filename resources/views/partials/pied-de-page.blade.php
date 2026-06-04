@@ -206,6 +206,7 @@ $renderReviewStars = static function (?float $note): string {
                                 class="footer-newsletter-form"
                             >
                                 <input type="hidden" name="action" value="newsletter_subscribe">
+                                <input type="hidden" name="_token" value="<?= e($donneesSite['jeton_csrf'] ?? '') ?>">
                                 <input type="hidden" name="jeton_csrf" value="<?= e($donneesSite['jeton_csrf'] ?? '') ?>">
                                 <input type="hidden" name="page_redirection" value="<?= e((string) ($donneesSite['page_courante'] ?? 'accueil')) ?>">
 

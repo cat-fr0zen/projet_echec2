@@ -180,6 +180,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                     <?= $ongletActif !== 'connexion' ? 'hidden' : '' ?>
                 >
                     <input type="hidden" name="action" value="connexion">
+                    <input type="hidden" name="_token" value="<?= e($donneesSite['jeton_csrf']) ?>">
                     <input type="hidden" name="jeton_csrf" value="<?= e($donneesSite['jeton_csrf']) ?>">
                     <input type="hidden" name="page_redirection" value="<?= e($pageCourante) ?>">
 
@@ -241,6 +242,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                     <?= $ongletActif !== 'inscription' ? 'hidden' : '' ?>
                 >
                     <input type="hidden" name="action" value="inscription">
+                    <input type="hidden" name="_token" value="<?= e($donneesSite['jeton_csrf']) ?>">
                     <input type="hidden" name="jeton_csrf" value="<?= e($donneesSite['jeton_csrf']) ?>">
                     <input type="hidden" name="page_redirection" value="<?= e($pageCourante) ?>">
 
