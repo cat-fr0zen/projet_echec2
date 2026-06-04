@@ -24,6 +24,22 @@ php artisan migrate --seed
 php artisan serve
 ```
 
+## Lancement en un clic
+
+Si tu veux tout lancer d'un coup sur cette machine, utilise :
+
+`lancement\demarrer_tout_le_site.bat`
+
+Ce script essaie de :
+
+1. detecter PHP et MySQL de Laragon
+2. installer Composer si `vendor` manque
+3. verifier ou generer `APP_KEY`
+4. demarrer MySQL local si besoin
+5. verifier la base `projet_echec2`
+6. lancer `migrate --seed`
+7. lancer `php artisan serve`
+
 ## Donnees locales
 
 Le dossier de donnees local suivi pour l'installation locale est :
