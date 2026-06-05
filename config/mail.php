@@ -1,14 +1,23 @@
 <?php
 
+use App\Support\MailProviderConfig;
+
+$mailProvider = MailProviderConfig::resolve(
+    env('MAIL_PROVIDER', 'custom'),
+    env('MAIL_HOST', ''),
+    env('MAIL_PORT', 1025),
+    env('MAIL_ENCRYPTION')
+);
+
 return [
     'default' => env('MAIL_MAILER', 'smtp'),
 
     'mailers' => [
         'smtp' => [
             'transport' => 'smtp',
-            'host' => env('MAIL_HOST', '127.0.0.1'),
-            'port' => env('MAIL_PORT', 1025),
-            'encryption' => env('MAIL_ENCRYPTION'),
+            'host' => $mailProvider['host'],
+            'port' => $mailProvider['port'],
+            'encryption' => $mailProvider['encryption'],
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
