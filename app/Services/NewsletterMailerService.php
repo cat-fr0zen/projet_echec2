@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Mail\NewsletterActualiteMail;
+use App\Mail\NewsletterConfirmationMail;
 use App\Repositories\NewsletterRepository;
+use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\Mail;
+use Throwable;
 
 final class NewsletterMailerService
 {
@@ -26,9 +31,9 @@ final class NewsletterMailerService
 
     public static function depuisEnvironnement(NewsletterRepository $depotNewsletter): self
     {
-        $adresseExpediteur = getenv('MAIL_FROM_ADDRESS');
-        $nomExpediteur = getenv('MAIL_FROM_NAME');
-        $urlPublique = getenv('NEWSLETTER_PUBLIC_BASE_URL');
+        $adresseExpediteur = config('mail.from.address');
+        $nomExpediteur = config('mail.from.name');
+        $urlPublique = env('NEWSLETTER_PUBLIC_BASE_URL', config('app.url', '/'));
 
         return new self(
             $depotNewsletter,
@@ -40,13 +45,31 @@ final class NewsletterMailerService
 
     public function envoyerConfirmation(array $abonnement): void
     {
-        $this->notifierUnAbonne(
-            $abonnement,
+        $courriel = (string) ($abonnement['courriel'] ?? '');
+        $identifiant = (string) ($abonnement['identifiant_abonnement'] ?? '');
+        $jeton = (string) ($abonnement['jeton_desabonnement'] ?? '');
+
+        if ($courriel === '' || $identifiant === '' || $jeton === '') {
+            return;
+        }
+
+        $urlAccueil = $this->construireUrl('/');
+        $urlDesabonnement = $this->construireUrl(
+            route('newsletter.unsubscribe', ['jeton' => $jeton], false)
+        );
+        $resultat = $this->envoyerMailable(
+            $courriel,
+            new NewsletterConfirmationMail($urlAccueil, $urlDesabonnement)
+        );
+
+        $this->depotNewsletter->enregistrerEnvoi(
+            $identifiant,
             self::TYPE_CONFIRMATION,
+            'Confirmation abonnement newsletter',
+            $urlAccueil,
             'Abonnement newsletter confirme',
-            'Bienvenue dans la newsletter du club',
-            $this->construireUrl('/'),
-            "Bonjour,\n\nVotre abonnement a la newsletter des Cavaliers d'Herouville est confirme.\n\nVous recevrez les nouvelles actualites publiees par le club: articles, horaires/cours et boutique.\n\n"
+            $resultat['succes'] ? 'envoye' : 'echec',
+            $resultat['erreur']
         );
     }
 
@@ -109,13 +132,19 @@ final class NewsletterMailerService
             return;
         }
 
-        $lienDesabonnement = $this->construireUrl('/?newsletter_unsubscribe=' . rawurlencode($jeton));
-        $corps = $message
-            . "Voir l'actualite: {$urlEvenement}\n\n"
-            . "Vous recevez cet email car vous avez demande a suivre les actualites du club.\n"
-            . "Pour vous desabonner: {$lienDesabonnement}\n";
-
-        $envoye = $this->envoyerMail($courriel, $sujet, $corps);
+        $lienDesabonnement = $this->construireUrl(
+            route('newsletter.unsubscribe', ['jeton' => $jeton], false)
+        );
+        $resultat = $this->envoyerMailable(
+            $courriel,
+            new NewsletterActualiteMail(
+                $sujet,
+                $titreEvenement,
+                trim($message),
+                $urlEvenement,
+                $lienDesabonnement
+            )
+        );
 
         $this->depotNewsletter->enregistrerEnvoi(
             $identifiant,
@@ -123,27 +152,41 @@ final class NewsletterMailerService
             $titreEvenement,
             $urlEvenement,
             $sujet,
-            $envoye ? 'envoye' : 'echec',
-            $envoye ? '' : 'mail() a refuse l envoi. Verifier SMTP/sendmail dans XAMPP.'
+            $resultat['succes'] ? 'envoye' : 'echec',
+            $resultat['erreur']
         );
     }
 
-    private function envoyerMail(string $destinataire, string $sujet, string $corps): bool
+    /**
+     * @return array{succes: bool, erreur: string}
+     */
+    private function envoyerMailable(string $destinataire, Mailable $mailable): array
     {
         if (!filter_var($destinataire, FILTER_VALIDATE_EMAIL)) {
-            return false;
+            return [
+                'succes' => false,
+                'erreur' => 'Adresse email destinataire invalide.',
+            ];
         }
 
-        $sujet = $this->nettoyerEntete($sujet);
-        $headers = [
-            'From: ' . $this->nomExpediteur . ' <' . $this->adresseExpediteur . '>',
-            'Reply-To: ' . $this->adresseExpediteur,
-            'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
-            'X-Mailer: PHP/' . PHP_VERSION,
-        ];
+        try {
+            Mail::to($destinataire)->send($mailable);
 
-        return @mail($destinataire, $sujet, $corps, implode("\r\n", $headers));
+            return [
+                'succes' => true,
+                'erreur' => '',
+            ];
+        } catch (Throwable $exception) {
+            report($exception);
+
+            return [
+                'succes' => false,
+                'erreur' => $this->limiter(
+                    $exception->getMessage() !== '' ? $exception->getMessage() : "L'envoi SMTP a echoue.",
+                    1000
+                ),
+            ];
+        }
     }
 
     private function construireUrl(string $chemin): string
@@ -165,5 +208,10 @@ final class NewsletterMailerService
     private function nettoyerEntete(string $valeur): string
     {
         return trim(str_replace(["\r", "\n"], '', $valeur));
+    }
+
+    private function limiter(string $valeur, int $limite): string
+    {
+        return function_exists('mb_substr') ? mb_substr($valeur, 0, $limite) : substr($valeur, 0, $limite);
     }
 }

@@ -9,6 +9,7 @@ use App\Repositories\ArticleRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
+use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\TraficVisiteursRepository;
@@ -28,6 +29,7 @@ final class LegacyPageRenderer
         private DammierRepository $dammierRepository,
         private ScheduleRepository $scheduleRepository,
         private ConstructeurPagesRepository $constructeurPagesRepository,
+        private ?NewsletterRepository $newsletterRepository,
         private ?TraficVisiteursRepository $trafficRepository,
         private ChessComService $chessComService,
         private GoogleReviewsService $googleReviewsService,
@@ -201,6 +203,15 @@ final class LegacyPageRenderer
             $siteData['all_users'] = $siteData['tous_utilisateurs'];
             $siteData['resume_roles_compte'] = $authData['est_admin'] ? $this->userRepository->resumerRoles() : [];
             $siteData['limite_professeurs'] = User::MAX_PROFESSEURS;
+            $siteData['resume_newsletter'] = $authData['est_admin'] && $this->newsletterRepository !== null
+                ? $this->newsletterRepository->obtenirResumeAdmin()
+                : [];
+            $siteData['newsletter_abonnements_admin'] = $authData['est_admin'] && $this->newsletterRepository !== null
+                ? $this->newsletterRepository->listerAbonnementsAdmin()
+                : [];
+            $siteData['newsletter_envois_admin'] = $authData['est_admin'] && $this->newsletterRepository !== null
+                ? $this->newsletterRepository->listerDerniersEnvois()
+                : [];
             $siteData['tous_articles'] = $authData['est_admin'] ? $this->articleRepository->listerTous() : [];
             $siteData['all_articles'] = $siteData['tous_articles'];
             $siteData['tous_medias'] = $authData['est_admin'] ? $this->mediaRepository->listerTous() : [];
@@ -265,6 +276,9 @@ final class LegacyPageRenderer
         $siteData['all_users'] = [];
         $siteData['resume_roles_compte'] = [];
         $siteData['limite_professeurs'] = User::MAX_PROFESSEURS;
+        $siteData['resume_newsletter'] = [];
+        $siteData['newsletter_abonnements_admin'] = [];
+        $siteData['newsletter_envois_admin'] = [];
         $siteData['tous_articles'] = [];
         $siteData['all_articles'] = [];
         $siteData['tous_medias'] = [];

@@ -24,6 +24,9 @@ $profLimit = (int) ($siteData['limite_professeurs'] ?? 10);
 $trafficSummary = is_array($siteData['resume_trafic_visiteurs'] ?? null) ? $siteData['resume_trafic_visiteurs'] : [];
 $popularPages = is_array($trafficSummary['pages_populaires'] ?? null) ? $trafficSummary['pages_populaires'] : [];
 $latestVisits = is_array($trafficSummary['dernieres_visites'] ?? null) ? $trafficSummary['dernieres_visites'] : [];
+$newsletterSummary = is_array($siteData['resume_newsletter'] ?? null) ? $siteData['resume_newsletter'] : [];
+$newsletterSubscribers = is_array($siteData['newsletter_abonnements_admin'] ?? null) ? $siteData['newsletter_abonnements_admin'] : [];
+$newsletterSends = is_array($siteData['newsletter_envois_admin'] ?? null) ? $siteData['newsletter_envois_admin'] : [];
 $horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horaires_club'] : [];
 $itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
 $blocsConstructeurAccueil = is_array($siteData['constructeur_accueil_blocs'] ?? null) ? $siteData['constructeur_accueil_blocs'] : [];
@@ -44,6 +47,92 @@ while (count($lignesHorairesAdmin) < 10) {
     <p class="eyebrow">Administration</p>
     <h1><?= e($pageData['title']) ?></h1>
     <p><?= e($pageData['intro']) ?></p>
+</section>
+
+<section id="admin-newsletter" class="section-block reveal reveal-2">
+    <div class="section-head">
+        <p class="eyebrow">Newsletter</p>
+        <h2>Suivre les abonnes et les envois.</h2>
+        <p>Cette zone centralise la liste des emails inscrits, les desabonnements et les derniers messages envoyes.</p>
+    </div>
+
+    <div class="admin-summary-grid">
+        <article class="info-card">
+            <p class="card-tag">Abonnes</p>
+            <span class="metric-value"><?= e((string) ($newsletterSummary['abonnes_total'] ?? 0)) ?></span>
+            <h3>Total en base</h3>
+        </article>
+        <article class="info-card">
+            <p class="card-tag">Actifs</p>
+            <span class="metric-value"><?= e((string) ($newsletterSummary['abonnes_actifs'] ?? 0)) ?></span>
+            <h3>Recoivent les emails</h3>
+        </article>
+        <article class="info-card">
+            <p class="card-tag">Desabonnes</p>
+            <span class="metric-value"><?= e((string) ($newsletterSummary['abonnes_desabonnes'] ?? 0)) ?></span>
+            <h3>Ont retire leur consentement</h3>
+        </article>
+        <article class="info-card">
+            <p class="card-tag">Envois</p>
+            <span class="metric-value"><?= e((string) ($newsletterSummary['envois_total'] ?? 0)) ?></span>
+            <h3>Historique conserve</h3>
+        </article>
+    </div>
+
+    <div class="split-grid">
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Abonnes</p>
+                <h2>Qui recoit la newsletter ?</h2>
+            </div>
+
+            <div class="admin-list">
+                <?php if ($newsletterSubscribers === []): ?>
+                    <div class="empty-state">
+                        <p class="card-tag">Aucun email</p>
+                        <h3>La newsletter n'a encore aucun inscrit.</h3>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($newsletterSubscribers as $abonneNewsletter): ?>
+                        <article class="info-card admin-card">
+                            <p class="card-tag"><?= e((string) ($abonneNewsletter['statut_libelle'] ?? $abonneNewsletter['statut'] ?? 'Actif')) ?></p>
+                            <h3><?= e((string) ($abonneNewsletter['courriel'] ?? '')) ?></h3>
+                            <p>Source : <?= e((string) ($abonneNewsletter['source_inscription'] ?? 'footer')) ?></p>
+                            <p class="card-subtitle">Inscrit le : <?= e((string) ($abonneNewsletter['cree_le'] ?? '')) ?></p>
+                            <?php if (($abonneNewsletter['desabonne_le'] ?? '') !== ''): ?>
+                                <p class="card-subtitle">Desabonne le : <?= e((string) $abonneNewsletter['desabonne_le']) ?></p>
+                            <?php endif; ?>
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </article>
+
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Derniers envois</p>
+                <h2>Ce qui est parti recemment</h2>
+            </div>
+
+            <div class="admin-list">
+                <?php if ($newsletterSends === []): ?>
+                    <div class="empty-state">
+                        <p class="card-tag">Aucun envoi</p>
+                        <h3>Aucun email newsletter n'a encore ete journalise.</h3>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($newsletterSends as $envoiNewsletter): ?>
+                        <article class="info-card admin-card">
+                            <p class="card-tag"><?= e((string) ($envoiNewsletter['type_evenement_libelle'] ?? $envoiNewsletter['code_type_evenement'] ?? '')) ?></p>
+                            <h3><?= e((string) ($envoiNewsletter['titre_evenement'] ?? '')) ?></h3>
+                            <p><?= e((string) ($envoiNewsletter['courriel'] ?? '')) ?></p>
+                            <p class="card-subtitle"><?= e((string) ($envoiNewsletter['statut_envoi_libelle'] ?? $envoiNewsletter['code_statut_envoi'] ?? '')) ?> - <?= e((string) ($envoiNewsletter['envoye_le'] ?? '')) ?></p>
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </article>
+    </div>
 </section>
 
 <section id="admin-newsletter-boutique" class="section-block reveal reveal-6">

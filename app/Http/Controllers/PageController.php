@@ -4,15 +4,24 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Repositories\NewsletterRepository;
 use App\Services\ChessComService;
 use App\Support\LegacyPageRenderer;
 use App\Support\SiteContent;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 final class PageController extends Controller
 {
-    public function show(?string $page = 'accueil'): Response
+    public function show(Request $request, ?string $page = 'accueil'): Response|RedirectResponse
     {
+        $jetonLegacyDesabonnement = trim((string) $request->query('newsletter_unsubscribe', ''));
+
+        if ($jetonLegacyDesabonnement !== '') {
+            return redirect()->route('newsletter.unsubscribe', ['jeton' => $jetonLegacyDesabonnement]);
+        }
+
         $renderer = new LegacyPageRenderer(
             new SiteContent(),
             new \App\Repositories\UserRepository(),
@@ -22,6 +31,7 @@ final class PageController extends Controller
             new \App\Repositories\DammierRepository(),
             new \App\Repositories\ScheduleRepository(),
             new \App\Repositories\ConstructeurPagesRepository(),
+            new NewsletterRepository(),
             new \App\Repositories\TraficVisiteursRepository(),
             new ChessComService(storage_path('app/cache/chesscom')),
             new \App\Services\GoogleReviewsService(
