@@ -6,6 +6,7 @@ namespace App\Support;
 
 use App\Models\User;
 use App\Repositories\ArticleRepository;
+use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
@@ -24,6 +25,7 @@ final class LegacyPageRenderer
         private SiteContent $siteContent,
         private UserRepository $userRepository,
         private ArticleRepository $articleRepository,
+        private CoursDocumentRepository $coursDocumentRepository,
         private MediaRepository $mediaRepository,
         private OrderRepository $orderRepository,
         private DammierRepository $dammierRepository,
@@ -201,6 +203,10 @@ final class LegacyPageRenderer
             $siteData['published_media'] = $publishedMedia;
             $siteData['mes_medias'] = $myMedia;
             $siteData['my_media'] = $myMedia;
+            $siteData['peut_gerer_documents_cours'] = $authData['est_admin'] || $authData['est_prof'];
+            $siteData['documents_cours_par_rubrique'] = $siteData['peut_gerer_documents_cours']
+                ? $this->coursDocumentRepository->listerParRubrique()
+                : [];
             $siteData['tous_utilisateurs'] = $authData['est_admin'] ? $this->userRepository->listerTous() : [];
             $siteData['all_users'] = $siteData['tous_utilisateurs'];
             $siteData['resume_roles_compte'] = $authData['est_admin'] ? $this->userRepository->resumerRoles() : [];
@@ -274,6 +280,8 @@ final class LegacyPageRenderer
         $siteData['published_media'] = [];
         $siteData['mes_medias'] = [];
         $siteData['my_media'] = [];
+        $siteData['peut_gerer_documents_cours'] = false;
+        $siteData['documents_cours_par_rubrique'] = [];
         $siteData['tous_utilisateurs'] = [];
         $siteData['all_users'] = [];
         $siteData['resume_roles_compte'] = [];

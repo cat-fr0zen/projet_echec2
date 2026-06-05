@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Repositories\ArticleRepository;
+use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
@@ -56,6 +57,7 @@ final class LegacyActionHandler
     public function __construct(
         private UserRepository $depotUtilisateurs,
         private ArticleRepository $depotArticles,
+        private CoursDocumentRepository $depotDocumentsCours,
         private MediaRepository $depotMedias,
         private OrderRepository $depotCommandes,
         private DammierRepository $depotDammier,
@@ -116,6 +118,14 @@ final class LegacyActionHandler
             case 'creer_article':
             case 'create_article':
                 $this->traiterCreationArticle();
+                break;
+            case 'ajouter_document_cours':
+            case 'upload_course_document':
+                $this->traiterAjoutDocumentCours();
+                break;
+            case 'supprimer_document_cours':
+            case 'delete_course_document':
+                $this->traiterSuppressionDocumentCours();
                 break;
             case 'soumettre_media':
             case 'submit_media':
@@ -452,6 +462,95 @@ final class LegacyActionHandler
         rediriger_vers(url_route('profil'));
     }
 
+    /** Ajoute un document PDF de cours dans une rubrique geree par les profs et l'admin. */
+    private function traiterAjoutDocumentCours(): void
+    {
+        $utilisateurCourant = $this->exigerProfOuAdmin();
+        $rubrique = trim((string) ($_POST['rubrique_document_cours'] ?? ''));
+        $titre = trim((string) ($_POST['titre_document_cours'] ?? ''));
+        $description = trim((string) ($_POST['description_document_cours'] ?? ''));
+        $fichier = $_FILES['fichier_document_cours'] ?? null;
+        $pageRedirection = url_route('guide').'#'.$this->ancreDocumentCours($rubrique);
+
+        if (! $this->depotDocumentsCours->rubriqueEstValide($rubrique)) {
+            ajouter_message_flash('error', 'La rubrique de cours demandee est invalide.');
+            rediriger_vers($pageRedirection);
+        }
+
+        if ($titre === '' || mb_strlen($titre) > 160) {
+            ajouter_message_flash('error', 'Le titre du document est obligatoire et doit rester inferieur a 160 caracteres.');
+            rediriger_vers($pageRedirection);
+        }
+
+        if (mb_strlen($description) > 2000) {
+            ajouter_message_flash('error', 'La description du document doit rester inferieure a 2000 caracteres.');
+            rediriger_vers($pageRedirection);
+        }
+
+        if (! is_array($fichier) || (($fichier['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK)) {
+            ajouter_message_flash('error', 'Merci de joindre un fichier PDF valide.');
+            rediriger_vers($pageRedirection);
+        }
+
+        $validation = $this->validerFichierPdfCours($fichier);
+
+        if ($validation['erreurs'] !== []) {
+            ajouter_message_flash('error', implode(' ', $validation['erreurs']));
+            rediriger_vers($pageRedirection);
+        }
+
+        $dossierCours = UploadStorage::dossierCours();
+
+        if (! $this->preparerDossierUpload($dossierCours)) {
+            ajouter_message_flash('error', "Le dossier des documents de cours n'est pas disponible.");
+            rediriger_vers($pageRedirection);
+        }
+
+        $nomStocke = 'cours_'.bin2hex(random_bytes(12)).'.pdf';
+        $cheminDestination = $dossierCours.DIRECTORY_SEPARATOR.$nomStocke;
+
+        if (! $this->deplacerFichierTeleverse((string) ($fichier['tmp_name'] ?? ''), $cheminDestination)) {
+            ajouter_message_flash('error', "Le televersement du PDF a echoue.");
+            rediriger_vers($pageRedirection);
+        }
+
+        $this->securiserFichierTeleverse($cheminDestination);
+
+        $this->depotDocumentsCours->creer([
+            'code_rubrique' => $rubrique,
+            'titre_document' => $titre,
+            'description_document' => $description,
+            'nom_fichier_original' => (string) ($fichier['name'] ?? 'document.pdf'),
+            'nom_fichier_stocke' => $nomStocke,
+            'chemin_fichier' => UploadStorage::cheminCours($nomStocke),
+            'type_mime' => $validation['mime'],
+            'taille_octets' => (int) ($fichier['size'] ?? 0),
+            'identifiant_auteur' => (string) ($utilisateurCourant['identifiant'] ?? ''),
+        ]);
+
+        ajouter_message_flash('success', 'Le document PDF a ete ajoute dans la rubrique de cours.');
+        rediriger_vers($pageRedirection);
+    }
+
+    /** Supprime un document PDF de cours avec nettoyage du fichier protege. */
+    private function traiterSuppressionDocumentCours(): void
+    {
+        $this->exigerProfOuAdmin();
+        $identifiantDocument = trim((string) ($_POST['identifiant_document_cours'] ?? ''));
+        $document = $this->depotDocumentsCours->trouverParIdentifiant($identifiantDocument);
+
+        if ($document === null) {
+            ajouter_message_flash('error', 'Le document demande est introuvable.');
+            rediriger_vers(url_route('guide').'#cours-livrets');
+        }
+
+        $this->depotDocumentsCours->supprimer($identifiantDocument);
+        UploadStorage::supprimerCheminCours((string) ($document['nom_fichier_stocke'] ?? ''));
+
+        ajouter_message_flash('success', 'Le document de cours a ete supprime.');
+        rediriger_vers(url_route('guide').'#'.$this->ancreDocumentCours((string) ($document['code_rubrique'] ?? '')));
+    }
+
     /** Soumission d'article (reserve adherent/admin). */
     private function traiterCreationArticle(): void
     {
@@ -577,7 +676,7 @@ final class LegacyActionHandler
         $nomStocke = 'media_'.bin2hex(random_bytes(12)).'.'.$validationFichier['extension'];
         $cheminDestination = rtrim($this->dossierUploadMedias, '/\\').DIRECTORY_SEPARATOR.$nomStocke;
 
-        if (! move_uploaded_file((string) $fichier['tmp_name'], $cheminDestination)) {
+        if (! $this->deplacerFichierTeleverse((string) $fichier['tmp_name'], $cheminDestination)) {
             ajouter_message_flash('error', 'Le téléversement du média a échoué.');
             rediriger_vers(url_route('mediatheque'));
         }
@@ -1179,7 +1278,7 @@ final class LegacyActionHandler
         $nomStocke = 'article_'.bin2hex(random_bytes(12)).'.'.$validation['extension'];
         $cheminDestination = $dossierArticles.DIRECTORY_SEPARATOR.$nomStocke;
 
-        if (! move_uploaded_file((string) ($fichier['tmp_name'] ?? ''), $cheminDestination)) {
+        if (! $this->deplacerFichierTeleverse((string) ($fichier['tmp_name'] ?? ''), $cheminDestination)) {
             return [
                 'bloc' => null,
                 'erreurs' => ["Le televersement d'un media d'article a echoue."],
@@ -1283,6 +1382,73 @@ final class LegacyActionHandler
         }
     }
 
+    private function deplacerFichierTeleverse(string $cheminSource, string $cheminDestination): bool
+    {
+        if ($cheminSource === '') {
+            return false;
+        }
+
+        if (move_uploaded_file($cheminSource, $cheminDestination)) {
+            return true;
+        }
+
+        if (! is_file($cheminSource)) {
+            return false;
+        }
+
+        return @rename($cheminSource, $cheminDestination)
+            || (@copy($cheminSource, $cheminDestination) && @unlink($cheminSource));
+    }
+
+    /**
+     * @param  array<string, mixed>  $fichier
+     * @return array{erreurs: array<int, string>, mime: string}
+     */
+    private function validerFichierPdfCours(array $fichier): array
+    {
+        $erreurs = [];
+        $nomOriginal = mb_strtolower((string) ($fichier['name'] ?? ''));
+        $extension = pathinfo($nomOriginal, PATHINFO_EXTENSION);
+        $taille = (int) ($fichier['size'] ?? 0);
+        $tailleMax = 20 * 1024 * 1024;
+        $mimeClient = mb_strtolower((string) ($fichier['type'] ?? ''));
+        $mimesAutorises = ['application/pdf', 'application/x-pdf'];
+        $cheminTemporaire = (string) ($fichier['tmp_name'] ?? '');
+
+        if ($taille <= 0 || $taille > $tailleMax) {
+            $erreurs[] = 'Le document PDF doit faire moins de 20 Mo.';
+        }
+
+        if ($extension !== 'pdf') {
+            $erreurs[] = 'Seuls les fichiers PDF sont acceptes.';
+        }
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = $finfo !== false ? (string) finfo_file($finfo, (string) ($fichier['tmp_name'] ?? '')) : '';
+        if ($finfo !== false) {
+            finfo_close($finfo);
+        }
+
+        $signaturePdf = is_file($cheminTemporaire)
+            ? (string) file_get_contents($cheminTemporaire, false, null, 0, 5)
+            : '';
+
+        if (
+            $signaturePdf !== '%PDF-'
+            && ! in_array($mime, $mimesAutorises, true)
+            && ! in_array($mimeClient, $mimesAutorises, true)
+        ) {
+            $erreurs[] = 'Le type de fichier envoye doit etre un PDF valide.';
+        }
+
+        return [
+            'erreurs' => $erreurs,
+            'mime' => in_array($mime, $mimesAutorises, true)
+                ? $mime
+                : (in_array($mimeClient, $mimesAutorises, true) ? $mimeClient : 'application/pdf'),
+        ];
+    }
+
     /**
      * Valide un fichier upload (type, extension, taille) selon photo/video.
      *
@@ -1366,6 +1532,41 @@ final class LegacyActionHandler
             ajouter_message_flash('error', "Accès réservé à l'administrateur du site.");
             rediriger_vers(url_route('accueil'));
         }
+    }
+
+    /**
+     * Force l'acces prof/admin pour les documents pedagogiques.
+     *
+     * @return array<string, mixed>
+     */
+    private function exigerProfOuAdmin(): array
+    {
+        $utilisateurCourant = $this->obtenirUtilisateurCourant();
+
+        if (
+            $utilisateurCourant === null
+            || ($utilisateurCourant['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF
+            || ! in_array((string) ($utilisateurCourant['role'] ?? ''), [DepotUtilisateurs::ROLE_PROF, DepotUtilisateurs::ROLE_ADMIN], true)
+        ) {
+            ajouter_message_flash('error', "Acces reserve aux professeurs et a l'administrateur.");
+            rediriger_vers(url_route('guide').'#cours-livrets');
+        }
+
+        return $utilisateurCourant;
+    }
+
+    private function ancreDocumentCours(string $rubrique): string
+    {
+        return match ($rubrique) {
+            'livret_a' => 'cours-livret-a',
+            'livret_b' => 'cours-livret-b',
+            'livret_c' => 'cours-livret-c',
+            'livret_d' => 'cours-livret-d',
+            'livret_e' => 'cours-livret-e',
+            'methodologie' => 'cours-methodologie',
+            'strategie' => 'cours-strategie',
+            default => 'cours-cours',
+        };
     }
 
     /** Verifie le format du numero de licence federale. */

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Repositories\ArticleRepository;
+use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
@@ -30,6 +31,7 @@ final class ActionController extends Controller
         $handler = new LegacyActionHandler(
             new UserRepository,
             new ArticleRepository,
+            new CoursDocumentRepository,
             new MediaRepository,
             new OrderRepository,
             new DammierRepository,
@@ -66,10 +68,16 @@ final class ActionController extends Controller
                 continue;
             }
 
+            $cheminTemporaire = $fichier->getRealPath();
+
+            if (! is_string($cheminTemporaire) || $cheminTemporaire === '') {
+                $cheminTemporaire = $fichier->getPathname();
+            }
+
             $resultat[$cle] = [
                 'name' => (string) $fichier->getClientOriginalName(),
                 'type' => (string) ($fichier->getClientMimeType() ?? ''),
-                'tmp_name' => $fichier->getPathname(),
+                'tmp_name' => $cheminTemporaire,
                 'error' => (int) $fichier->getError(),
                 'size' => (int) $fichier->getSize(),
             ];

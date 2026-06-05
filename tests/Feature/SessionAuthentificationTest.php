@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Repositories\ArticleRepository;
+use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
@@ -54,6 +55,7 @@ final class SessionAuthentificationTest extends TestCase
         return new LegacyActionHandler(
             new UserRepository,
             new ArticleRepository,
+            new CoursDocumentRepository,
             new MediaRepository,
             new OrderRepository,
             new DammierRepository,

@@ -21,6 +21,11 @@ final class UploadStorage
         return self::dossierRacine().DIRECTORY_SEPARATOR.'articles';
     }
 
+    public static function dossierCours(): string
+    {
+        return self::dossierRacine().DIRECTORY_SEPARATOR.'cours';
+    }
+
     public static function cheminMedia(string $nomFichier): string
     {
         return 'fichiers/medias/'.rawurlencode($nomFichier);
@@ -29,6 +34,11 @@ final class UploadStorage
     public static function cheminArticle(string $nomFichier): string
     {
         return 'fichiers/articles/'.rawurlencode($nomFichier);
+    }
+
+    public static function cheminCours(string $nomFichier): string
+    {
+        return 'fichiers/cours/'.rawurlencode($nomFichier);
     }
 
     public static function resoudreCheminMedia(string $nomFichier): ?string
@@ -72,6 +82,19 @@ final class UploadStorage
         return is_file($cheminLegacy) ? $cheminLegacy : null;
     }
 
+    public static function resoudreCheminCours(string $nomFichier): ?string
+    {
+        $nomSecurise = self::securiserNomFichier($nomFichier);
+
+        if ($nomSecurise === null) {
+            return null;
+        }
+
+        $cheminPrive = self::dossierCours().DIRECTORY_SEPARATOR.$nomSecurise;
+
+        return is_file($cheminPrive) ? $cheminPrive : null;
+    }
+
     public static function supprimerCheminMedia(string $nomFichier): void
     {
         $nomSecurise = self::securiserNomFichier($nomFichier);
@@ -106,6 +129,21 @@ final class UploadStorage
             if (is_file($chemin)) {
                 unlink($chemin);
             }
+        }
+    }
+
+    public static function supprimerCheminCours(string $nomFichier): void
+    {
+        $nomSecurise = self::securiserNomFichier($nomFichier);
+
+        if ($nomSecurise === null) {
+            return;
+        }
+
+        $chemin = self::dossierCours().DIRECTORY_SEPARATOR.$nomSecurise;
+
+        if (is_file($chemin)) {
+            unlink($chemin);
         }
     }
 

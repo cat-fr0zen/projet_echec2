@@ -20,7 +20,7 @@ final class CoursPageTest extends TestCase
         $this->seed(DatabaseSeeder::class);
     }
 
-    public function test_la_page_guide_devient_une_page_cours_avec_deux_grandes_entrees(): void
+    public function test_la_page_cours_affiche_des_blocs_compacts_et_les_niveaux_de_livret(): void
     {
         $utilisateur = (new UserRepository())->creer([
             'nom' => 'Cours',
@@ -38,7 +38,11 @@ final class CoursPageTest extends TestCase
         ])->get('/guide')
             ->assertOk()
             ->assertSeeText('Cours')
-            ->assertSeeText('Livrets de A à E')
-            ->assertSeeText('Cours / méthodologie / stratégie');
+            ->assertSeeText('Livrets')
+            ->assertSeeText('Methodologie / strategie')
+            ->assertSeeText('Livret A')
+            ->assertSeeText('Livret E')
+            ->assertDontSeeText('Ouvrir les livrets')
+            ->assertDontSeeText('Voir les contenus');
     }
 }

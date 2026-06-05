@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActionController;
+use App\Http\Controllers\CoursDocumentController;
 use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\MediaAssetController;
 use App\Http\Controllers\NewsletterController;
@@ -15,6 +16,10 @@ Route::get('/fichiers/medias/{nomFichier}', [MediaAssetController::class, 'showP
 Route::get('/fichiers/articles/{nomFichier}', [MediaAssetController::class, 'showArticle'])
     ->where('nomFichier', '[A-Za-z0-9._-]+')
     ->name('fichiers.articles.show');
+
+Route::get('/fichiers/cours/{nomFichier}', [CoursDocumentController::class, 'show'])
+    ->where('nomFichier', '[A-Za-z0-9._-]+')
+    ->name('fichiers.cours.show');
 
 Route::get('/newsletter/desabonnement/{jeton}', [NewsletterController::class, 'unsubscribe'])
     ->where('jeton', '[A-Fa-f0-9]{64}')

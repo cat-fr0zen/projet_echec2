@@ -26,6 +26,7 @@ final class PageController extends Controller
             new SiteContent(),
             new \App\Repositories\UserRepository(),
             new \App\Repositories\ArticleRepository(),
+            new \App\Repositories\CoursDocumentRepository(),
             new \App\Repositories\MediaRepository(),
             new \App\Repositories\OrderRepository(),
             new \App\Repositories\DammierRepository(),
