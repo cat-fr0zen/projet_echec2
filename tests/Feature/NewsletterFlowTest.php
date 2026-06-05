@@ -36,6 +36,7 @@ final class NewsletterFlowTest extends TestCase
         ])->withSession(['_token' => $jetonCsrf])
             ->post('/', [
                 '_token' => $jetonCsrf,
+                'jeton_csrf' => $jetonCsrf,
                 'action' => 'newsletter_subscribe',
                 'newsletter_email' => 'abonne@example.test',
                 'newsletter_consentement' => '1',
@@ -125,6 +126,7 @@ final class NewsletterFlowTest extends TestCase
             '_token' => $jetonCsrf,
         ])->post('/admin', [
             '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
             'action' => 'notify_shop_item',
             'titre_objet_boutique' => 'Nouveau polo du club',
         ])->assertRedirect('/admin#admin-newsletter-boutique');
