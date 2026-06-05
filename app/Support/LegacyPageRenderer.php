@@ -70,6 +70,8 @@ final class LegacyPageRenderer
         );
         $siteData['secondary_nav'] = $siteData['navigation_secondaire'];
         $siteData['cartes_guide'] = $this->siteContent->obtenirCartesGuide();
+        $siteData['livrets_cours'] = $this->siteContent->obtenirLivretsCours();
+        $siteData['cartes_cours_strategie'] = $this->siteContent->obtenirCartesCoursStrategie();
         $siteData['cartes_mediatheque'] = $this->siteContent->obtenirCartesMediatheque();
         $siteData['cartes_boutique'] = $this->siteContent->obtenirCartesBoutique();
         $siteData['constructeur_accueil_blocs'] = $this->constructeurPagesRepository->listerPourPage('accueil');

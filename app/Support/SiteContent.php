@@ -28,7 +28,7 @@ final class SiteContent
     {
         $navigationPrincipale = [
             ['slug' => 'accueil', 'label' => 'Accueil'],
-            ['slug' => 'guide', 'label' => 'Guide'],
+            ['slug' => 'guide', 'label' => 'Cours'],
             ['slug' => 'mediatheque', 'label' => 'Médiathèque'],
             ['slug' => 'articles', 'label' => 'Articles'],
             ['slug' => 'boutique', 'label' => 'Boutique'],
@@ -308,7 +308,7 @@ final class SiteContent
                 "Connexion par email ou numéro de licence, thème clair ou sombre, menu burger et articles en attente de modération."
             ),
             'guide' => $this->page(
-                'Guide',
+                'Cours',
                 'guide.php',
                 'Guides de stratégie, principes de jeu et cartes de progression.',
                 intro: "Des cartes simples pour rappeler les principes stratégiques les plus utiles à un joueur de club."
@@ -385,6 +385,29 @@ final class SiteContent
             $this->carteSimple('Tactique', 'Chercher les fourchettes', "Les fourchettes, en particulier avec le cavalier, peuvent faire gagner du matériel rapidement."),
             $this->carteSimple('Milieu de jeu', 'Améliorer la pièce la moins active', "Quand aucun coup tactique n'apparaît, améliorer sa pièce la moins bien placée reste un excellent réflexe."),
             $this->carteSimple('Finale', 'Activer le roi', "En finale, le roi devient une pièce forte et doit souvent participer activement."),
+        ];
+    }
+
+    public function obtenirLivretsCours(): array
+    {
+        return [
+            $this->carteSimple('Livret A', 'Bases du jeu', "Découvrir l'échiquier, le mouvement des pièces, les règles essentielles et les premiers automatismes."),
+            $this->carteSimple('Livret B', 'Premiers repères', "Commencer à construire une partie propre, protéger ses pièces et comprendre les menaces simples."),
+            $this->carteSimple('Livret C', 'Milieu de jeu', "Travailler la coordination des pièces, les plans simples et la lecture des positions les plus courantes."),
+            $this->carteSimple('Livret D', 'Approfondissement', "Renforcer le calcul, l'évaluation de position et les transitions vers les finales."),
+            $this->carteSimple('Livret E', 'Consolidation', "Structurer la progression de club, l'analyse des parties et les décisions stratégiques plus exigeantes."),
+        ];
+    }
+
+    public function obtenirCartesCoursStrategie(): array
+    {
+        return [
+            $this->carteSimple('Cours', 'Le fil des séances', "Retrouver les grands thèmes vus au club et garder une continuité de travail entre deux cours."),
+            $this->carteSimple('Méthodologie', "Comment réfléchir devant l'échiquier", "Apprendre une routine simple : observer, comparer, calculer, vérifier et choisir."),
+            $this->carteSimple('Stratégie', 'Comprendre le plan avant le coup', "Repérer les faiblesses, les bonnes cases, les colonnes ouvertes et les priorités de la position."),
+            $this->carteSimple('Analyse', 'Revenir sur ses parties', "Comprendre ses erreurs, repérer les moments clés et transformer chaque partie en base de progression."),
+            $this->carteSimple('Finales', 'Bien finir ses parties', "Travailler les finales utiles au joueur de club pour convertir un avantage ou tenir une position difficile."),
+            $this->carteSimple('Tournoi', 'Gagner en autonomie', "Gérer son temps, noter proprement, rester concentré et appliquer les bons réflexes en compétition."),
         ];
     }
 

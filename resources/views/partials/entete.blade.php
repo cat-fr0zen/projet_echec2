@@ -155,7 +155,7 @@ $themeMoonIconUrl = url_ressource('assets/media/image/theme-lune.svg');
                         <button type="submit" class="button button-secondary burger-logout-button">Deconnexion</button>
                     </form>
                 <?php else: ?>
-                    <p class="burger-helper">Connecte-toi pour accéder aux guides, à la boutique et à ton profil membre.</p>
+                    <p class="burger-helper">Connecte-toi pour accéder aux cours, à la boutique et à ton profil membre.</p>
                     <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
                 <?php endif; ?>
             </section>
