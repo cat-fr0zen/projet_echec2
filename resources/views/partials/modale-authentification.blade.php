@@ -123,7 +123,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
         aria-labelledby="auth-modal-title"
         aria-describedby="auth-modal-description"
     >
-        <div class="auth-modal-panel">
+        <div class="auth-modal-panel" tabindex="-1">
             <button type="button" class="auth-close" data-auth-close aria-label="Fermer la fenêtre">×</button>
             <p class="eyebrow">Espace membre</p>
             <h2 id="auth-modal-title"><?= e($modaleAuthentification['title']) ?></h2>

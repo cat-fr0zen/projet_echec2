@@ -89,6 +89,7 @@ $themeMoonIconUrl = url_ressource('assets/media/image/theme-lune.svg');
         class="burger-panel"
         data-burger-panel
         hidden
+        tabindex="-1"
         role="dialog"
         aria-modal="true"
         aria-labelledby="burger-panel-title"

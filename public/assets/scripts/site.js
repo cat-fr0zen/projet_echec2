@@ -62,6 +62,23 @@ function scheduleHorizontalScrollReset() {
 }
 
 /**
+ * Place le focus sans declencher de scroll parasite sur mobile.
+ *
+ * @param {HTMLElement | null | undefined} element Element a focus.
+ */
+function focusElementWithoutScroll(element) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    try {
+        element.focus({ preventScroll: true });
+    } catch (error) {
+        element.focus();
+    }
+}
+
+/**
  * Retourne la liste des elements focusables dans un conteneur (accessibilite).
  *
  * @param {HTMLElement} root Conteneur.
@@ -109,10 +126,10 @@ function trapFocus(event, root) {
 
     if (event.shiftKey && activeElement === firstElement) {
         event.preventDefault();
-        lastElement.focus();
+        focusElementWithoutScroll(lastElement);
     } else if (!event.shiftKey && activeElement === lastElement) {
         event.preventDefault();
-        firstElement.focus();
+        focusElementWithoutScroll(firstElement);
     }
 }
 
@@ -272,45 +289,10 @@ function initBurgerMenu() {
     const burgerPanel = document.querySelector("[data-burger-panel]");
     const burgerCloseButton = document.querySelector("[data-burger-close]");
     const siteHeader = document.querySelector("[data-site-header]");
-    const panelGap = 10;
-    const panelViewportPadding = 12;
     let previousFocusedElement = null;
 
     if (!(burgerToggle instanceof HTMLButtonElement) || !(burgerPanel instanceof HTMLElement)) {
         return;
-    }
-
-    function clampPanelPosition(value, minimum, maximum) {
-        return Math.min(Math.max(value, minimum), maximum);
-    }
-
-    function syncBurgerPanelPosition() {
-        if (burgerPanel.hidden) {
-            return;
-        }
-
-        const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
-        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-        const triggerRect = burgerToggle.getBoundingClientRect();
-        const panelWidth = Math.min(
-            burgerPanel.offsetWidth || 352,
-            viewportWidth - panelViewportPadding * 2
-        );
-        const maximumLeft = Math.max(
-            panelViewportPadding,
-            viewportWidth - panelWidth - panelViewportPadding
-        );
-        const panelLeft = clampPanelPosition(
-            triggerRect.right - panelWidth,
-            panelViewportPadding,
-            maximumLeft
-        );
-        const panelTop = Math.max(panelViewportPadding, triggerRect.bottom + panelGap);
-        const panelMaxHeight = Math.max(220, viewportHeight - panelTop - panelViewportPadding);
-
-        burgerPanel.style.setProperty("--burger-panel-left", `${Math.round(panelLeft)}px`);
-        burgerPanel.style.setProperty("--burger-panel-top", `${Math.round(panelTop)}px`);
-        burgerPanel.style.setProperty("--burger-panel-max-height", `${Math.round(panelMaxHeight)}px`);
     }
 
     function setOpenState(isOpen, shouldRestoreFocus = true) {
@@ -323,35 +305,22 @@ function initBurgerMenu() {
 
         if (isOpen) {
             previousFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-            syncBurgerPanelPosition();
-            const [firstFocusableElement] = getFocusableElements(burgerPanel);
-
-            if (firstFocusableElement instanceof HTMLElement) {
-                firstFocusableElement.focus();
-            }
+            burgerPanel.scrollTop = 0;
+            focusElementWithoutScroll(burgerPanel);
         } else if (shouldRestoreFocus && previousFocusedElement instanceof HTMLElement) {
-            previousFocusedElement.focus();
+            focusElementWithoutScroll(previousFocusedElement);
             previousFocusedElement = null;
         } else {
             previousFocusedElement = null;
         }
 
-        resetHorizontalScroll();
+        scheduleHorizontalScrollReset();
     }
 
     burgerToggle.addEventListener("click", () => {
         const isOpen = burgerToggle.getAttribute("aria-expanded") === "true";
         setOpenState(!isOpen);
     });
-
-    window.addEventListener("resize", syncBurgerPanelPosition);
-    window.addEventListener("orientationchange", syncBurgerPanelPosition);
-    window.addEventListener("scroll", syncBurgerPanelPosition, { passive: true });
-
-    if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", syncBurgerPanelPosition);
-        window.visualViewport.addEventListener("scroll", syncBurgerPanelPosition);
-    }
 
     if (burgerCloseButton instanceof HTMLButtonElement) {
         burgerCloseButton.addEventListener("click", () => {
@@ -432,15 +401,13 @@ function initAuthModal() {
         const errorSummary = modalRoot.querySelector(".auth-errors");
 
         if (errorSummary instanceof HTMLElement) {
-            errorSummary.focus();
+            focusElementWithoutScroll(errorSummary);
             return;
         }
 
         const [firstFocusableElement] = getFocusableElements(modalRoot);
 
-        if (firstFocusableElement instanceof HTMLElement) {
-            firstFocusableElement.focus();
-        }
+        focusElementWithoutScroll(firstFocusableElement);
     }
 
     function closeModal() {
@@ -449,7 +416,7 @@ function initAuthModal() {
         document.body.classList.remove("modal-open");
 
         if (previousFocusedElement instanceof HTMLElement) {
-            previousFocusedElement.focus();
+            focusElementWithoutScroll(previousFocusedElement);
             previousFocusedElement = null;
         }
     }
@@ -1348,7 +1315,7 @@ function initLegalModals() {
         }
 
         if (previousFocusedElement instanceof HTMLElement) {
-            previousFocusedElement.focus();
+            focusElementWithoutScroll(previousFocusedElement);
             previousFocusedElement = null;
         }
     }
@@ -1373,9 +1340,7 @@ function initLegalModals() {
 
         const [firstFocusableElement] = getFocusableElements(modal);
 
-        if (firstFocusableElement instanceof HTMLElement) {
-            firstFocusableElement.focus();
-        }
+        focusElementWithoutScroll(firstFocusableElement);
     }
 
     openButtons.forEach((button) => {
