@@ -6,17 +6,19 @@ Outlook, OVH, Infomaniak, etc.
 
 ## Principe
 
+Le choix par défaut recommandé dans ce projet est maintenant **Gmail**.
+
 Tu peux maintenant choisir un preset simple dans `.env` :
 
 ```dotenv
-MAIL_PROVIDER=custom
+MAIL_PROVIDER=gmail
 MAIL_MAILER=smtp
-MAIL_HOST=smtp.example.net
+MAIL_HOST=smtp.gmail.com
 MAIL_PORT=587
-MAIL_USERNAME=change_me_mail_user
-MAIL_PASSWORD=change_me_mail_password
+MAIL_USERNAME=adresse_gmail_du_club@gmail.com
+MAIL_PASSWORD=mot_de_passe_application_gmail
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@cavaliers-herouville.fr"
+MAIL_FROM_ADDRESS="adresse_gmail_du_club@gmail.com"
 MAIL_FROM_NAME="Cavaliers d'Herouville"
 ```
 
