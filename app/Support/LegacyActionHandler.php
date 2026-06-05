@@ -13,6 +13,7 @@ use App\Repositories\OrderRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\UserRepository;
 use App\Services\NewsletterMailerService;
+use App\Support\UploadStorage;
 use DateTimeImmutable;
 use Throwable;
 
@@ -61,8 +62,10 @@ final class LegacyActionHandler
         private ConstructeurPagesRepository $depotConstructeurPages,
         private string $dossierUploadMedias,
         private ?NewsletterRepository $depotNewsletter = null,
-        private ?NewsletterMailerService $newsletterMailer = null
+        private ?NewsletterMailerService $newsletterMailer = null,
+        private ?SensitiveActionRateLimiter $rateLimiter = null
     ) {
+        $this->rateLimiter ??= new SensitiveActionRateLimiter();
     }
 
     /**
@@ -85,6 +88,14 @@ final class LegacyActionHandler
         if (!verifier_jeton_csrf($_POST['jeton_csrf'] ?? null)) {
             $this->traiterEchecCsrf($action);
         }
+
+        $contexteTentative = [
+            ...$_POST,
+            '__ip' => (string) (request()->ip() ?? ''),
+        ];
+
+        $this->rateLimiter?->bloquerSiNecessaire($action, $contexteTentative, $this->resoudrePageRedirection('accueil'));
+        $this->rateLimiter?->enregistrerTentative($action, $contexteTentative);
 
         switch ($action) {
             case 'inscription':
@@ -201,6 +212,14 @@ final class LegacyActionHandler
         }
 
         $utilisateur = $this->depotUtilisateurs->creer($donnees);
+        $this->rateLimiter?->reinitialiser('inscription', [
+            ...$donnees,
+            '__ip' => (string) (request()->ip() ?? ''),
+        ]);
+        $this->rateLimiter?->reinitialiser('connexion', [
+            'identifiant_connexion' => $donnees['courriel'],
+            '__ip' => (string) (request()->ip() ?? ''),
+        ]);
         $this->ouvrirSessionAuthentification((string) $utilisateur['identifiant']);
         ajouter_message_flash('success', 'Votre compte a été créé avec succès.');
         rediriger_vers(url_route('profil'));
@@ -594,7 +613,7 @@ final class LegacyActionHandler
             'description' => $description,
             'nom_fichier_original' => (string) ($fichier['name'] ?? ''),
             'nom_fichier_stocke' => $nomStocke,
-            'chemin_public' => 'assets/media/uploads/' . $nomStocke,
+            'chemin_public' => UploadStorage::cheminMedia($nomStocke),
             'type_mime' => $validationFichier['mime'],
             'taille_octets' => (int) ($fichier['size'] ?? 0),
         ]);
@@ -1163,7 +1182,7 @@ final class LegacyActionHandler
             ];
         }
 
-        $dossierArticles = rtrim($this->dossierUploadMedias, '/\\') . DIRECTORY_SEPARATOR . 'articles';
+        $dossierArticles = UploadStorage::dossierArticles();
 
         if (!$this->preparerDossierUpload($dossierArticles)) {
             return [
@@ -1187,7 +1206,7 @@ final class LegacyActionHandler
         return [
             'bloc' => [
                 'type' => $type,
-                'chemin_public' => 'assets/media/uploads/articles/' . $nomStocke,
+                'chemin_public' => UploadStorage::cheminArticle($nomStocke),
                 'type_mime' => $validation['mime'],
                 'texte_alternatif' => $texteAlternatif,
                 'legende' => $legende,
@@ -1235,8 +1254,8 @@ final class LegacyActionHandler
 
     private function supprimerMediasArticleTeleverses(array $blocs): void
     {
-        $dossierArticles = rtrim($this->dossierUploadMedias, '/\\') . DIRECTORY_SEPARATOR . 'articles';
         $prefixePublic = 'assets/media/uploads/articles/';
+        $prefixeProtege = 'fichiers/articles/';
 
         foreach ($blocs as $bloc) {
             if (!in_array((string) ($bloc['type'] ?? ''), [DepotArticles::TYPE_BLOC_IMAGE, DepotArticles::TYPE_BLOC_VIDEO], true)) {
@@ -1245,7 +1264,7 @@ final class LegacyActionHandler
 
             $cheminPublic = (string) ($bloc['chemin_public'] ?? '');
 
-            if (!str_starts_with($cheminPublic, $prefixePublic)) {
+            if (!str_starts_with($cheminPublic, $prefixePublic) && !str_starts_with($cheminPublic, $prefixeProtege)) {
                 continue;
             }
 
@@ -1255,11 +1274,7 @@ final class LegacyActionHandler
                 continue;
             }
 
-            $cheminFichier = $dossierArticles . DIRECTORY_SEPARATOR . $nomFichier;
-
-            if (is_file($cheminFichier)) {
-                unlink($cheminFichier);
-            }
+            UploadStorage::supprimerCheminArticle($nomFichier);
         }
     }
 

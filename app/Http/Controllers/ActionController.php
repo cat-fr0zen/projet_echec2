@@ -6,6 +6,8 @@ namespace App\Http\Controllers;
 
 use App\Services\NewsletterMailerService;
 use App\Support\LegacyActionHandler;
+use App\Support\SensitiveActionRateLimiter;
+use App\Support\UploadStorage;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -22,9 +24,10 @@ final class ActionController extends Controller
             new \App\Repositories\DammierRepository(),
             new \App\Repositories\ScheduleRepository(),
             new \App\Repositories\ConstructeurPagesRepository(),
-            public_path('assets/media/uploads'),
+            UploadStorage::dossierRacine(),
             $newsletterRepository,
-            NewsletterMailerService::depuisEnvironnement($newsletterRepository)
+            NewsletterMailerService::depuisEnvironnement($newsletterRepository),
+            new SensitiveActionRateLimiter()
         );
 
         $handler->traiter();

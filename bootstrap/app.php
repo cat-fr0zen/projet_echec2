@@ -11,7 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up'
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Les middlewares web standards de Laravel sont charges automatiquement.
+        $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Le port local garde la gestion d'exceptions Laravel par defaut.

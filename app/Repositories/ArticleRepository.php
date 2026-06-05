@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Models\Article;
 use App\Support\NomAffichageUtilisateur;
+use App\Support\UploadStorage;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -90,6 +91,34 @@ final class ArticleRepository
     }
 
     /**
+     * @return array<string, mixed>|null
+     */
+    public function trouverBlocMediaParNomFichierStocke(string $nomFichierStocke): ?array
+    {
+        $row = DB::table('article_bloc')
+            ->join('article', 'article.identifiant', '=', 'article_bloc.identifiant_article')
+            ->select([
+                'article_bloc.chemin_public',
+                'article_bloc.type_mime',
+                'article.identifiant_auteur',
+                'article.code_statut as statut_article',
+            ])
+            ->where('article_bloc.chemin_public', 'like', '%' . $nomFichierStocke)
+            ->first();
+
+        if ($row === null) {
+            return null;
+        }
+
+        return [
+            'chemin_public' => (string) ($row->chemin_public ?? ''),
+            'type_mime' => (string) ($row->type_mime ?? ''),
+            'identifiant_auteur' => (string) ($row->identifiant_auteur ?? ''),
+            'statut_article' => (string) ($row->statut_article ?? ''),
+        ];
+    }
+
+    /**
      * @param array<int, object> $rows
      * @return array<int, array<string, mixed>>
      */
@@ -158,7 +187,10 @@ final class ArticleRepository
             static fn (object $row): array => [
                 'type' => (string) ($row->code_type ?? Article::TYPE_BLOC_PARAGRAPHE),
                 'texte' => (string) ($row->texte ?? ''),
-                'chemin_public' => (string) ($row->chemin_public ?? ''),
+                'chemin_public' => self::normaliserCheminBloc(
+                    (string) ($row->code_type ?? Article::TYPE_BLOC_PARAGRAPHE),
+                    (string) ($row->chemin_public ?? '')
+                ),
                 'type_mime' => (string) ($row->type_mime ?? ''),
                 'texte_alternatif' => (string) ($row->texte_alternatif ?? ''),
                 'legende' => (string) ($row->legende ?? ''),
@@ -233,5 +265,20 @@ final class ArticleRepository
     private function limiter(string $valeur, int $limite): string
     {
         return function_exists('mb_substr') ? mb_substr($valeur, 0, $limite) : substr($valeur, 0, $limite);
+    }
+
+    private static function normaliserCheminBloc(string $type, string $cheminPublic): string
+    {
+        if (!in_array($type, [Article::TYPE_BLOC_IMAGE, Article::TYPE_BLOC_VIDEO], true)) {
+            return $cheminPublic;
+        }
+
+        $nomFichier = UploadStorage::securiserNomFichier(basename($cheminPublic));
+
+        if ($nomFichier === null) {
+            return $cheminPublic;
+        }
+
+        return UploadStorage::cheminArticle($nomFichier);
     }
 }

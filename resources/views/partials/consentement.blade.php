@@ -2,8 +2,8 @@
 /**
  * Partiel: Consentement cookies.
  *
- * Affiche une "gate" tant que l'utilisateur n'a pas accepte les cookies essentiels
- * et preferences. Le comportement (focus trap, lock body) est gere cote JS (site.js).
+ * Presente une information claire sur les cookies indispensables, avec
+ * un choix simple entre "essentiels seulement" et "essentiels + theme".
  */
 $donneesConsentement = $donneesSite['consentement'] ?? $donneesSite['consent'];
 $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_documents'] ?? [];
@@ -32,18 +32,17 @@ $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_docum
             <?php endforeach; ?>
         </div>
 
-        <div class="consent-checks">
-            <?php foreach (($donneesConsentement['cases'] ?? $donneesConsentement['checks'] ?? []) as $index => $libelleCase): ?>
-                <label class="consent-check">
-                    <input type="checkbox" data-consent-checkbox="<?= e((string) $index) ?>">
-                    <span><?= e($libelleCase) ?></span>
-                </label>
-            <?php endforeach; ?>
-        </div>
+        <p class="consent-text">
+            Les cookies essentiels restent nécessaires à la sécurité, à la session membre et au bon fonctionnement du site.
+            Le cookie de thème est facultatif.
+        </p>
 
         <div class="button-row consent-actions">
-            <button type="button" class="button button-primary" data-consent-accept disabled>
-                <?= e($donneesConsentement['bouton'] ?? $donneesConsentement['button'] ?? 'Accepter') ?>
+            <button type="button" class="button button-secondary" data-consent-continue>
+                Continuer avec les cookies essentiels
+            </button>
+            <button type="button" class="button button-primary" data-consent-accept>
+                Autoriser aussi le cookie de thème
             </button>
         </div>
         <p class="consent-text consent-note">Les documents complets restent accessibles en permanence dans le footer du site.</p>

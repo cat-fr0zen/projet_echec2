@@ -34,7 +34,8 @@ function getCookieValue(name) {
  */
 function setCookieValue(name, value, days = 365) {
     const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expiresAt}; path=/; SameSite=Lax`;
+    const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expiresAt}; path=/; SameSite=Lax${secureFlag}`;
 }
 
 /**
@@ -131,9 +132,9 @@ function initConsentGate() {
 
     const cookieName = consentRoot.getAttribute("data-consent-cookie") || "site_consent";
     const acceptButton = consentRoot.querySelector("[data-consent-accept]");
-    const checkboxes = Array.from(consentRoot.querySelectorAll("[data-consent-checkbox]"));
-    const firstCheckbox = checkboxes[0];
-    const hasAccepted = getCookieValue(cookieName) === "accepted";
+    const continueButton = consentRoot.querySelector("[data-consent-continue]");
+    const savedLevel = getCookieValue(cookieName);
+    const hasAccepted = savedLevel === "accepted" || savedLevel === "essential";
     const handleKeydown = (event) => {
         if (!consentRoot.hidden) {
             trapFocus(event, consentRoot);
@@ -146,14 +147,6 @@ function initConsentGate() {
         document.removeEventListener("keydown", handleKeydown);
     }
 
-    function updateButtonState() {
-        const allChecked = checkboxes.every((checkbox) => checkbox.checked);
-
-        if (acceptButton instanceof HTMLButtonElement) {
-            acceptButton.disabled = !allChecked;
-        }
-    }
-
     if (hasAccepted) {
         unlockSite();
         return;
@@ -163,20 +156,22 @@ function initConsentGate() {
     consentRoot.removeAttribute("hidden");
     document.addEventListener("keydown", handleKeydown);
 
-    if (firstCheckbox instanceof HTMLElement) {
-        firstCheckbox.focus();
+    if (continueButton instanceof HTMLElement) {
+        continueButton.focus();
     }
-
-    checkboxes.forEach((checkbox) => {
-        checkbox.addEventListener("change", updateButtonState);
-    });
-
-    updateButtonState();
 
     if (acceptButton instanceof HTMLButtonElement) {
         acceptButton.addEventListener("click", () => {
             setCookieValue(cookieName, "accepted");
             setCookieValue("site_cookie_level", "essential-preferences");
+            unlockSite();
+        });
+    }
+
+    if (continueButton instanceof HTMLButtonElement) {
+        continueButton.addEventListener("click", () => {
+            setCookieValue(cookieName, "essential");
+            setCookieValue("site_cookie_level", "essential-only");
             unlockSite();
         });
     }

@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use App\Models\MediaPublication;
 use App\Support\NomAffichageUtilisateur;
+use App\Support\UploadStorage;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
@@ -89,6 +90,13 @@ final class MediaRepository
         return $row !== null ? $this->normaliserMedia((array) $row) : null;
     }
 
+    public function trouverParNomFichierStocke(string $nomFichierStocke): ?array
+    {
+        $row = $this->requeteMedias()->where('media_publication.nom_fichier_stocke', $nomFichierStocke)->first();
+
+        return $row !== null ? $this->normaliserMedia((array) $row) : null;
+    }
+
     /**
      * @param array<int, object> $rows
      * @return array<int, array<string, mixed>>
@@ -117,7 +125,10 @@ final class MediaRepository
             'description' => (string) ($row['description'] ?? ''),
             'nom_fichier_original' => (string) ($row['nom_fichier_original'] ?? ''),
             'nom_fichier_stocke' => (string) ($row['nom_fichier_stocke'] ?? ''),
-            'chemin_public' => (string) ($row['chemin_public'] ?? ''),
+            'chemin_public' => $this->normaliserCheminPublic(
+                (string) ($row['nom_fichier_stocke'] ?? ''),
+                (string) ($row['chemin_public'] ?? '')
+            ),
             'type_mime' => (string) ($row['type_mime'] ?? ''),
             'taille_octets' => (int) ($row['taille_octets'] ?? 0),
             'statut' => $statut,
@@ -154,5 +165,14 @@ final class MediaRepository
         } catch (Throwable) {
             return (string) $value;
         }
+    }
+
+    private function normaliserCheminPublic(string $nomFichierStocke, string $cheminPublic): string
+    {
+        if ($nomFichierStocke !== '') {
+            return UploadStorage::cheminMedia($nomFichierStocke);
+        }
+
+        return $cheminPublic;
     }
 }

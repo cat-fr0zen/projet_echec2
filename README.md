@@ -54,6 +54,13 @@ Projet_echec2/
 4. Lancer `php artisan serve`
 5. Ouvrir `http://127.0.0.1:8000`
 
+## Publication web
+
+- profil production: [`.env.example`](/abs/c:/DEV/vscode_workspace/Projet_echec2/.env.example)
+- profil local: [`.env.local.example`](/abs/c:/DEV/vscode_workspace/Projet_echec2/.env.local.example)
+- guide de deploiement: [docs/deploiement-production.md](/abs/c:/DEV/vscode_workspace/Projet_echec2/docs/deploiement-production.md)
+- ticket d'authentification restante: [docs/tickets/auth-modernisation-laravel.md](/abs/c:/DEV/vscode_workspace/Projet_echec2/docs/tickets/auth-modernisation-laravel.md)
+
 ## Dossiers importants
 
 - `database/migrations` : schema Laravel versionne

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Response;
 
 if (!function_exists('normaliser_texte_utf8')) {
@@ -194,15 +195,14 @@ if (!function_exists('rediriger_vers')) {
     {
         /** @var RedirectResponse $response */
         $response = redirect($url);
-        $response->send();
-        exit;
+
+        throw new HttpResponseException($response);
     }
 }
 
 if (!function_exists('repondre_json_et_terminer')) {
     function repondre_json_et_terminer(array $payload, int $statusCode = 200): never
     {
-        Response::json($payload, $statusCode)->send();
-        exit;
+        throw new HttpResponseException(Response::json($payload, $statusCode));
     }
 }

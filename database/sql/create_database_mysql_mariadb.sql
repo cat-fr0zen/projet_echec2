@@ -1,3 +1,7 @@
+-- Script de confort pour environnement local.
+-- Pour la production publique, utiliser le script dedie
+-- `create_database_mysql_mariadb_production.sql` avec comptes separes.
+
 CREATE DATABASE IF NOT EXISTS projet_echec2
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
