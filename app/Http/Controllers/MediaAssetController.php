@@ -73,16 +73,14 @@ final class MediaAssetController extends Controller
      */
     private function recupererUtilisateurCourant(UserRepository $userRepository): ?array
     {
-        return $userRepository->trouverParIdentifiant(
-            session('identifiant_utilisateur') !== null ? (string) session('identifiant_utilisateur') : null
-        );
+        return $userRepository->trouverParIdentifiant(identifiant_utilisateur_courant());
     }
 
     private function repondreFichier(ResponseFactory $responseFactory, string $cheminFichier, string $typeMime): BinaryFileResponse
     {
         $reponse = $responseFactory->file($cheminFichier, [
             'Content-Type' => $typeMime,
-            'Content-Disposition' => 'inline; filename="' . basename($cheminFichier) . '"',
+            'Content-Disposition' => 'inline; filename="'.basename($cheminFichier).'"',
             'X-Content-Type-Options' => 'nosniff',
             'Cache-Control' => 'public, max-age=3600',
         ]);

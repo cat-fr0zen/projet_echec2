@@ -76,7 +76,7 @@ final class MediaAssetAccessTest extends TestCase
      */
     private function creerUtilisateur(string $courriel): array
     {
-        return (new UserRepository())->creer([
+        return (new UserRepository)->creer([
             'nom' => 'Test',
             'prenom' => 'Media',
             'date_naissance' => '1990-01-02',
@@ -90,12 +90,12 @@ final class MediaAssetAccessTest extends TestCase
 
     private function creerFichierMediaPrive(string $nomFichier, string $contenu): void
     {
-        $dossier = storage_path('app/private/uploads');
+        $dossier = storage_path('app/private/uploads/medias');
 
-        if (!is_dir($dossier)) {
+        if (! is_dir($dossier)) {
             mkdir($dossier, 0775, true);
         }
 
-        file_put_contents($dossier . DIRECTORY_SEPARATOR . $nomFichier, $contenu);
+        file_put_contents($dossier.DIRECTORY_SEPARATOR.$nomFichier, $contenu);
     }
 }

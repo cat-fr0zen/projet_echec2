@@ -52,13 +52,13 @@ final class SessionAuthentificationTest extends TestCase
     private function creerHandler(): LegacyActionHandler
     {
         return new LegacyActionHandler(
-            new UserRepository(),
-            new ArticleRepository(),
-            new MediaRepository(),
-            new OrderRepository(),
-            new DammierRepository(),
-            new ScheduleRepository(),
-            new ConstructeurPagesRepository(),
+            new UserRepository,
+            new ArticleRepository,
+            new MediaRepository,
+            new OrderRepository,
+            new DammierRepository,
+            new ScheduleRepository,
+            new ConstructeurPagesRepository,
             public_path('assets/media/uploads')
         );
     }

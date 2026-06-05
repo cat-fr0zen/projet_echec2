@@ -13,8 +13,8 @@ use App\Repositories\OrderRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\UserRepository;
 use App\Services\NewsletterMailerService;
-use App\Support\UploadStorage;
 use DateTimeImmutable;
+use Illuminate\Support\Facades\Hash;
 use Throwable;
 
 /**
@@ -36,6 +36,7 @@ use Throwable;
 final class LegacyActionHandler
 {
     private const MODE_DOSSIER_UPLOAD = 0755;
+
     private const MODE_FICHIER_UPLOAD = 0644;
 
     private const PAGES_AUTORISEES = [
@@ -65,13 +66,11 @@ final class LegacyActionHandler
         private ?NewsletterMailerService $newsletterMailer = null,
         private ?SensitiveActionRateLimiter $rateLimiter = null
     ) {
-        $this->rateLimiter ??= new SensitiveActionRateLimiter();
+        $this->rateLimiter ??= new SensitiveActionRateLimiter;
     }
 
     /**
      * Point d'entree unique: route toutes les actions POST.
-     *
-     * @return void
      */
     public function traiter(): void
     {
@@ -85,7 +84,7 @@ final class LegacyActionHandler
             return;
         }
 
-        if (!verifier_jeton_csrf($_POST['jeton_csrf'] ?? null)) {
+        if (! verifier_jeton_csrf($_POST['jeton_csrf'] ?? null)) {
             $this->traiterEchecCsrf($action);
         }
 
@@ -227,8 +226,6 @@ final class LegacyActionHandler
 
     /**
      * Affiche une erreur claire quand un formulaire d'auth arrive avec une session expiree.
-     *
-     * @return never
      */
     private function traiterEchecCsrf(string $action): never
     {
@@ -276,9 +273,12 @@ final class LegacyActionHandler
         $pageRedirection = $this->resoudrePageRedirection('accueil');
         $identifiantConnexion = trim((string) ($_POST['identifiant_connexion'] ?? $_POST['login_identifier'] ?? $_POST['courriel'] ?? $_POST['email'] ?? ''));
         $motDePasse = (string) ($_POST['mot_de_passe'] ?? $_POST['password'] ?? '');
-        $utilisateur = $this->depotUtilisateurs->trouverParIdentifiantConnexion($identifiantConnexion);
+        $utilisateurAuthentifiable = $this->depotUtilisateurs->trouverModeleParIdentifiantConnexion($identifiantConnexion);
+        $utilisateur = $utilisateurAuthentifiable !== null
+            ? $this->depotUtilisateurs->trouverParIdentifiant((string) $utilisateurAuthentifiable->getAuthIdentifier())
+            : null;
 
-        if ($utilisateur === null || !password_verify($motDePasse, (string) ($utilisateur['mot_de_passe_hache'] ?? ''))) {
+        if ($utilisateur === null || $utilisateurAuthentifiable === null || ! Hash::check($motDePasse, $utilisateurAuthentifiable->getAuthPassword())) {
             memoriser_etat_formulaire([
                 'ouverte' => true,
                 'onglet' => 'connexion',
@@ -289,6 +289,10 @@ final class LegacyActionHandler
                 ],
             ]);
             rediriger_vers(url_route($pageRedirection));
+        }
+
+        if (Hash::needsRehash($utilisateurAuthentifiable->getAuthPassword())) {
+            $this->depotUtilisateurs->mettreAJourMotDePasse((string) $utilisateur['identifiant'], $motDePasse);
         }
 
         if (($utilisateur['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF) {
@@ -312,13 +316,11 @@ final class LegacyActionHandler
     /** Permet a l'admin d'organiser les blocs visibles de l'accueil. */
     private function traiterMiseAJourConstructeurAccueil(): void
     {
-        $utilisateur = $this->depotUtilisateurs->trouverParIdentifiant(
-            isset($_SESSION['identifiant_utilisateur']) ? (string) $_SESSION['identifiant_utilisateur'] : null
-        );
+        $utilisateur = $this->depotUtilisateurs->trouverParIdentifiant(identifiant_utilisateur_courant());
 
         if (($utilisateur['role'] ?? '') !== 'admin') {
             ajouter_message_flash('error', "Seul l'administrateur peut modifier le constructeur.");
-            rediriger_vers(url_route('admin') . '#admin-constructeur');
+            rediriger_vers(url_route('admin').'#admin-constructeur');
         }
 
         $ordres = is_array($_POST['ordre_bloc'] ?? null) ? $_POST['ordre_bloc'] : [];
@@ -340,7 +342,7 @@ final class LegacyActionHandler
 
         $this->depotConstructeurPages->mettreAJourBlocsAccueil($donnees);
         ajouter_message_flash('success', "Le constructeur de l'accueil a ete mis a jour.");
-        rediriger_vers(url_route('admin') . '#admin-constructeur');
+        rediriger_vers(url_route('admin').'#admin-constructeur');
     }
 
     /** Inscrit une adresse a la newsletter avec consentement explicite. */
@@ -350,21 +352,21 @@ final class LegacyActionHandler
 
         if ($this->depotNewsletter === null || $this->newsletterMailer === null) {
             ajouter_message_flash('error', "La newsletter n'est pas disponible pour le moment.");
-            rediriger_vers(url_route($pageRedirection) . '#footer-newsletter-title');
+            rediriger_vers(url_route($pageRedirection).'#footer-newsletter-title');
         }
 
         $courriel = trim((string) ($_POST['newsletter_email'] ?? ''));
         $courriel = function_exists('mb_strtolower') ? mb_strtolower($courriel) : strtolower($courriel);
         $consentementAccepte = (string) ($_POST['newsletter_consentement'] ?? '') === '1';
 
-        if ($courriel === '' || strlen($courriel) > 254 || !filter_var($courriel, FILTER_VALIDATE_EMAIL)) {
+        if ($courriel === '' || strlen($courriel) > 254 || ! filter_var($courriel, FILTER_VALIDATE_EMAIL)) {
             ajouter_message_flash('error', 'Veuillez saisir une adresse email valide pour la newsletter.');
-            rediriger_vers(url_route($pageRedirection) . '#footer-newsletter-title');
+            rediriger_vers(url_route($pageRedirection).'#footer-newsletter-title');
         }
 
-        if (!$consentementAccepte) {
+        if (! $consentementAccepte) {
             ajouter_message_flash('error', 'Le consentement est obligatoire pour recevoir la newsletter.');
-            rediriger_vers(url_route($pageRedirection) . '#footer-newsletter-title');
+            rediriger_vers(url_route($pageRedirection).'#footer-newsletter-title');
         }
 
         $abonnement = $this->depotNewsletter->inscrire(
@@ -377,11 +379,11 @@ final class LegacyActionHandler
         try {
             $this->newsletterMailer->envoyerConfirmation($abonnement);
         } catch (Throwable $exception) {
-            error_log('[newsletter-confirmation] ' . $exception->getMessage());
+            error_log('[newsletter-confirmation] '.$exception->getMessage());
         }
 
         ajouter_message_flash('success', 'Inscription newsletter enregistree. Un email de confirmation va etre envoye si la messagerie du serveur est configuree.');
-        rediriger_vers(url_route($pageRedirection) . '#footer-newsletter-title');
+        rediriger_vers(url_route($pageRedirection).'#footer-newsletter-title');
     }
 
     /** Traite la deconnexion (session). */
@@ -395,34 +397,13 @@ final class LegacyActionHandler
     /** Ouvre ou migre proprement la session d'authentification. */
     private function ouvrirSessionAuthentification(string $identifiantUtilisateur): void
     {
-        if (app()->bound('session.store')) {
-            $session = session();
-            $session->migrate(true);
-            $session->put('identifiant_utilisateur', $identifiantUtilisateur);
-
-            return;
-        }
-
-        $this->demarrerSessionNativeSiNecessaire();
-        session_regenerate_id(true);
-        $_SESSION['identifiant_utilisateur'] = $identifiantUtilisateur;
+        connecter_utilisateur_courant($identifiantUtilisateur);
     }
 
     /** Ferme proprement la session d'authentification sans supposer une session PHP active. */
     private function fermerSessionAuthentification(): void
     {
-        if (app()->bound('session.store')) {
-            $session = session();
-            $session->forget('identifiant_utilisateur');
-            $session->migrate(true);
-
-            return;
-        }
-
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            unset($_SESSION['identifiant_utilisateur']);
-            session_regenerate_id(true);
-        }
+        deconnecter_utilisateur_courant();
     }
 
     /** Garantit une session native active avant les appels PHP bas niveau. */
@@ -481,7 +462,7 @@ final class LegacyActionHandler
             rediriger_vers(url_route('articles'));
         }
 
-        if (!$this->utilisateurPeutPublierContenu($utilisateurCourant)) {
+        if (! $this->utilisateurPeutPublierContenu($utilisateurCourant)) {
             ajouter_message_flash('error', 'Seuls les adhérents du club peuvent proposer des articles.');
             rediriger_vers(url_route('articles'));
         }
@@ -522,7 +503,7 @@ final class LegacyActionHandler
             rediriger_vers(url_route('articles'));
         }
 
-        $nomAuteur = trim((string) $utilisateurCourant['prenom'] . ' ' . (string) $utilisateurCourant['nom']);
+        $nomAuteur = trim((string) $utilisateurCourant['prenom'].' '.(string) $utilisateurCourant['nom']);
 
         $this->depotArticles->creer([
             'identifiant_auteur' => $utilisateurCourant['identifiant'],
@@ -548,7 +529,7 @@ final class LegacyActionHandler
             rediriger_vers(url_route('mediatheque'));
         }
 
-        if (!$this->utilisateurPeutPublierContenu($utilisateurCourant)) {
+        if (! $this->utilisateurPeutPublierContenu($utilisateurCourant)) {
             ajouter_message_flash('error', 'Seuls les adhérents du club peuvent proposer des photos ou des vidéos.');
             rediriger_vers(url_route('mediatheque'));
         }
@@ -568,11 +549,11 @@ final class LegacyActionHandler
             $erreurs[] = 'La description du media doit rester inferieure a 500 caracteres.';
         }
 
-        if (!in_array($typeMedia, [DepotMedias::TYPE_PHOTO, DepotMedias::TYPE_VIDEO], true)) {
+        if (! in_array($typeMedia, [DepotMedias::TYPE_PHOTO, DepotMedias::TYPE_VIDEO], true)) {
             $erreurs[] = 'Le type de media est invalide.';
         }
 
-        if (!is_array($fichier) || (($fichier['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK)) {
+        if (! is_array($fichier) || (($fichier['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK)) {
             $erreurs[] = 'Un fichier valide est obligatoire.';
         }
 
@@ -588,22 +569,22 @@ final class LegacyActionHandler
             rediriger_vers(url_route('mediatheque'));
         }
 
-        if (!$this->preparerDossierUpload($this->dossierUploadMedias)) {
+        if (! $this->preparerDossierUpload($this->dossierUploadMedias)) {
             ajouter_message_flash('error', "Le dossier d'envoi des medias n'est pas disponible.");
             rediriger_vers(url_route('mediatheque'));
         }
 
-        $nomStocke = 'media_' . bin2hex(random_bytes(12)) . '.' . $validationFichier['extension'];
-        $cheminDestination = rtrim($this->dossierUploadMedias, '/\\') . DIRECTORY_SEPARATOR . $nomStocke;
+        $nomStocke = 'media_'.bin2hex(random_bytes(12)).'.'.$validationFichier['extension'];
+        $cheminDestination = rtrim($this->dossierUploadMedias, '/\\').DIRECTORY_SEPARATOR.$nomStocke;
 
-        if (!move_uploaded_file((string) $fichier['tmp_name'], $cheminDestination)) {
+        if (! move_uploaded_file((string) $fichier['tmp_name'], $cheminDestination)) {
             ajouter_message_flash('error', 'Le téléversement du média a échoué.');
             rediriger_vers(url_route('mediatheque'));
         }
 
         $this->securiserFichierTeleverse($cheminDestination);
 
-        $nomAuteur = trim((string) $utilisateurCourant['prenom'] . ' ' . (string) $utilisateurCourant['nom']);
+        $nomAuteur = trim((string) $utilisateurCourant['prenom'].' '.(string) $utilisateurCourant['nom']);
 
         $this->depotMedias->creer([
             'identifiant_auteur' => $utilisateurCourant['identifiant'],
@@ -662,7 +643,7 @@ final class LegacyActionHandler
         $identifiantArticle = trim((string) ($_POST['identifiant_article'] ?? ''));
         $article = $identifiantArticle !== '' ? $this->depotArticles->trouverParIdentifiant($identifiantArticle) : null;
 
-        if ($article === null || !$this->depotArticles->supprimer($identifiantArticle)) {
+        if ($article === null || ! $this->depotArticles->supprimer($identifiantArticle)) {
             ajouter_message_flash('error', "Impossible de supprimer l'article.");
             rediriger_vers(url_route('admin'));
         }
@@ -707,7 +688,7 @@ final class LegacyActionHandler
             rediriger_vers(url_route('boutique'));
         }
 
-        $nomUtilisateur = trim((string) $utilisateurCourant['prenom'] . ' ' . (string) $utilisateurCourant['nom']);
+        $nomUtilisateur = trim((string) $utilisateurCourant['prenom'].' '.(string) $utilisateurCourant['nom']);
 
         $this->depotCommandes->creer([
             'identifiant_utilisateur' => $utilisateurCourant['identifiant'],
@@ -790,11 +771,11 @@ final class LegacyActionHandler
         );
 
         if ($utilisateurMisAJour === null) {
-            ajouter_message_flash('error', "Le transfert du role admin a echoue.");
+            ajouter_message_flash('error', 'Le transfert du role admin a echoue.');
             rediriger_vers(url_route('admin'));
         }
 
-        ajouter_message_flash('success', "Le role admin a ete transfere vers un autre compte.");
+        ajouter_message_flash('success', 'Le role admin a ete transfere vers un autre compte.');
         rediriger_vers(url_route('admin'));
     }
 
@@ -831,13 +812,13 @@ final class LegacyActionHandler
             $this->notifierHorairesMisAJour((string) ($_POST['libelle_saison_horaires'] ?? 'Horaires du club'));
         }
 
-        if (!$succes) {
+        if (! $succes) {
             ajouter_message_flash('error', 'Au moins un créneau doit contenir un jour et un horaire.');
-            rediriger_vers(url_route('admin') . '#admin-horaires-club');
+            rediriger_vers(url_route('admin').'#admin-horaires-club');
         }
 
         ajouter_message_flash('success', 'Les horaires publics du club ont été mis à jour.');
-        rediriger_vers(url_route('admin') . '#admin-horaires-club');
+        rediriger_vers(url_route('admin').'#admin-horaires-club');
     }
 
     private function traiterNotificationObjetBoutique(): void
@@ -848,13 +829,13 @@ final class LegacyActionHandler
 
         if ($titreProduit === '' || mb_strlen($titreProduit) > 150) {
             ajouter_message_flash('error', "Le titre de l'objet boutique est obligatoire et doit rester court.");
-            rediriger_vers(url_route('admin') . '#admin-newsletter-boutique');
+            rediriger_vers(url_route('admin').'#admin-newsletter-boutique');
         }
 
         $this->notifierNouvelObjetBoutique($titreProduit);
 
         ajouter_message_flash('success', 'Les abonnes newsletter ont ete informes de la nouveaute boutique.');
-        rediriger_vers(url_route('admin') . '#admin-newsletter-boutique');
+        rediriger_vers(url_route('admin').'#admin-newsletter-boutique');
     }
 
     /**
@@ -890,7 +871,7 @@ final class LegacyActionHandler
             ], 422);
         }
 
-        if (!$this->depotDammier->verifierPuzzleHebdomadaire($weekKey, $puzzleId)) {
+        if (! $this->depotDammier->verifierPuzzleHebdomadaire($weekKey, $puzzleId)) {
             $this->repondreJson([
                 'success' => false,
                 'message' => 'Le puzzle hebdomadaire a changé. Recharge la page.',
@@ -924,7 +905,7 @@ final class LegacyActionHandler
         try {
             $this->newsletterMailer->notifierArticlePublie($article);
         } catch (Throwable $exception) {
-            error_log('[newsletter-article] ' . $exception->getMessage());
+            error_log('[newsletter-article] '.$exception->getMessage());
         }
     }
 
@@ -937,7 +918,7 @@ final class LegacyActionHandler
         try {
             $this->newsletterMailer->notifierHorairesMisAJour($libelleSaison);
         } catch (Throwable $exception) {
-            error_log('[newsletter-horaires] ' . $exception->getMessage());
+            error_log('[newsletter-horaires] '.$exception->getMessage());
         }
     }
 
@@ -950,7 +931,7 @@ final class LegacyActionHandler
         try {
             $this->newsletterMailer->notifierNouvelObjetBoutique($titreProduit);
         } catch (Throwable $exception) {
-            error_log('[newsletter-boutique] ' . $exception->getMessage());
+            error_log('[newsletter-boutique] '.$exception->getMessage());
         }
     }
 
@@ -961,7 +942,7 @@ final class LegacyActionHandler
      */
     private function obtenirUtilisateurCourant(): ?array
     {
-        $identifiantUtilisateur = isset($_SESSION['identifiant_utilisateur']) ? (string) $_SESSION['identifiant_utilisateur'] : '';
+        $identifiantUtilisateur = identifiant_utilisateur_courant() ?? '';
 
         return $this->depotUtilisateurs->trouverParIdentifiant($identifiantUtilisateur);
     }
@@ -975,7 +956,7 @@ final class LegacyActionHandler
             return '';
         }
 
-        return hash('sha256', $adresseIp . '|' . $selConsentement);
+        return hash('sha256', $adresseIp.'|'.$selConsentement);
     }
 
     private function nettoyerAgentUtilisateur(): string
@@ -988,14 +969,14 @@ final class LegacyActionHandler
     /**
      * D?termin? une page de redirection sure (whitelist).
      *
-     * @param string $pageParDefaut Fallback.
+     * @param  string  $pageParDefaut  Fallback.
      * @return string Page valide.
      */
     private function resoudrePageRedirection(string $pageParDefaut): string
     {
         $page = trim((string) ($_POST['page_redirection'] ?? $_POST['redirect_page'] ?? ''));
 
-        if ($page === '' || !in_array($page, self::PAGES_AUTORISEES, true)) {
+        if ($page === '' || ! in_array($page, self::PAGES_AUTORISEES, true)) {
             return $pageParDefaut;
         }
 
@@ -1005,8 +986,8 @@ final class LegacyActionHandler
     /**
      * Valide les donnees de profil (nom/prenom/email/naissance/description/pseudo chess).
      *
-     * @param array $donnees Donnees a verifier.
-     * @param bool $verifierMotDePasse True pour l'inscription.
+     * @param  array  $donnees  Donnees a verifier.
+     * @param  bool  $verifierMotDePasse  True pour l'inscription.
      * @return array Liste d'erreurs.
      */
     private function validerDonneesProfil(array $donnees, bool $verifierMotDePasse): array
@@ -1021,15 +1002,15 @@ final class LegacyActionHandler
             $erreurs[] = 'Le prenom est obligatoire et doit rester raisonnable.';
         }
 
-        if ($donnees['date_naissance'] !== '' && !$this->estDateValide($donnees['date_naissance'])) {
+        if ($donnees['date_naissance'] !== '' && ! $this->estDateValide($donnees['date_naissance'])) {
             $erreurs[] = 'La date de naissance doit respecter le format attendu.';
         }
 
-        if (!filter_var($donnees['courriel'], FILTER_VALIDATE_EMAIL)) {
+        if (! filter_var($donnees['courriel'], FILTER_VALIDATE_EMAIL)) {
             $erreurs[] = 'Veuillez saisir une adresse email valide.';
         }
 
-        if (!$this->estNumeroLicenceValide((string) ($donnees['numero_licence'] ?? ''))) {
+        if (! $this->estNumeroLicenceValide((string) ($donnees['numero_licence'] ?? ''))) {
             $erreurs[] = 'Le numero de licence doit contenir 3 a 30 caracteres: lettres, chiffres ou tirets.';
         }
 
@@ -1041,7 +1022,7 @@ final class LegacyActionHandler
             $erreurs[] = 'La description de profil doit rester inferieure a 1200 caracteres.';
         }
 
-        if (!$this->estPseudoChessValide($donnees['pseudo_chess'])) {
+        if (! $this->estPseudoChessValide($donnees['pseudo_chess'])) {
             $erreurs[] = 'Le pseudo Chess.com doit contenir seulement des lettres, chiffres, tirets ou underscores.';
         }
 
@@ -1060,7 +1041,7 @@ final class LegacyActionHandler
         $erreurs = [];
         $blocs = [];
 
-        if (!is_array($donnees)) {
+        if (! is_array($donnees)) {
             return [
                 'blocs' => [],
                 'erreurs' => ["L'editeur d'article n'a pas transmis de contenu valide."],
@@ -1072,7 +1053,7 @@ final class LegacyActionHandler
         }
 
         foreach (array_slice($donnees, 0, 60) as $bloc) {
-            if (!is_array($bloc)) {
+            if (! is_array($bloc)) {
                 continue;
             }
 
@@ -1086,6 +1067,7 @@ final class LegacyActionHandler
 
                 if (mb_strlen($texte) > 3000) {
                     $erreurs[] = 'Un paragraphe doit rester inferieur a 3000 caracteres.';
+
                     continue;
                 }
 
@@ -1093,12 +1075,14 @@ final class LegacyActionHandler
                     'type' => DepotArticles::TYPE_BLOC_PARAGRAPHE,
                     'texte' => $texte,
                 ];
+
                 continue;
             }
 
             if ($type === DepotArticles::TYPE_BLOC_SOUS_TITRE) {
                 if ($texte === '' || mb_strlen($texte) > 140) {
                     $erreurs[] = 'Chaque sous-titre doit contenir entre 1 et 140 caracteres.';
+
                     continue;
                 }
 
@@ -1106,6 +1090,7 @@ final class LegacyActionHandler
                     'type' => DepotArticles::TYPE_BLOC_SOUS_TITRE,
                     'texte' => $texte,
                 ];
+
                 continue;
             }
 
@@ -1138,7 +1123,7 @@ final class LegacyActionHandler
         $texteAlternatif = trim((string) ($bloc['texte_alternatif'] ?? ''));
         $legende = trim((string) ($bloc['legende'] ?? ''));
 
-        if (!preg_match('/^article_media_[a-z0-9_]+$/', $nomChampFichier)) {
+        if (! preg_match('/^article_media_[a-z0-9_]+$/', $nomChampFichier)) {
             return [
                 'bloc' => null,
                 'erreurs' => ['Un bloc media est invalide.'],
@@ -1147,7 +1132,7 @@ final class LegacyActionHandler
 
         $fichier = $_FILES[$nomChampFichier] ?? null;
 
-        if (!is_array($fichier) || (($fichier['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK)) {
+        if (! is_array($fichier) || (($fichier['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK)) {
             return [
                 'bloc' => null,
                 'erreurs' => ['Chaque bloc image ou video doit contenir un fichier valide.'],
@@ -1184,17 +1169,17 @@ final class LegacyActionHandler
 
         $dossierArticles = UploadStorage::dossierArticles();
 
-        if (!$this->preparerDossierUpload($dossierArticles)) {
+        if (! $this->preparerDossierUpload($dossierArticles)) {
             return [
                 'bloc' => null,
                 'erreurs' => ["Le dossier d'envoi des medias d'article n'est pas disponible."],
             ];
         }
 
-        $nomStocke = 'article_' . bin2hex(random_bytes(12)) . '.' . $validation['extension'];
-        $cheminDestination = $dossierArticles . DIRECTORY_SEPARATOR . $nomStocke;
+        $nomStocke = 'article_'.bin2hex(random_bytes(12)).'.'.$validation['extension'];
+        $cheminDestination = $dossierArticles.DIRECTORY_SEPARATOR.$nomStocke;
 
-        if (!move_uploaded_file((string) ($fichier['tmp_name'] ?? ''), $cheminDestination)) {
+        if (! move_uploaded_file((string) ($fichier['tmp_name'] ?? ''), $cheminDestination)) {
             return [
                 'bloc' => null,
                 'erreurs' => ["Le televersement d'un media d'article a echoue."],
@@ -1258,19 +1243,19 @@ final class LegacyActionHandler
         $prefixeProtege = 'fichiers/articles/';
 
         foreach ($blocs as $bloc) {
-            if (!in_array((string) ($bloc['type'] ?? ''), [DepotArticles::TYPE_BLOC_IMAGE, DepotArticles::TYPE_BLOC_VIDEO], true)) {
+            if (! in_array((string) ($bloc['type'] ?? ''), [DepotArticles::TYPE_BLOC_IMAGE, DepotArticles::TYPE_BLOC_VIDEO], true)) {
                 continue;
             }
 
             $cheminPublic = (string) ($bloc['chemin_public'] ?? '');
 
-            if (!str_starts_with($cheminPublic, $prefixePublic) && !str_starts_with($cheminPublic, $prefixeProtege)) {
+            if (! str_starts_with($cheminPublic, $prefixePublic) && ! str_starts_with($cheminPublic, $prefixeProtege)) {
                 continue;
             }
 
             $nomFichier = basename($cheminPublic);
 
-            if ($nomFichier === '' || !str_starts_with($nomFichier, 'article_')) {
+            if ($nomFichier === '' || ! str_starts_with($nomFichier, 'article_')) {
                 continue;
             }
 
@@ -1280,7 +1265,7 @@ final class LegacyActionHandler
 
     private function preparerDossierUpload(string $dossier): bool
     {
-        if (!is_dir($dossier) && !mkdir($dossier, self::MODE_DOSSIER_UPLOAD, true)) {
+        if (! is_dir($dossier) && ! mkdir($dossier, self::MODE_DOSSIER_UPLOAD, true)) {
             return false;
         }
 
@@ -1301,8 +1286,8 @@ final class LegacyActionHandler
     /**
      * Valide un fichier upload (type, extension, taille) selon photo/video.
      *
-     * @param array $fichier $_FILES[...] brut.
-     * @param string $typeMedia photo|video.
+     * @param  array  $fichier  $_FILES[...] brut.
+     * @param  string  $typeMedia  photo|video.
      * @return array {erreurs, extension, mime}
      */
     private function validerFichierMedia(array $fichier, string $typeMedia): array
@@ -1326,7 +1311,7 @@ final class LegacyActionHandler
                 : 'La photo doit faire moins de 8 Mo.';
         }
 
-        if ($extension === '' || !in_array($extension, $extensionsAutorisees, true)) {
+        if ($extension === '' || ! in_array($extension, $extensionsAutorisees, true)) {
             $erreurs[] = 'L extension du fichier n est pas autorisee.';
         }
 
@@ -1336,7 +1321,7 @@ final class LegacyActionHandler
             finfo_close($finfo);
         }
 
-        if ($mime === '' || !in_array($mime, $mimeAutorises, true)) {
+        if ($mime === '' || ! in_array($mime, $mimeAutorises, true)) {
             $erreurs[] = 'Le type de fichier envoye n est pas autorise.';
         }
 
@@ -1350,7 +1335,7 @@ final class LegacyActionHandler
     /**
      * Verifie si l'utilisateur a le droit de soumettre du contenu (article/media).
      *
-     * @param array $utilisateur Utilisateur normalise.
+     * @param  array  $utilisateur  Utilisateur normalise.
      * @return bool True si adherent/admin et compte actif.
      */
     private function utilisateurPeutPublierContenu(array $utilisateur): bool
@@ -1368,8 +1353,6 @@ final class LegacyActionHandler
 
     /**
      * Force l'acces admin (sinon redirection accueil).
-     *
-     * @return void
      */
     private function exigerAdmin(): void
     {
@@ -1429,8 +1412,6 @@ final class LegacyActionHandler
 
     /**
      * Termine la requete avec une reponse JSON.
-     *
-     * @return never
      */
     private function repondreJson(array $payload, int $statusCode = 200): never
     {

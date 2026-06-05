@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\ActionController;
+use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\MediaAssetController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/fichiers/medias/{nomFichier}', [MediaAssetController::class, 'showPublication'])
@@ -15,6 +17,11 @@ Route::get('/fichiers/articles/{nomFichier}', [MediaAssetController::class, 'sho
 
 Route::get('/', [PageController::class, 'show'])->name('accueil');
 Route::post('/', [ActionController::class, 'handle']);
+
+Route::get('/mot-de-passe/oublie', [ForgotPasswordController::class, 'create'])->name('password.request');
+Route::post('/mot-de-passe/oublie', [ForgotPasswordController::class, 'store'])->name('password.email');
+Route::get('/mot-de-passe/reinitialiser/{token}', [ResetPasswordController::class, 'edit'])->name('password.reset');
+Route::post('/mot-de-passe/reinitialiser', [ResetPasswordController::class, 'update'])->name('password.update');
 
 Route::get('/merch', fn () => redirect()->route('boutique'))->name('merch');
 

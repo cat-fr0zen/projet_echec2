@@ -33,15 +33,14 @@ final class LegacyPageRenderer
         private GoogleReviewsService $googleReviewsService,
         private array $messagesFlash,
         private array $formState
-    ) {
-    }
+    ) {}
 
     public function afficher(string $segment): string
     {
         $currentUser = $this->recupererUtilisateurCourant();
 
         if ($currentUser !== null && ($currentUser['statut_compte'] ?? '') !== User::STATUT_COMPTE_ACTIF) {
-            unset($_SESSION['identifiant_utilisateur']);
+            deconnecter_utilisateur_courant();
             ajouter_message_flash('error', "Votre compte n'est plus actif. Merci de recontacter le club.");
             rediriger_vers(url_route('accueil'));
         }
@@ -74,7 +73,7 @@ final class LegacyPageRenderer
         $siteData['constructeur_accueil_blocs'] = $this->constructeurPagesRepository->listerPourPage('accueil');
         $siteData['constructeur_accueil_blocs_actifs'] = $this->constructeurPagesRepository->listerActifsPourPage('accueil');
 
-        if (!($authData['est_connecte'] ?? false) && $this->trafficRepository !== null) {
+        if (! ($authData['est_connecte'] ?? false) && $this->trafficRepository !== null) {
             $this->trafficRepository->enregistrerVisitePublique($segment);
         }
         $siteData['google_reviews'] = $this->googleReviewsService->recupererAvisLieu(
@@ -130,10 +129,10 @@ final class LegacyPageRenderer
             $pageData['note_bandeau_accueil'] = $pageData['note_hero'];
             $pageCourante = $segment;
             $pageTitle = $pageData['titre'] !== '' ? $pageData['titre'] : 'Page';
-            $viewFile = resource_path('views/pages/' . str_replace('.php', '.blade.php', $pageData['vue']));
+            $viewFile = resource_path('views/pages/'.str_replace('.php', '.blade.php', $pageData['vue']));
         }
 
-        $metaTitle = $pageTitle . ' | ' . $siteData['brand'];
+        $metaTitle = $pageTitle.' | '.$siteData['brand'];
         $metaDescription = (string) (
             $pageData['description_meta']
             ?? $pageData['meta_description']
@@ -156,9 +155,7 @@ final class LegacyPageRenderer
     private function recupererUtilisateurCourant(): ?array
     {
         try {
-            return $this->userRepository->trouverParIdentifiant(
-                isset($_SESSION['identifiant_utilisateur']) ? (string) $_SESSION['identifiant_utilisateur'] : null
-            );
+            return $this->userRepository->trouverParIdentifiant(identifiant_utilisateur_courant());
         } catch (Throwable $exception) {
             report($exception);
 
@@ -167,9 +164,9 @@ final class LegacyPageRenderer
     }
 
     /**
-     * @param array<string, mixed> $siteData
-     * @param array<string, mixed> $authData
-     * @param array<string, mixed>|null $currentUser
+     * @param  array<string, mixed>  $siteData
+     * @param  array<string, mixed>  $authData
+     * @param  array<string, mixed>|null  $currentUser
      * @return array<string, mixed>
      */
     private function chargerDonneesDynamiques(array $siteData, array $authData, ?array $currentUser): array
@@ -236,8 +233,8 @@ final class LegacyPageRenderer
     }
 
     /**
-     * @param array<string, mixed> $siteData
-     * @param array<string, mixed> $authData
+     * @param  array<string, mixed>  $siteData
+     * @param  array<string, mixed>  $authData
      * @return array<string, mixed>
      */
     private function appliquerModeDegrade(array $siteData, array $authData): array
@@ -317,12 +314,12 @@ final class LegacyPageRenderer
         $estConnecte = $this->estUtilisateurActif($utilisateur);
         $estAdmin = $this->estAdmin($utilisateur);
 
-        if (in_array($segment, ['guide', 'boutique', 'profil', 'parametres'], true) && !$estConnecte) {
+        if (in_array($segment, ['guide', 'boutique', 'profil', 'parametres'], true) && ! $estConnecte) {
             ajouter_message_flash('error', 'Connecte-toi pour acceder a cette page.');
             rediriger_vers(url_route('accueil'));
         }
 
-        if ($segment === 'admin' && !$estAdmin) {
+        if ($segment === 'admin' && ! $estAdmin) {
             ajouter_message_flash('error', "Acces reserve a l'administrateur du site.");
             rediriger_vers(url_route('accueil'));
         }
@@ -330,7 +327,7 @@ final class LegacyPageRenderer
 
     private function construireDonneesAuthentification(?array $utilisateur): array
     {
-        if (!$this->estUtilisateurActif($utilisateur)) {
+        if (! $this->estUtilisateurActif($utilisateur)) {
             return [
                 'est_connecte' => false,
                 'nom_affichage' => '',
@@ -350,7 +347,7 @@ final class LegacyPageRenderer
             ];
         }
 
-        $displayName = trim((string) ($utilisateur['prenom'] ?? '') . ' ' . (string) ($utilisateur['nom'] ?? ''));
+        $displayName = trim((string) ($utilisateur['prenom'] ?? '').' '.(string) ($utilisateur['nom'] ?? ''));
         $estAdmin = $this->estAdmin($utilisateur);
         $estAdherent = $this->estAdherent($utilisateur);
         $estProf = $this->estProf($utilisateur);
@@ -393,7 +390,7 @@ final class LegacyPageRenderer
             static function (array $item) use ($auth): bool {
                 $slug = (string) ($item['slug'] ?? '');
 
-                if (in_array($slug, ['guide', 'boutique'], true) && !($auth['est_connecte'] ?? false)) {
+                if (in_array($slug, ['guide', 'boutique'], true) && ! ($auth['est_connecte'] ?? false)) {
                     return false;
                 }
 

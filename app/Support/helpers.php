@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Response;
 
-if (!function_exists('normaliser_texte_utf8')) {
+if (! function_exists('normaliser_texte_utf8')) {
     function normaliser_texte_utf8(?string $valeur): string
     {
         $texte = (string) $valeur;
@@ -15,7 +16,7 @@ if (!function_exists('normaliser_texte_utf8')) {
             return '';
         }
 
-        if (!preg_match('//u', $texte) && function_exists('mb_convert_encoding')) {
+        if (! preg_match('//u', $texte) && function_exists('mb_convert_encoding')) {
             $texte = mb_convert_encoding($texte, 'UTF-8', 'Windows-1252,ISO-8859-1,UTF-8');
         }
 
@@ -62,7 +63,7 @@ if (!function_exists('normaliser_texte_utf8')) {
     }
 }
 
-if (!function_exists('normaliser_structure_utf8')) {
+if (! function_exists('normaliser_structure_utf8')) {
     function normaliser_structure_utf8(mixed $valeur): mixed
     {
         if (is_array($valeur)) {
@@ -79,23 +80,23 @@ if (!function_exists('normaliser_structure_utf8')) {
     }
 }
 
-if (!function_exists('url_route')) {
+if (! function_exists('url_route')) {
     function url_route(string $segment, array $parametres = []): string
     {
         $segmentNormalise = trim($segment, '/');
         $chemin = $segmentNormalise === '' || $segmentNormalise === 'accueil'
             ? '/'
-            : '/' . rawurlencode($segmentNormalise);
+            : '/'.rawurlencode($segmentNormalise);
 
         if ($parametres === []) {
             return $chemin;
         }
 
-        return $chemin . '?' . http_build_query($parametres);
+        return $chemin.'?'.http_build_query($parametres);
     }
 }
 
-if (!function_exists('url_ressource')) {
+if (! function_exists('url_ressource')) {
     function url_ressource(string $chemin): string
     {
         $cheminNormalise = ltrim(str_replace('\\', '/', $chemin), '/');
@@ -105,7 +106,7 @@ if (!function_exists('url_ressource')) {
         }
 
         if (str_starts_with($cheminNormalise, 'ressources/styles/')) {
-            return asset('assets/styles/' . basename($cheminNormalise));
+            return asset('assets/styles/'.basename($cheminNormalise));
         }
 
         if (str_starts_with($cheminNormalise, 'assets/scripts/')) {
@@ -113,7 +114,7 @@ if (!function_exists('url_ressource')) {
         }
 
         if (str_starts_with($cheminNormalise, 'ressources/scripts/')) {
-            return asset('assets/scripts/' . basename($cheminNormalise));
+            return asset('assets/scripts/'.basename($cheminNormalise));
         }
 
         if (str_starts_with($cheminNormalise, 'assets/media/')) {
@@ -123,14 +124,14 @@ if (!function_exists('url_ressource')) {
         if (str_starts_with($cheminNormalise, 'ressources/media/')) {
             $suffixe = substr($cheminNormalise, strlen('ressources/media/'));
 
-            return asset('assets/media/' . $suffixe);
+            return asset('assets/media/'.$suffixe);
         }
 
         return asset($cheminNormalise);
     }
 }
 
-if (!function_exists('theme_courant')) {
+if (! function_exists('theme_courant')) {
     function theme_courant(): string
     {
         $theme = request()->cookie('site_theme', 'light');
@@ -139,21 +140,21 @@ if (!function_exists('theme_courant')) {
     }
 }
 
-if (!function_exists('jeton_csrf')) {
+if (! function_exists('jeton_csrf')) {
     function jeton_csrf(): string
     {
         return csrf_token();
     }
 }
 
-if (!function_exists('verifier_jeton_csrf')) {
+if (! function_exists('verifier_jeton_csrf')) {
     function verifier_jeton_csrf(mixed $jeton): bool
     {
         return is_string($jeton) && hash_equals(csrf_token(), $jeton);
     }
 }
 
-if (!function_exists('ajouter_message_flash')) {
+if (! function_exists('ajouter_message_flash')) {
     function ajouter_message_flash(string $type, string $message): void
     {
         $messages = session('messages_flash', []);
@@ -165,7 +166,7 @@ if (!function_exists('ajouter_message_flash')) {
     }
 }
 
-if (!function_exists('recuperer_messages_flash')) {
+if (! function_exists('recuperer_messages_flash')) {
     function recuperer_messages_flash(): array
     {
         $messages = session()->pull('messages_flash', []);
@@ -174,14 +175,14 @@ if (!function_exists('recuperer_messages_flash')) {
     }
 }
 
-if (!function_exists('memoriser_etat_formulaire')) {
+if (! function_exists('memoriser_etat_formulaire')) {
     function memoriser_etat_formulaire(array $etat): void
     {
         session(['etat_formulaire' => $etat]);
     }
 }
 
-if (!function_exists('recuperer_etat_formulaire')) {
+if (! function_exists('recuperer_etat_formulaire')) {
     function recuperer_etat_formulaire(): array
     {
         $etat = session()->pull('etat_formulaire', []);
@@ -190,7 +191,84 @@ if (!function_exists('recuperer_etat_formulaire')) {
     }
 }
 
-if (!function_exists('rediriger_vers')) {
+if (! function_exists('identifiant_utilisateur_courant')) {
+    function identifiant_utilisateur_courant(): ?string
+    {
+        $identifiantAuthentifie = Auth::guard('web')->id();
+
+        if ($identifiantAuthentifie !== null && trim((string) $identifiantAuthentifie) !== '') {
+            return (string) $identifiantAuthentifie;
+        }
+
+        $identifiantLegacy = session('identifiant_utilisateur');
+
+        if (is_string($identifiantLegacy) && trim($identifiantLegacy) !== '') {
+            return trim($identifiantLegacy);
+        }
+
+        if (isset($_SESSION['identifiant_utilisateur']) && is_string($_SESSION['identifiant_utilisateur']) && trim($_SESSION['identifiant_utilisateur']) !== '') {
+            return trim($_SESSION['identifiant_utilisateur']);
+        }
+
+        return null;
+    }
+}
+
+if (! function_exists('connecter_utilisateur_courant')) {
+    function connecter_utilisateur_courant(string $identifiantUtilisateur): void
+    {
+        $identifiantNormalise = trim($identifiantUtilisateur);
+
+        if ($identifiantNormalise === '') {
+            return;
+        }
+
+        try {
+            Auth::guard('web')->loginUsingId($identifiantNormalise);
+        } catch (Throwable) {
+            // Garde un fonctionnement legacy si la couche auth Laravel n'est pas encore disponible.
+        }
+
+        if (app()->bound('session.store')) {
+            $session = session();
+            $session->migrate(true);
+            $session->put('identifiant_utilisateur', $identifiantNormalise);
+            $_SESSION['identifiant_utilisateur'] = $identifiantNormalise;
+
+            return;
+        }
+
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            @session_start();
+        }
+
+        session_regenerate_id(true);
+        $_SESSION['identifiant_utilisateur'] = $identifiantNormalise;
+    }
+}
+
+if (! function_exists('deconnecter_utilisateur_courant')) {
+    function deconnecter_utilisateur_courant(): void
+    {
+        Auth::guard('web')->logout();
+
+        if (app()->bound('session.store')) {
+            $session = session();
+            $session->forget('identifiant_utilisateur');
+            $session->migrate(true);
+            unset($_SESSION['identifiant_utilisateur']);
+
+            return;
+        }
+
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            unset($_SESSION['identifiant_utilisateur']);
+            session_regenerate_id(true);
+        }
+    }
+}
+
+if (! function_exists('rediriger_vers')) {
     function rediriger_vers(string $url): never
     {
         /** @var RedirectResponse $response */
@@ -200,7 +278,7 @@ if (!function_exists('rediriger_vers')) {
     }
 }
 
-if (!function_exists('repondre_json_et_terminer')) {
+if (! function_exists('repondre_json_et_terminer')) {
     function repondre_json_et_terminer(array $payload, int $statusCode = 200): never
     {
         throw new HttpResponseException(Response::json($payload, $statusCode));

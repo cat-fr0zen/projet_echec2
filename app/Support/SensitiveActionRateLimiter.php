@@ -21,7 +21,7 @@ final class SensitiveActionRateLimiter
 
         $cle = $this->construireCle($politique['action'], $donnees);
 
-        if (!RateLimiter::tooManyAttempts($cle, $politique['max_attempts'])) {
+        if (! RateLimiter::tooManyAttempts($cle, $politique['max_attempts'])) {
             return null;
         }
 
@@ -53,7 +53,7 @@ final class SensitiveActionRateLimiter
     {
         $politique = $this->resoudrePolitique($action);
 
-        if ($politique === null || !$politique['clear_on_success']) {
+        if ($politique === null || ! $politique['clear_on_success']) {
             return;
         }
 
@@ -105,7 +105,7 @@ final class SensitiveActionRateLimiter
 
         if ($actionNormalisee === 'newsletter_subscribe') {
             ajouter_message_flash('error', $message);
-            rediriger_vers(url_route($pageRedirection) . '#footer-newsletter-title');
+            rediriger_vers(url_route($pageRedirection).'#footer-newsletter-title');
         }
 
         ajouter_message_flash('error', $message);

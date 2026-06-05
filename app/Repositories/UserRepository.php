@@ -7,6 +7,7 @@ namespace App\Repositories;
 use App\Models\User;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 final class UserRepository
 {
@@ -36,6 +37,15 @@ final class UserRepository
         return $row !== null ? $this->normaliserUtilisateur((array) $row) : null;
     }
 
+    public function trouverModeleParIdentifiant(?string $identifiant): ?User
+    {
+        if ($identifiant === null || trim($identifiant) === '') {
+            return null;
+        }
+
+        return User::query()->find(trim($identifiant));
+    }
+
     public function listerTous(): array
     {
         return array_map(
@@ -52,6 +62,19 @@ final class UserRepository
             ->first();
 
         return $row !== null ? $this->normaliserUtilisateur((array) $row) : null;
+    }
+
+    public function trouverModeleParCourriel(string $courriel): ?User
+    {
+        $email = mb_strtolower(trim($courriel));
+
+        if ($email === '') {
+            return null;
+        }
+
+        return User::query()
+            ->where('courriel_normalise', $email)
+            ->first();
     }
 
     public function trouverParNumeroLicence(string $numeroLicence): ?array
@@ -84,10 +107,33 @@ final class UserRepository
         return $this->trouverParNumeroLicence($identifier);
     }
 
+    public function trouverModeleParIdentifiantConnexion(string $identifiantConnexion): ?User
+    {
+        $identifier = trim($identifiantConnexion);
+
+        if ($identifier === '') {
+            return null;
+        }
+
+        if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
+            return $this->trouverModeleParCourriel($identifier);
+        }
+
+        $numeroLicence = $this->normaliserNumeroLicenceFederale($identifier);
+
+        if ($numeroLicence === '') {
+            return null;
+        }
+
+        return User::query()
+            ->whereRaw('UPPER(numero_licence_federale) = ?', [$numeroLicence])
+            ->first();
+    }
+
     public function creer(array $donnees): array
     {
         $isFirstAccount = DB::table('compte_membre')->count() === 0;
-        $identifiant = 'utilisateur_' . bin2hex(random_bytes(8));
+        $identifiant = 'utilisateur_'.bin2hex(random_bytes(8));
         $license = $this->normaliserNumeroLicenceFederale($donnees['numero_licence'] ?? '');
         $email = mb_strtolower(trim((string) ($donnees['courriel'] ?? '')));
 
@@ -99,7 +145,7 @@ final class UserRepository
             'courriel' => $email,
             'courriel_normalise' => $email,
             'numero_licence_federale' => $license !== '' ? $license : null,
-            'mot_de_passe_hache' => password_hash((string) ($donnees['mot_de_passe'] ?? ''), PASSWORD_DEFAULT),
+            'mot_de_passe_hache' => Hash::make((string) ($donnees['mot_de_passe'] ?? '')),
             'description_profil' => (string) ($donnees['description_profil'] ?? ''),
             'pseudo_chess' => $this->normaliserPseudoChess($donnees['pseudo_chess'] ?? ''),
             'code_role' => $isFirstAccount ? User::ROLE_ADMIN : User::ROLE_CONNECTE,
@@ -130,17 +176,31 @@ final class UserRepository
         return $updated > 0 ? $this->trouverParIdentifiant($identifiant) : null;
     }
 
+    public function mettreAJourMotDePasse(string $identifiant, string $motDePasse): bool
+    {
+        if (trim($identifiant) === '' || trim($motDePasse) === '') {
+            return false;
+        }
+
+        return DB::table('compte_membre')
+            ->where('identifiant', $identifiant)
+            ->update([
+                'mot_de_passe_hache' => Hash::make($motDePasse),
+                'mis_a_jour_le' => date('Y-m-d H:i:s'),
+            ]) > 0;
+    }
+
     public function mettreAJourAcces(string $identifiant, string $role, string $statutCompte, string $statutAdhesion): ?array
     {
-        if (!in_array($role, [User::ROLE_CONNECTE, User::ROLE_ADHERENT, User::ROLE_PROF, User::ROLE_ADMIN], true)) {
+        if (! in_array($role, [User::ROLE_CONNECTE, User::ROLE_ADHERENT, User::ROLE_PROF, User::ROLE_ADMIN], true)) {
             return null;
         }
 
-        if (!in_array($statutCompte, [User::STATUT_COMPTE_ACTIF, User::STATUT_COMPTE_SUSPENDU], true)) {
+        if (! in_array($statutCompte, [User::STATUT_COMPTE_ACTIF, User::STATUT_COMPTE_SUSPENDU], true)) {
             return null;
         }
 
-        if (!in_array($statutAdhesion, [User::STATUT_ADHESION_AUCUNE, User::STATUT_ADHESION_ACTIVE], true)) {
+        if (! in_array($statutAdhesion, [User::STATUT_ADHESION_AUCUNE, User::STATUT_ADHESION_ACTIVE], true)) {
             return null;
         }
 
@@ -186,7 +246,7 @@ final class UserRepository
             return null;
         }
 
-        if (!in_array($roleApresTransfert, [User::ROLE_CONNECTE, User::ROLE_ADHERENT, User::ROLE_PROF], true)) {
+        if (! in_array($roleApresTransfert, [User::ROLE_CONNECTE, User::ROLE_ADHERENT, User::ROLE_PROF], true)) {
             return null;
         }
 
