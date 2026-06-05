@@ -20,7 +20,7 @@ final class CoursPageTest extends TestCase
         $this->seed(DatabaseSeeder::class);
     }
 
-    public function test_la_page_cours_affiche_des_blocs_compacts_et_les_niveaux_de_livret(): void
+    public function test_la_page_cours_n_affiche_plus_que_trois_petits_blocs(): void
     {
         $utilisateur = (new UserRepository())->creer([
             'nom' => 'Cours',
@@ -40,8 +40,11 @@ final class CoursPageTest extends TestCase
             ->assertSeeText('Cours')
             ->assertSeeText('Livrets')
             ->assertSeeText('Methodologie / strategie')
-            ->assertSeeText('Livret A')
-            ->assertSeeText('Livret E')
+            ->assertSeeText('Pedagogie')
+            ->assertSeeText('Progression')
+            ->assertDontSeeText('Niveaux de livret.')
+            ->assertDontSeeText('Livret A')
+            ->assertDontSeeText('Livret E')
             ->assertDontSeeText('Ouvrir les livrets')
             ->assertDontSeeText('Voir les contenus');
     }
