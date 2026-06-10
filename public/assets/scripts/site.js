@@ -325,12 +325,45 @@ function initFlashMessages() {
 function initBurgerMenu() {
     const burgerToggle = document.querySelector("[data-burger-toggle]");
     const burgerPanel = document.querySelector("[data-burger-panel]");
-    const burgerCloseButton = document.querySelector("[data-burger-close]");
+    const burgerBackdrop = document.querySelector("[data-burger-backdrop]");
+    const burgerCloseButtons = Array.from(document.querySelectorAll("[data-burger-close]"));
     const siteHeader = document.querySelector("[data-site-header]");
     let previousFocusedElement = null;
+    let layoutSyncFrame = null;
 
     if (!(burgerToggle instanceof HTMLButtonElement) || !(burgerPanel instanceof HTMLElement)) {
         return;
+    }
+
+    function syncPanelLayout() {
+        if (!(siteHeader instanceof HTMLElement)) {
+            return;
+        }
+
+        const headerRect = siteHeader.getBoundingClientRect();
+        const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+        const panelTop = Math.max(headerRect.bottom + 8, 8);
+        const panelRight = Math.max(viewportWidth - headerRect.right, 8);
+        const panelMaxHeight = Math.max(viewportHeight - panelTop - 8, 240);
+
+        document.documentElement.style.setProperty("--burger-panel-top", `${Math.round(panelTop)}px`);
+        document.documentElement.style.setProperty("--burger-panel-right", `${Math.round(panelRight)}px`);
+        document.documentElement.style.setProperty("--burger-panel-max-height", `${Math.round(panelMaxHeight)}px`);
+    }
+
+    function requestPanelLayoutSync() {
+        if (layoutSyncFrame !== null) {
+            return;
+        }
+
+        layoutSyncFrame = window.requestAnimationFrame(() => {
+            layoutSyncFrame = null;
+
+            if (!burgerPanel.hidden) {
+                syncPanelLayout();
+            }
+        });
     }
 
     function setOpenState(isOpen, shouldRestoreFocus = true) {
@@ -338,13 +371,19 @@ function initBurgerMenu() {
         burgerToggle.setAttribute("aria-label", isOpen ? "Fermer le menu" : "Ouvrir le menu");
         burgerPanel.hidden = !isOpen;
         burgerPanel.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        if (burgerBackdrop instanceof HTMLElement) {
+            burgerBackdrop.hidden = !isOpen;
+            burgerBackdrop.setAttribute("aria-hidden", isOpen ? "false" : "true");
+        }
         document.body.classList.toggle("burger-open", isOpen);
         siteHeader?.classList.toggle("is-menu-open", isOpen);
 
         if (isOpen) {
             previousFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+            syncPanelLayout();
             burgerPanel.scrollTop = 0;
-            focusElementWithoutScroll(burgerPanel);
+            const [firstFocusableElement] = getFocusableElements(burgerPanel);
+            focusElementWithoutScroll(firstFocusableElement || burgerPanel);
         } else if (shouldRestoreFocus && previousFocusedElement instanceof HTMLElement) {
             focusElementWithoutScroll(previousFocusedElement);
             previousFocusedElement = null;
@@ -360,11 +399,11 @@ function initBurgerMenu() {
         setOpenState(!isOpen);
     });
 
-    if (burgerCloseButton instanceof HTMLButtonElement) {
-        burgerCloseButton.addEventListener("click", () => {
+    burgerCloseButtons.forEach((button) => {
+        button.addEventListener("click", () => {
             setOpenState(false);
         });
-    }
+    });
 
     burgerPanel.querySelectorAll("a").forEach((link) => {
         link.addEventListener("click", () => {
@@ -373,6 +412,10 @@ function initBurgerMenu() {
     });
 
     document.addEventListener("click", (event) => {
+        if (burgerPanel.hidden) {
+            return;
+        }
+
         const target = event.target;
 
         if (!(target instanceof Node)) {
@@ -393,6 +436,10 @@ function initBurgerMenu() {
             setOpenState(false);
         }
     });
+
+    window.addEventListener("scroll", requestPanelLayoutSync, { passive: true });
+    window.addEventListener("resize", requestPanelLayoutSync);
+    window.addEventListener("orientationchange", requestPanelLayoutSync);
 }
 
 /**

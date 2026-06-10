@@ -84,6 +84,16 @@ $themeMoonIconUrl = url_ressource('assets/media/image/theme-lune.svg');
         </div>
     </div>
 
+    <button
+        type="button"
+        class="burger-backdrop"
+        data-burger-backdrop
+        data-burger-close
+        hidden
+        tabindex="-1"
+        aria-label="Fermer le menu"
+    ></button>
+
     <div
         id="burger-panel"
         class="burger-panel"
