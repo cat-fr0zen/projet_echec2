@@ -260,6 +260,7 @@ function initStickyHeader() {
  */
 function initFlashMessages() {
     const flashMessages = Array.from(document.querySelectorAll(".flash-message"));
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     flashMessages.forEach((message) => {
         if (!(message instanceof HTMLElement)) {
@@ -267,17 +268,54 @@ function initFlashMessages() {
         }
 
         const dismissButton = message.querySelector("[data-flash-dismiss]");
+        const flashStack = message.closest(".flash-stack");
+        const dismissDelay = message.classList.contains("flash-message--error") ? 8000 : 6500;
+        let autoDismissId = null;
+
         const dismiss = () => {
-            message.style.opacity = "0";
-            message.style.transform = "translateY(-8px)";
+            if (message.classList.contains("is-dismissing")) {
+                return;
+            }
+
+            window.clearTimeout(autoDismissId);
+            message.classList.add("is-dismissing");
+
             window.setTimeout(() => {
                 message.remove();
-            }, 220);
+
+                if (flashStack instanceof HTMLElement && !flashStack.querySelector(".flash-message")) {
+                    flashStack.remove();
+                }
+            }, reducedMotion ? 0 : 220);
+        };
+
+        const scheduleAutoDismiss = () => {
+            window.clearTimeout(autoDismissId);
+            autoDismissId = window.setTimeout(dismiss, dismissDelay);
+        };
+
+        const pauseAutoDismiss = () => {
+            window.clearTimeout(autoDismissId);
         };
 
         if (dismissButton instanceof HTMLButtonElement) {
             dismissButton.addEventListener("click", dismiss);
         }
+
+        message.addEventListener("mouseenter", pauseAutoDismiss);
+        message.addEventListener("mouseleave", scheduleAutoDismiss);
+        message.addEventListener("focusin", pauseAutoDismiss);
+        message.addEventListener("focusout", (event) => {
+            const nextFocusedElement = event.relatedTarget;
+
+            if (nextFocusedElement instanceof Node && message.contains(nextFocusedElement)) {
+                return;
+            }
+
+            scheduleAutoDismiss();
+        });
+
+        scheduleAutoDismiss();
     });
 }
 
