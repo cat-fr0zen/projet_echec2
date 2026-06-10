@@ -300,6 +300,14 @@ p {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.home-secondary-grid {
+    align-items: start;
+}
+
+.home-secondary-grid--single {
+    grid-template-columns: 1fr;
+}
+
 .panel,
 .page-banner,
 .site-footer {

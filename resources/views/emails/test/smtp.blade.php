@@ -1,6 +1,6 @@
 <p>Bonjour,</p>
 
-<p>Ceci est un email de test envoye depuis le site des Cavaliers d'Herouville.</p>
+<p>Ceci est un email de test envoyé depuis le site des Cavaliers d'Hérouville.</p>
 
 <p>Fournisseur : <strong>{{ $provider }}</strong></p>
 <p>Serveur SMTP : <strong>{{ $host }}</strong></p>

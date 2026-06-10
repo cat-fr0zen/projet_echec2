@@ -18,8 +18,8 @@ final class CoursDocumentRepository
         'livret_d' => 'Livret D',
         'livret_e' => 'Livret E',
         'cours' => 'Cours',
-        'methodologie' => 'Methodologie',
-        'strategie' => 'Strategie',
+        'methodologie' => 'Méthodologie',
+        'strategie' => 'Stratégie',
     ];
 
     /**

@@ -351,7 +351,7 @@ final class LegacyActionHandler
         }
 
         $this->depotConstructeurPages->mettreAJourBlocsAccueil($donnees);
-        ajouter_message_flash('success', "Le constructeur de l'accueil a ete mis a jour.");
+        ajouter_message_flash('success', "Le constructeur de l'accueil a été mis à jour.");
         rediriger_vers(url_route('admin').'#admin-constructeur');
     }
 
@@ -392,7 +392,7 @@ final class LegacyActionHandler
             error_log('[newsletter-confirmation] '.$exception->getMessage());
         }
 
-        ajouter_message_flash('success', 'Inscription newsletter enregistree. Un email de confirmation va etre envoye si la messagerie du serveur est configuree.');
+        ajouter_message_flash('success', 'Inscription newsletter enregistrée. Un email de confirmation va être envoyé si la messagerie du serveur est configurée.');
         rediriger_vers(url_route($pageRedirection).'#footer-newsletter-title');
     }
 
@@ -453,7 +453,7 @@ final class LegacyActionHandler
         }
 
         if ($this->numeroLicenceDejaUtilise($donnees['numero_licence'], (string) $utilisateurCourant['identifiant'])) {
-            ajouter_message_flash('error', 'Ce numero de licence est deja associe a un autre compte.');
+            ajouter_message_flash('error', 'Ce numéro de licence est déjà associé à un autre compte.');
             rediriger_vers(url_route('profil'));
         }
 
@@ -473,17 +473,17 @@ final class LegacyActionHandler
         $pageRedirection = url_route('guide').'#'.$this->ancreDocumentCours($rubrique);
 
         if (! $this->depotDocumentsCours->rubriqueEstValide($rubrique)) {
-            ajouter_message_flash('error', 'La rubrique de cours demandee est invalide.');
+            ajouter_message_flash('error', 'La rubrique de cours demandée est invalide.');
             rediriger_vers($pageRedirection);
         }
 
         if ($titre === '' || mb_strlen($titre) > 160) {
-            ajouter_message_flash('error', 'Le titre du document est obligatoire et doit rester inferieur a 160 caracteres.');
+            ajouter_message_flash('error', 'Le titre du document est obligatoire et doit rester inférieur à 160 caractères.');
             rediriger_vers($pageRedirection);
         }
 
         if (mb_strlen($description) > 2000) {
-            ajouter_message_flash('error', 'La description du document doit rester inferieure a 2000 caracteres.');
+            ajouter_message_flash('error', 'La description du document doit rester inférieure à 2000 caractères.');
             rediriger_vers($pageRedirection);
         }
 
@@ -510,7 +510,7 @@ final class LegacyActionHandler
         $cheminDestination = $dossierCours.DIRECTORY_SEPARATOR.$nomStocke;
 
         if (! $this->deplacerFichierTeleverse((string) ($fichier['tmp_name'] ?? ''), $cheminDestination)) {
-            ajouter_message_flash('error', "Le televersement du PDF a echoue.");
+            ajouter_message_flash('error', "Le téléversement du PDF a échoué.");
             rediriger_vers($pageRedirection);
         }
 
@@ -528,7 +528,7 @@ final class LegacyActionHandler
             'identifiant_auteur' => (string) ($utilisateurCourant['identifiant'] ?? ''),
         ]);
 
-        ajouter_message_flash('success', 'Le document PDF a ete ajoute dans la rubrique de cours.');
+        ajouter_message_flash('success', 'Le document PDF a été ajouté dans la rubrique de cours.');
         rediriger_vers($pageRedirection);
     }
 
@@ -547,7 +547,7 @@ final class LegacyActionHandler
         $this->depotDocumentsCours->supprimer($identifiantDocument);
         UploadStorage::supprimerCheminCours((string) ($document['nom_fichier_stocke'] ?? ''));
 
-        ajouter_message_flash('success', 'Le document de cours a ete supprime.');
+        ajouter_message_flash('success', 'Le document de cours a été supprimé.');
         rediriger_vers(url_route('guide').'#'.$this->ancreDocumentCours((string) ($document['code_rubrique'] ?? '')));
     }
 
@@ -571,11 +571,11 @@ final class LegacyActionHandler
         $erreurs = [];
 
         if ($titre === '' || mb_strlen($titre) > 150) {
-            $erreurs[] = 'Le titre est obligatoire et doit rester inferieur a 150 caracteres.';
+            $erreurs[] = 'Le titre est obligatoire et doit rester inférieur à 150 caractères.';
         }
 
         if ($auteurAffiche === '' || mb_strlen($auteurAffiche) > 120) {
-            $erreurs[] = "Le nom d'auteur affiche est obligatoire et doit rester inferieur a 120 caracteres.";
+            $erreurs[] = "Le nom d'auteur affiché est obligatoire et doit rester inférieur à 120 caractères.";
         }
 
         if (preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', $auteurAffiche) === 1) {
@@ -641,11 +641,11 @@ final class LegacyActionHandler
         $erreurs = [];
 
         if ($titre === '' || mb_strlen($titre) > 150) {
-            $erreurs[] = 'Le titre du media est obligatoire et doit rester inferieur a 150 caracteres.';
+            $erreurs[] = 'Le titre du média est obligatoire et doit rester inférieur à 150 caractères.';
         }
 
         if (mb_strlen($description) > 500) {
-            $erreurs[] = 'La description du media doit rester inferieure a 500 caracteres.';
+            $erreurs[] = 'La description du média doit rester inférieure à 500 caractères.';
         }
 
         if (! in_array($typeMedia, [DepotMedias::TYPE_PHOTO, DepotMedias::TYPE_VIDEO], true)) {
@@ -748,7 +748,7 @@ final class LegacyActionHandler
         }
 
         $this->supprimerMediasArticleTeleverses($article['blocs'] ?? []);
-        ajouter_message_flash('success', "L'article a ete supprime.");
+        ajouter_message_flash('success', "L'article a été supprimé.");
         rediriger_vers(url_route('admin'));
     }
 
@@ -870,11 +870,11 @@ final class LegacyActionHandler
         );
 
         if ($utilisateurMisAJour === null) {
-            ajouter_message_flash('error', 'Le transfert du role admin a echoue.');
+            ajouter_message_flash('error', 'Le transfert du rôle admin a échoué.');
             rediriger_vers(url_route('admin'));
         }
 
-        ajouter_message_flash('success', 'Le role admin a ete transfere vers un autre compte.');
+        ajouter_message_flash('success', 'Le rôle admin a été transféré vers un autre compte.');
         rediriger_vers(url_route('admin'));
     }
 
@@ -933,7 +933,7 @@ final class LegacyActionHandler
 
         $this->notifierNouvelObjetBoutique($titreProduit);
 
-        ajouter_message_flash('success', 'Les abonnes newsletter ont ete informes de la nouveaute boutique.');
+        ajouter_message_flash('success', 'Les abonnés newsletter ont été informés de la nouveauté boutique.');
         rediriger_vers(url_route('admin').'#admin-newsletter-boutique');
     }
 
@@ -1118,7 +1118,7 @@ final class LegacyActionHandler
         }
 
         if (mb_strlen($donnees['description_profil']) > 1200) {
-            $erreurs[] = 'La description de profil doit rester inferieure a 1200 caracteres.';
+            $erreurs[] = 'La description de profil doit rester inférieure à 1200 caractères.';
         }
 
         if (! $this->estPseudoChessValide($donnees['pseudo_chess'])) {
@@ -1165,7 +1165,7 @@ final class LegacyActionHandler
                 }
 
                 if (mb_strlen($texte) > 3000) {
-                    $erreurs[] = 'Un paragraphe doit rester inferieur a 3000 caracteres.';
+                    $erreurs[] = 'Un paragraphe doit rester inférieur à 3000 caractères.';
 
                     continue;
                 }
@@ -1250,7 +1250,7 @@ final class LegacyActionHandler
         if (mb_strlen($legende) > 220) {
             return [
                 'bloc' => null,
-                'erreurs' => ['Une legende media doit rester inferieure a 220 caracteres.'],
+                'erreurs' => ['Une légende média doit rester inférieure à 220 caractères.'],
             ];
         }
 
@@ -1438,7 +1438,7 @@ final class LegacyActionHandler
             && ! in_array($mime, $mimesAutorises, true)
             && ! in_array($mimeClient, $mimesAutorises, true)
         ) {
-            $erreurs[] = 'Le type de fichier envoye doit etre un PDF valide.';
+            $erreurs[] = 'Le type de fichier envoyé doit être un PDF valide.';
         }
 
         return [
@@ -1548,7 +1548,7 @@ final class LegacyActionHandler
             || ($utilisateurCourant['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF
             || ! in_array((string) ($utilisateurCourant['role'] ?? ''), [DepotUtilisateurs::ROLE_PROF, DepotUtilisateurs::ROLE_ADMIN], true)
         ) {
-            ajouter_message_flash('error', "Acces reserve aux professeurs et a l'administrateur.");
+            ajouter_message_flash('error', "Accès réservé aux professeurs et à l'administrateur.");
             rediriger_vers(url_route('guide').'#cours-livrets');
         }
 

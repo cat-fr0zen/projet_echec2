@@ -37,6 +37,14 @@ $blocsAccueilMobilesActifs = array_values(
         static fn (array $bloc): bool => !in_array((string) ($bloc['code_bloc'] ?? ''), ['bandeau_accueil', 'casse_tete_hebdomadaire'], true)
     )
 );
+$codesBlocsAccueilGroupes = ['mot_du_club', 'liens_utiles'];
+$blocsAccueilGroupes = array_values(
+    array_filter(
+        $blocsAccueilMobilesActifs,
+        static fn (array $bloc): bool => in_array((string) ($bloc['code_bloc'] ?? ''), $codesBlocsAccueilGroupes, true)
+    )
+);
+$grilleAccueilGroupesAffichee = false;
 ?>
 
 <section class="hero-grid">
@@ -52,11 +60,11 @@ $blocsAccueilMobilesActifs = array_values(
                 target="_blank"
                 rel="noopener noreferrer external"
                 referrerpolicy="no-referrer"
-                aria-label="Adherer au club sur HelloAsso (nouvel onglet)"
+                aria-label="Adhérer au club sur HelloAsso (nouvel onglet)"
             >
-                Adherer
+                Adhérer
             </a>
-            <a class="button button-secondary" href="#legal-hub">Voir le cadre legal</a>
+            <a class="button button-secondary" href="#legal-hub">Voir le cadre légal</a>
             <?php if ($authData['is_authenticated']): ?>
                 <a class="button button-secondary" href="<?= e(url_route('profil')) ?>">Voir mon profil</a>
             <?php endif; ?>
@@ -74,7 +82,7 @@ $blocsAccueilMobilesActifs = array_values(
                             <dt>
                                 <?= e((string) ($horaireResume['day'] ?? '')) ?>
                                 <?php if (!empty($horaireResume['has_holiday'])): ?>
-                                    <span class="schedule-exception-badge">Jour ferie</span>
+                                    <span class="schedule-exception-badge">Jour férié</span>
                                 <?php endif; ?>
                             </dt>
                             <dd><?= e((string) ($horaireResume['times'] ?? '')) ?></dd>
@@ -82,7 +90,7 @@ $blocsAccueilMobilesActifs = array_values(
                     <?php endforeach; ?>
                 </dl>
                 <?php if ($messageJourFerie !== ''): ?>
-                    <p class="home-schedule-holiday"><strong>Jour ferie:</strong> <?= e($messageJourFerie) ?></p>
+                    <p class="home-schedule-holiday"><strong>Jour férié :</strong> <?= e($messageJourFerie) ?></p>
                 <?php endif; ?>
             </section>
         <?php endif; ?>
@@ -98,9 +106,9 @@ $blocsAccueilMobilesActifs = array_values(
         >
             <div class="dammier_header">
                 <div>
-                    <p class="eyebrow">Casse-tete hebdomadaire</p>
+                    <p class="eyebrow">Casse-tête hebdomadaire</p>
                     <h2><?= e((string) ($dammierPuzzle['dammier_title'] ?? 'Puzzle hebdomadaire')) ?></h2>
-                    <p class="card-tag">Difficulte: <?= e($libelleDifficulteDammier) ?> · <?= e((string) $nombreCoupsBlancsDammier) ?> coups blancs</p>
+                    <p class="card-tag">Difficulté : <?= e($libelleDifficulteDammier) ?> · <?= e((string) $nombreCoupsBlancsDammier) ?> coups blancs</p>
                 </div>
             </div>
 
@@ -110,8 +118,8 @@ $blocsAccueilMobilesActifs = array_values(
             <div class="dammier_layout">
                 <div class="dammier_board_panel">
                     <p id="dammier-board-help" class="sr-only">
-                        Utilise Tab ou les fleches pour parcourir le damier. Selectionne d'abord une piece de ton camp,
-                        puis sa case d'arrivee pour proposer le coup.
+                        Utilise Tab ou les flèches pour parcourir le damier. Sélectionne d'abord une pièce de ton camp,
+                        puis sa case d'arrivée pour proposer le coup.
                     </p>
                     <div
                         class="dammier_board"
@@ -127,11 +135,11 @@ $blocsAccueilMobilesActifs = array_values(
                 </div>
 
                 <div class="dammier_play_panel">
-                    <p class="dammier_prompt" data-dammier-prompt>Clique sur une piece, puis sur sa case d'arrivee.</p>
+                    <p class="dammier_prompt" data-dammier-prompt>Clique sur une pièce, puis sur sa case d'arrivée.</p>
                     <div class="dammier_status">
-                        <span class="dammier_status_chip" data-dammier-selection role="status" aria-live="polite">Aucune piece selectionnee.</span>
+                        <span class="dammier_status_chip" data-dammier-selection role="status" aria-live="polite">Aucune pièce sélectionnée.</span>
                     </div>
-                    <p id="dammier-feedback" class="dammier_feedback" data-dammier-feedback role="status" aria-live="polite">Le score compte le nombre total de tentatives jusqu'a la resolution.</p>
+                    <p id="dammier-feedback" class="dammier_feedback" data-dammier-feedback role="status" aria-live="polite">Le score compte le nombre total de tentatives jusqu'à la résolution.</p>
                     <p id="dammier-hint-text" class="dammier_hint_text" data-dammier-hint-text hidden aria-live="polite"></p>
 
                     <div class="dammier_actions">
@@ -158,9 +166,9 @@ $blocsAccueilMobilesActifs = array_values(
                                         <?php endforeach; ?>
                                     </ol>
                                     <?php if ($dammierClassement === []): ?>
-                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty>Aucun score enregistre cette semaine.</p>
+                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty>Aucun score enregistré cette semaine.</p>
                                     <?php else: ?>
-                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty hidden>Aucun score enregistre cette semaine.</p>
+                                        <p class="dammier_ranking_empty" data-dammier-ranking-empty hidden>Aucun score enregistré cette semaine.</p>
                                     <?php endif; ?>
                                 <?php else: ?>
                                     <p class="dammier_ranking_locked">Connecte-toi pour voir le classement hebdomadaire.</p>
@@ -181,6 +189,23 @@ $blocsAccueilMobilesActifs = array_values(
     $codeBlocAccueil = (string) ($blocAccueil['code_bloc'] ?? '');
     $vueBlocAccueil = resource_path('views/pages/accueil/blocs/' . $codeBlocAccueil . '.blade.php');
     ?>
+    <?php if (in_array($codeBlocAccueil, $codesBlocsAccueilGroupes, true)): ?>
+        <?php if (!$grilleAccueilGroupesAffichee && $blocsAccueilGroupes !== []): ?>
+            <section class="split-grid home-secondary-grid<?= count($blocsAccueilGroupes) === 1 ? ' home-secondary-grid--single' : '' ?> reveal reveal-4">
+                <?php foreach ($blocsAccueilGroupes as $blocAccueilGroupe): ?>
+                    <?php
+                    $codeBlocAccueilGroupe = (string) ($blocAccueilGroupe['code_bloc'] ?? '');
+                    $vueBlocAccueilGroupe = resource_path('views/pages/accueil/blocs/' . $codeBlocAccueilGroupe . '.blade.php');
+                    ?>
+                    <?php if (is_file($vueBlocAccueilGroupe)): ?>
+                        <?php require $vueBlocAccueilGroupe; ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </section>
+            <?php $grilleAccueilGroupesAffichee = true; ?>
+        <?php endif; ?>
+        <?php continue; ?>
+    <?php endif; ?>
     <?php if (is_file($vueBlocAccueil)): ?>
         <?php require $vueBlocAccueil; ?>
     <?php endif; ?>

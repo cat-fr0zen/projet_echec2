@@ -78,7 +78,7 @@ final class ScheduleRepository
                 'time' => $time,
                 'heure_debut' => $heureDebut,
                 'heure_fin' => $heureFin,
-                'title' => $title !== '' ? $title : 'Activite du club',
+                'title' => $title !== '' ? $title : 'Activité du club',
                 'details' => $details,
                 'is_holiday' => (bool) ($creneau['is_holiday'] ?? false),
             ];
@@ -200,7 +200,7 @@ final class ScheduleRepository
             $items[] = [
                 'day' => $day,
                 'time' => $time,
-                'title' => $this->nettoyerTexteCourt((string) ($item['title'] ?? $item['titre'] ?? 'Activite du club'), 180),
+                'title' => $this->nettoyerTexteCourt((string) ($item['title'] ?? $item['titre'] ?? 'Activité du club'), 180),
                 'details' => $details,
                 'details_lines' => $this->extraireLignes($details),
                 'is_holiday' => (bool) ($item['is_holiday'] ?? $item['jour_ferie'] ?? false),
@@ -224,17 +224,17 @@ final class ScheduleRepository
     {
         return [
             'schedule_id' => self::IDENTIFIANT,
-            'season_label' => "Horaires 2025/2026 - Club d'Echecs",
-            'holiday_notice' => 'Les horaires peuvent etre adaptes ou le club ferme les jours feries.',
+            'season_label' => "Horaires 2025/2026 - Club d'Échecs",
+            'holiday_notice' => 'Les horaires peuvent être adaptés ou le club ferme les jours fériés.',
             'updated_at' => gmdate('c'),
             'items' => [
-                $this->creneau('Mardi', '18h00 a 19h30', 'Entrainement ados et adultes debutants', 'Avec Patrick.'),
-                $this->creneau('Mercredi', '17h30 a 18h30', 'Initiation et perfectionnement enfants debutants', 'Avec Ashot et Francois.'),
-                $this->creneau('Jeudi', '14h00 a 16h30', 'Club Senior +', 'Avec Francois.'),
-                $this->creneau('Vendredi', '17h00 a 18h00', 'Cours de preparation aux championnats scolaires', "Ecole Sainte-Marie et College Saint-Pierre.\nAvec Jean-Patrick a l'ecole et Ryan au college."),
-                $this->creneau('Vendredi', '18h00 a 19h30', 'Parties libres tous publics', "Materiel a disposition.\nSalle du restaurant du Cafe des images."),
-                $this->creneau('Samedi', '10h30 a 12h00', "Groupes selon l'age et le niveau", 'Centre Socioculturel CAF, 202 Boulevard des Belles Portes, 14200 Herouville Saint-Clair.'),
-                $this->creneau('Samedi', '14h30 a 16h00', 'Tous publics', 'Parties libres et tournois mensuels au club.'),
+                $this->creneau('Mardi', '18h00 à 19h30', 'Entraînement ados et adultes débutants', 'Avec Patrick.'),
+                $this->creneau('Mercredi', '17h30 à 18h30', 'Initiation et perfectionnement enfants débutants', 'Avec Ashot et François.'),
+                $this->creneau('Jeudi', '14h00 à 16h30', 'Club Senior +', 'Avec François.'),
+                $this->creneau('Vendredi', '17h00 à 18h00', 'Cours de préparation aux championnats scolaires', "École Sainte-Marie et Collège Saint-Pierre.\nAvec Jean-Patrick à l'école et Ryan au collège."),
+                $this->creneau('Vendredi', '18h00 à 19h30', 'Parties libres tous publics', "Matériel à disposition.\nSalle du restaurant du Café des images."),
+                $this->creneau('Samedi', '10h30 à 12h00', "Groupes selon l'âge et le niveau", 'Centre Socioculturel CAF, 202 Boulevard des Belles Portes, 14200 Hérouville Saint-Clair.'),
+                $this->creneau('Samedi', '14h30 à 16h00', 'Tous publics', 'Parties libres et tournois mensuels au club.'),
             ],
         ];
     }
@@ -255,7 +255,7 @@ final class ScheduleRepository
      */
     private function decomposerPlageHoraire(string $plage): array
     {
-        if (preg_match('/(\d{1,2})[h:](\d{2})\s*a\s*(\d{1,2})[h:](\d{2})/i', $plage, $captures) !== 1) {
+        if (preg_match('/(\d{1,2})[h:](\d{2})\s*(?:a|à)\s*(\d{1,2})[h:](\d{2})/iu', $plage, $captures) !== 1) {
             return [null, null];
         }
 
@@ -272,7 +272,7 @@ final class ScheduleRepository
 
         if ($heureDebut !== '' && $heureFin !== '' && strlen($heureDebut) >= 5 && strlen($heureFin) >= 5) {
             return sprintf(
-                '%sh%s a %sh%s',
+                '%sh%s à %sh%s',
                 substr($heureDebut, 0, 2),
                 substr($heureDebut, 3, 2),
                 substr($heureFin, 0, 2),

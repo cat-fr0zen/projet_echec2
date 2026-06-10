@@ -1,9 +1,9 @@
 <section class="section-block reveal reveal-5" data-accueil-slot="pieces_echecs">
     <div class="section-head">
-        <p class="eyebrow">Pieces d'echecs</p>
-        <h2>Chaque piece, son mouvement et son utilite.</h2>
+        <p class="eyebrow">Pièces d'échecs</p>
+        <h2>Chaque pièce, son mouvement et son utilité.</h2>
         <p>
-            Le carrousel tourne automatiquement pour rappeler les fondamentaux du jeu d'echecs.
+            Le carrousel tourne automatiquement pour rappeler les fondamentaux du jeu d'échecs.
             Les commandes restent accessibles si l'utilisateur veut reprendre la main.
         </p>
     </div>
@@ -15,7 +15,7 @@
         style="--piece-turn-duration: 6800ms;"
         tabindex="0"
         aria-roledescription="carousel"
-        aria-label="Carrousel des pieces d'echecs"
+        aria-label="Carrousel des pièces d'échecs"
     >
         <div class="piece-stage">
             <?php foreach ($pieceCarousel as $index => $piece): ?>
@@ -39,7 +39,7 @@
                         </div>
                     </div>
                     <div class="piece-meta">
-                        <p class="card-tag">Piece <?= e((string) ($index + 1)) ?></p>
+                        <p class="card-tag">Pièce <?= e((string) ($index + 1)) ?></p>
                         <h3><?= e($piece['name']) ?></h3>
                         <p class="piece-role"><?= e($piece['role']) ?></p>
                     </div>
@@ -48,8 +48,8 @@
         </div>
 
         <div class="piece-controls">
-            <button type="button" class="carousel-button" data-piece-prev aria-label="Voir la piece precedente">Precedente</button>
-            <div class="piece-indicators" aria-label="Selection des pieces">
+            <button type="button" class="carousel-button" data-piece-prev aria-label="Voir la pièce précédente">Précédente</button>
+            <div class="piece-indicators" aria-label="Sélection des pièces">
                 <?php foreach ($pieceCarousel as $index => $piece): ?>
                     <button
                         type="button"
@@ -59,7 +59,7 @@
                     ></button>
                 <?php endforeach; ?>
             </div>
-            <button type="button" class="carousel-button" data-piece-next aria-label="Voir la piece suivante">Suivante</button>
+            <button type="button" class="carousel-button" data-piece-next aria-label="Voir la pièce suivante">Suivante</button>
         </div>
     </div>
 </section>

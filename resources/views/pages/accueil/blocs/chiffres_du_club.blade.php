@@ -1,8 +1,8 @@
 <section class="section-block reveal reveal-6" data-accueil-slot="chiffres_du_club">
     <div class="section-head">
         <p class="eyebrow">Chiffres du club</p>
-        <h2>Les informations essentielles en un coup d'oeil.</h2>
-        <p>Les cartes resumeees restent faciles a lire tout en gardant le style du site.</p>
+        <h2>Les informations essentielles en un coup d'œil.</h2>
+        <p>Les cartes résumées restent faciles à lire tout en gardant le style du site.</p>
     </div>
 
     <div class="card-grid card-grid--three">
@@ -25,7 +25,7 @@
                     <p class="eyebrow">Emploi du temps</p>
                     <h3><?= e($libelleSaisonHoraires) ?></h3>
                     <?php if ($messageJourFerie !== ''): ?>
-                        <p><strong>Jour ferie:</strong> <?= e($messageJourFerie) ?></p>
+                        <p><strong>Jour férié :</strong> <?= e($messageJourFerie) ?></p>
                     <?php endif; ?>
                 </div>
 
@@ -35,7 +35,7 @@
                             <p class="card-tag">
                                 <?= e((string) ($horaire['day'] ?? '')) ?>
                                 <?php if (!empty($horaire['is_holiday'])): ?>
-                                    · Jour ferie
+                                    · Jour férié
                                 <?php endif; ?>
                             </p>
                             <h4><?= e((string) ($horaire['time'] ?? '')) ?></h4>

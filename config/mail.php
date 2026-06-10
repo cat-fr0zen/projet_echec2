@@ -9,6 +9,11 @@ $mailProvider = MailProviderConfig::resolve(
     env('MAIL_ENCRYPTION')
 );
 
+$mailVerifyPeer = filter_var(env('MAIL_VERIFY_PEER', true), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+$mailVerifyPeerName = filter_var(env('MAIL_VERIFY_PEER_NAME', true), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+$mailAllowSelfSigned = filter_var(env('MAIL_ALLOW_SELF_SIGNED', false), FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+$mailCaFile = trim((string) env('MAIL_CA_FILE', ''));
+
 return [
     'default' => env('MAIL_MAILER', 'smtp'),
 
@@ -22,6 +27,15 @@ return [
             'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
+            'verify_peer' => $mailVerifyPeer ?? true,
+            'stream' => [
+                'ssl' => array_filter([
+                    'verify_peer' => $mailVerifyPeer ?? true,
+                    'verify_peer_name' => $mailVerifyPeerName ?? true,
+                    'allow_self_signed' => $mailAllowSelfSigned ?? false,
+                    'cafile' => $mailCaFile !== '' ? $mailCaFile : null,
+                ], static fn (mixed $value): bool => $value !== null),
+            ],
         ],
 
         'log' => [

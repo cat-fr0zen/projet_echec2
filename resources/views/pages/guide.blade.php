@@ -14,17 +14,17 @@ $blocsCours = [
     [
         'tag' => 'Parcours',
         'title' => 'Livrets',
-        'text' => 'Acceder rapidement aux niveaux A a E.',
+        'text' => 'Accéder rapidement aux niveaux A à E.',
     ],
     [
-        'tag' => 'Pedagogie',
+        'tag' => 'Pédagogie',
         'title' => 'Cours',
-        'text' => 'Retrouver les supports de seance du club.',
+        'text' => 'Retrouver les supports de séance du club.',
     ],
     [
         'tag' => 'Progression',
-        'title' => 'Methodologie / strategie',
-        'text' => 'Ranger les PDF de methode et de plan de jeu.',
+        'title' => 'Méthodologie / stratégie',
+        'text' => 'Ranger les PDF de méthode et de plan de jeu.',
     ],
 ];
 ?>

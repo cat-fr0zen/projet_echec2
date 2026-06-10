@@ -222,7 +222,7 @@ $renderReviewStars = static function (?float $note): string {
                                         aria-describedby="newsletter-help newsletter-consent-help"
                                     >
                                     <p id="newsletter-help" class="footer-newsletter-help">
-                                        Un email de confirmation est envoye apres inscription.
+                                        Un email de confirmation est envoyé après inscription.
                                     </p>
                                 </div>
 
@@ -235,7 +235,7 @@ $renderReviewStars = static function (?float $note): string {
                                         required
                                     >
                                     <span id="newsletter-consent-help">
-                                        J'accepte de recevoir les actualites du club. Un lien de desabonnement est present dans chaque email.
+                                        J'accepte de recevoir les actualités du club. Un lien de désabonnement est présent dans chaque email.
                                     </span>
                                 </label>
                                 <button

@@ -1,6 +1,6 @@
 <p>Bonjour,</p>
 
-<p>Votre abonnement à la newsletter des Cavaliers d'Herouville est bien actif.</p>
+<p>Votre abonnement à la newsletter des Cavaliers d'Hérouville est bien actif.</p>
 
 <p>
     Vous recevrez les nouvelles du club : publications, horaires et informations

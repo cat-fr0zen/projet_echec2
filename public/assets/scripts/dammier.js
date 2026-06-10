@@ -403,7 +403,7 @@ function initDammierBoardGame() {
             return;
         }
 
-        selectionNode.textContent = `Piece selectionnee: ${selectedSquare}. Choisis la case d'arrivee.`;
+        selectionNode.textContent = `Pièce sélectionnée : ${selectedSquare}. Choisis la case d'arrivée.`;
     }
 
     function buildSquareLabel(square) {

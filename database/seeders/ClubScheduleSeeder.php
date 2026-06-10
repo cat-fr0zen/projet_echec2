@@ -14,8 +14,8 @@ final class ClubScheduleSeeder extends Seeder
         DB::table('horaire_club')->updateOrInsert(
             ['schedule_id' => 'club_schedule'],
             [
-                'season_label' => "Horaires 2025/2026 - Club d'Echecs",
-                'holiday_notice' => "Les horaires peuvent etre adaptes les jours feries. Consultez l'emploi du temps complet avant de vous deplacer.",
+                'season_label' => "Horaires 2025/2026 - Club d'Échecs",
+                'holiday_notice' => "Les horaires peuvent être adaptés les jours fériés. Consultez l'emploi du temps complet avant de vous déplacer.",
                 'updated_at' => now(),
             ]
         );
@@ -23,13 +23,13 @@ final class ClubScheduleSeeder extends Seeder
         DB::table('horaire_creneau')->where('schedule_id', 'club_schedule')->delete();
 
         $items = [
-            ['Mardi', '18h00 a 19h30', 'Entrainement ados et adultes debutants', 'Avec Patrick.'],
-            ['Mercredi', '17h30 a 18h30', 'Initiation et perfectionnement enfants debutants', 'Avec Ashot et Francois.'],
-            ['Jeudi', '14h00 a 16h30', 'Club Senior +', 'Avec Francois.'],
-            ['Vendredi', '17h00 a 18h00', 'Cours preparation aux championnats scolaires', "Ecole Sainte-Marie et College Saint-Pierre.\nAvec Jean-Patrick a l'ecole et Ryan au college."],
-            ['Vendredi', '18h00 a 19h30', 'Parties libres tous publics', "Materiel a disposition.\nSalle du restaurant du Cafe des images."],
-            ['Samedi', '10h30 a 12h00', "Groupes selon l'age et le niveau", 'Centre Socioculturel CAF, 202 Boulevard des Belles Portes, 14200 Herouville Saint-Clair.'],
-            ['Samedi', '14h30 a 16h00', 'Tous publics', 'Parties libres et tournois mensuels au club.'],
+            ['Mardi', '18h00 à 19h30', 'Entraînement ados et adultes débutants', 'Avec Patrick.'],
+            ['Mercredi', '17h30 à 18h30', 'Initiation et perfectionnement enfants débutants', 'Avec Ashot et François.'],
+            ['Jeudi', '14h00 à 16h30', 'Club Senior +', 'Avec François.'],
+            ['Vendredi', '17h00 à 18h00', 'Cours de préparation aux championnats scolaires', "École Sainte-Marie et Collège Saint-Pierre.\nAvec Jean-Patrick à l'école et Ryan au collège."],
+            ['Vendredi', '18h00 à 19h30', 'Parties libres tous publics', "Matériel à disposition.\nSalle du restaurant du Café des images."],
+            ['Samedi', '10h30 à 12h00', "Groupes selon l'âge et le niveau", 'Centre Socioculturel CAF, 202 Boulevard des Belles Portes, 14200 Hérouville Saint-Clair.'],
+            ['Samedi', '14h30 à 16h00', 'Tous publics', 'Parties libres et tournois mensuels au club.'],
         ];
 
         foreach ($items as $index => [$jour, $horaire, $titre, $details]) {
@@ -54,7 +54,7 @@ final class ClubScheduleSeeder extends Seeder
      */
     private function decomposerPlageHoraire(string $plage): array
     {
-        if (preg_match('/(\d{1,2})[h:](\d{2})\s*a\s*(\d{1,2})[h:](\d{2})/i', $plage, $captures) !== 1) {
+        if (preg_match('/(\d{1,2})[h:](\d{2})\s*(?:a|à)\s*(\d{1,2})[h:](\d{2})/iu', $plage, $captures) !== 1) {
             return [null, null];
         }
 

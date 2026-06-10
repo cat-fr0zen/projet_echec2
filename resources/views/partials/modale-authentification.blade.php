@@ -228,7 +228,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
 
                     <div class="button-row">
                         <button type="submit" class="button button-primary auth-submit">Se connecter</button>
-                        <a href="<?= e(route('password.request')) ?>" class="button button-secondary">Mot de passe oublie ?</a>
+                        <a href="<?= e(route('password.request')) ?>" class="button button-secondary">Mot de passe oublié ?</a>
                     </div>
                 </form>
 

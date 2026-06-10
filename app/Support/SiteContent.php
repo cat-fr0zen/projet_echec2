@@ -160,15 +160,15 @@ final class SiteContent
             $this->documentLegal(
                 'newsletter-privacy',
                 'Newsletter',
-                "Inscription, consentement, emails automatiques et desabonnement.",
+                "Inscription, consentement, emails automatiques et désabonnement.",
                 [
-                    $this->sectionLegale('Donnees newsletter', [
-                        "La newsletter traite uniquement l'adresse email, la date d'inscription, la version du consentement, un jeton de desabonnement et une preuve technique minimisee.",
-                        "L'adresse IP peut etre hachee avec un sel serveur pour prouver le consentement sans conserver l'adresse en clair.",
+                    $this->sectionLegale('Données newsletter', [
+                        "La newsletter traite uniquement l'adresse email, la date d'inscription, la version du consentement, un jeton de désabonnement et une preuve technique minimisée.",
+                        "L'adresse IP peut être hachée avec un sel serveur pour prouver le consentement sans conserver l'adresse en clair.",
                     ]),
-                    $this->sectionLegale('Finalite et retrait', [
-                        "Les emails servent a annoncer les nouveaux articles, les mises a jour de cours ou horaires, et les informations boutique publiees par le club.",
-                        "Chaque email contient un lien de desabonnement automatique; la demande peut aussi etre faite au contact officiel du club.",
+                    $this->sectionLegale('Finalité et retrait', [
+                        "Les emails servent à annoncer les nouveaux articles, les mises à jour de cours ou d'horaires, et les informations boutique publiées par le club.",
+                        "Chaque email contient un lien de désabonnement automatique ; la demande peut aussi être faite au contact officiel du club.",
                     ]),
                 ]
             ),

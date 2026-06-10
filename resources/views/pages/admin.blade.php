@@ -52,25 +52,25 @@ while (count($lignesHorairesAdmin) < 10) {
 <section id="admin-newsletter" class="section-block reveal reveal-2">
     <div class="section-head">
         <p class="eyebrow">Newsletter</p>
-        <h2>Suivre les abonnes et les envois.</h2>
-        <p>Cette zone centralise la liste des emails inscrits, les desabonnements et les derniers messages envoyes.</p>
+        <h2>Suivre les abonnés et les envois.</h2>
+        <p>Cette zone centralise la liste des emails inscrits, les désabonnements et les derniers messages envoyés.</p>
     </div>
 
     <div class="admin-summary-grid">
         <article class="info-card">
-            <p class="card-tag">Abonnes</p>
+            <p class="card-tag">Abonnés</p>
             <span class="metric-value"><?= e((string) ($newsletterSummary['abonnes_total'] ?? 0)) ?></span>
             <h3>Total en base</h3>
         </article>
         <article class="info-card">
             <p class="card-tag">Actifs</p>
             <span class="metric-value"><?= e((string) ($newsletterSummary['abonnes_actifs'] ?? 0)) ?></span>
-            <h3>Recoivent les emails</h3>
+            <h3>Reçoivent les emails</h3>
         </article>
         <article class="info-card">
-            <p class="card-tag">Desabonnes</p>
+            <p class="card-tag">Désabonnés</p>
             <span class="metric-value"><?= e((string) ($newsletterSummary['abonnes_desabonnes'] ?? 0)) ?></span>
-            <h3>Ont retire leur consentement</h3>
+            <h3>Ont retiré leur consentement</h3>
         </article>
         <article class="info-card">
             <p class="card-tag">Envois</p>
@@ -82,8 +82,8 @@ while (count($lignesHorairesAdmin) < 10) {
     <div class="split-grid">
         <article class="panel">
             <div class="section-head section-head--compact">
-                <p class="eyebrow">Abonnes</p>
-                <h2>Qui recoit la newsletter ?</h2>
+                <p class="eyebrow">Abonnés</p>
+                <h2>Qui reçoit la newsletter ?</h2>
             </div>
 
             <div class="admin-list">
@@ -100,7 +100,7 @@ while (count($lignesHorairesAdmin) < 10) {
                             <p>Source : <?= e((string) ($abonneNewsletter['source_inscription'] ?? 'footer')) ?></p>
                             <p class="card-subtitle">Inscrit le : <?= e((string) ($abonneNewsletter['cree_le'] ?? '')) ?></p>
                             <?php if (($abonneNewsletter['desabonne_le'] ?? '') !== ''): ?>
-                                <p class="card-subtitle">Desabonne le : <?= e((string) $abonneNewsletter['desabonne_le']) ?></p>
+                                <p class="card-subtitle">Désabonné le : <?= e((string) $abonneNewsletter['desabonne_le']) ?></p>
                             <?php endif; ?>
                         </article>
                     <?php endforeach; ?>
@@ -111,14 +111,14 @@ while (count($lignesHorairesAdmin) < 10) {
         <article class="panel">
             <div class="section-head section-head--compact">
                 <p class="eyebrow">Derniers envois</p>
-                <h2>Ce qui est parti recemment</h2>
+                <h2>Ce qui est parti récemment</h2>
             </div>
 
             <div class="admin-list">
                 <?php if ($newsletterSends === []): ?>
                     <div class="empty-state">
                         <p class="card-tag">Aucun envoi</p>
-                        <h3>Aucun email newsletter n'a encore ete journalise.</h3>
+                        <h3>Aucun email newsletter n'a encore été journalisé.</h3>
                     </div>
                 <?php else: ?>
                     <?php foreach ($newsletterSends as $envoiNewsletter): ?>
@@ -138,8 +138,8 @@ while (count($lignesHorairesAdmin) < 10) {
 <section id="admin-newsletter-boutique" class="section-block reveal reveal-6">
     <div class="section-head">
         <p class="eyebrow">Newsletter</p>
-        <h2>Informer les abonnes d'une nouveaute boutique.</h2>
-        <p>Ce bouton envoie une actualite email aux personnes inscrites a la newsletter lorsque le club ajoute un nouvel objet ou une information boutique.</p>
+        <h2>Informer les abonnés d'une nouveauté boutique.</h2>
+        <p>Ce bouton envoie une actualité email aux personnes inscrites à la newsletter lorsque le club ajoute un nouvel objet ou une information boutique.</p>
     </div>
 
     <form method="post" action="<?= e(url_route('admin')) ?>#admin-newsletter-boutique" class="article-form">
@@ -156,7 +156,7 @@ while (count($lignesHorairesAdmin) < 10) {
             required
         >
 
-        <button type="submit" class="button button-primary">Envoyer l'actualite boutique</button>
+        <button type="submit" class="button button-primary">Envoyer l'actualité boutique</button>
     </form>
 </section>
 
@@ -205,7 +205,7 @@ while (count($lignesHorairesAdmin) < 10) {
     <div class="section-head">
         <p class="eyebrow">Constructeur</p>
         <h2>Organiser l'accueil avec des blocs interchangeables.</h2>
-        <p>Les blocs verrouilles restent a leur place. Les autres peuvent etre deplaces ou masques sans toucher au code.</p>
+        <p>Les blocs verrouillés restent à leur place. Les autres peuvent être déplacés ou masqués sans toucher au code.</p>
     </div>
 
     <form method="post" action="<?= e(url_route('admin')) ?>#admin-constructeur" class="admin-form">
@@ -250,9 +250,9 @@ while (count($lignesHorairesAdmin) < 10) {
                                 <span><?= e($estVerrouilleConstructeur ? 'Toujours visible' : 'Visible sur le site') ?></span>
                             </span>
                             <?php if ($estVerrouilleConstructeur): ?>
-                                <small class="form-helper">Ce bloc reste visible et ne peut pas etre deplace.</small>
+                                <small class="form-helper">Ce bloc reste visible et ne peut pas être déplacé.</small>
                             <?php else: ?>
-                                <small class="form-helper">Decoche cette case pour masquer temporairement ce bloc.</small>
+                                <small class="form-helper">Décoche cette case pour masquer temporairement ce bloc.</small>
                             <?php endif; ?>
                         </label>
                     </div>
@@ -462,7 +462,7 @@ while (count($lignesHorairesAdmin) < 10) {
                     <label class="form-group">
                         <span>Rôle</span>
                         <select name="role_utilisateur">
-                            <option value="connecte"<?= ($user['role'] ?? '') === 'connecte' ? ' selected' : '' ?>>Connect?</option>
+                            <option value="connecte"<?= ($user['role'] ?? '') === 'connecte' ? ' selected' : '' ?>>Connecté</option>
                             <option value="adherent"<?= ($user['role'] ?? '') === 'adherent' ? ' selected' : '' ?>>Adhérent</option>
                             <option value="prof"<?= ($user['role'] ?? '') === 'prof' ? ' selected' : '' ?>>Prof</option>
                             <option value="admin"<?= ($user['role'] ?? '') === 'admin' ? ' selected' : '' ?>>Admin</option>
@@ -485,7 +485,7 @@ while (count($lignesHorairesAdmin) < 10) {
                         </select>
                     </label>
 
-                    <button type="submit" class="button button-primary">Mettre ? jour</button>
+                    <button type="submit" class="button button-primary">Mettre à jour</button>
                 </form>
 
                 <?php if ($currentAdminId !== '' && (string) ($user['identifiant'] ?? '') !== $currentAdminId): ?>
@@ -499,12 +499,12 @@ while (count($lignesHorairesAdmin) < 10) {
                             <span>Mon rôle après transfert</span>
                             <select name="role_apres_transfert">
                                 <option value="prof">Prof</option>
-                                <option value="adherent">Adherent</option>
-                                <option value="connecte">Compte connecte</option>
+                                <option value="adherent">Adhérent</option>
+                                <option value="connecte">Compte connecté</option>
                             </select>
                         </label>
 
-                        <button type="submit" class="button button-secondary">Transferer le role admin</button>
+                        <button type="submit" class="button button-secondary">Transférer le rôle admin</button>
                     </form>
                 <?php endif; ?>
             </article>

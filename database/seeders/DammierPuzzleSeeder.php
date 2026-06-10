@@ -139,8 +139,8 @@ final class DammierPuzzleSeeder extends Seeder
             [
                 'slug' => 'italienne',
                 'name' => 'Ouverture italienne',
-                'theme' => 'Developpement rapide et pression sur f7.',
-                'hint' => 'Les pieces legeres sortent vite et le centre reste sous tension.',
+                'theme' => 'Développement rapide et pression sur f7.',
+                'hint' => 'Les pièces légères sortent vite et le centre reste sous tension.',
                 'moves' => [
                     'e2e4', 'e7e5', 'g1f3', 'b8c6', 'f1c4', 'f8c5', 'c2c3', 'g8f6',
                     'd2d4', 'e5d4', 'c3d4', 'c5b4', 'b1c3', 'f6e4', 'e1g1', 'e4c3',
@@ -161,7 +161,7 @@ final class DammierPuzzleSeeder extends Seeder
             [
                 'slug' => 'sicilienne',
                 'name' => 'Defense sicilienne',
-                'theme' => 'Desiquilibre immediat et activite des pieces.',
+                'theme' => 'Déséquilibre immédiat et activité des pièces.',
                 'hint' => 'Cherche les coups les plus naturels contre la structure sicilienne.',
                 'moves' => [
                     'e2e4', 'c7c5', 'g1f3', 'd7d6', 'd2d4', 'c5d4', 'f3d4', 'g8f6',
@@ -171,9 +171,9 @@ final class DammierPuzzleSeeder extends Seeder
             ],
             [
                 'slug' => 'francaise',
-                'name' => 'Defense francaise avancee',
+                'name' => 'Défense française avancée',
                 'theme' => 'Espace blanc contre contre-jeu sur le centre.',
-                'hint' => 'Les Blancs gardent l espace puis developpent derriere leur chaine de pions.',
+                'hint' => "Les Blancs gardent l'espace puis développent derrière leur chaîne de pions.",
                 'moves' => [
                     'e2e4', 'e7e6', 'd2d4', 'd7d5', 'e4e5', 'c7c5', 'c2c3', 'b8c6',
                     'g1f3', 'c5d4', 'c3d4', 'c8d7', 'b1c3', 'g8e7', 'c1e3', 'e7f5',
@@ -183,8 +183,8 @@ final class DammierPuzzleSeeder extends Seeder
             [
                 'slug' => 'caro_kann',
                 'name' => 'Defense Caro-Kann',
-                'theme' => 'Structure saine, developpement harmonieux et pions solides.',
-                'hint' => 'Observe la logique de developpement des deux camps sans sacrifier le centre.',
+                'theme' => 'Structure saine, développement harmonieux et pions solides.',
+                'hint' => 'Observe la logique de développement des deux camps sans sacrifier le centre.',
                 'moves' => [
                     'e2e4', 'c7c6', 'd2d4', 'd7d5', 'b1c3', 'd5e4', 'c3e4', 'c8f5',
                     'e4g3', 'f5g6', 'h2h4', 'h7h6', 'g1f3', 'b8d7', 'h4h5', 'g6h7',
@@ -194,8 +194,8 @@ final class DammierPuzzleSeeder extends Seeder
             [
                 'slug' => 'qgd',
                 'name' => 'Gambit dame refuse',
-                'theme' => 'Coordination lente et controle des cases cles.',
-                'hint' => 'Le centre doit rester stable pendant que les pieces prennent leurs meilleures cases.',
+                'theme' => 'Coordination lente et contrôle des cases clés.',
+                'hint' => 'Le centre doit rester stable pendant que les pièces prennent leurs meilleures cases.',
                 'moves' => [
                     'd2d4', 'd7d5', 'c2c4', 'e7e6', 'b1c3', 'g8f6', 'c1g5', 'f8e7',
                     'e2e3', 'e8g8', 'g1f3', 'b8d7', 'a1c1', 'c7c6', 'f1d3', 'd5c4',
@@ -205,8 +205,8 @@ final class DammierPuzzleSeeder extends Seeder
             [
                 'slug' => 'slave',
                 'name' => 'Defense slave',
-                'theme' => 'Solidite noire et recuperation du pion avec activite.',
-                'hint' => 'Les Blancs cherchent surtout un developpement propre avant de recuperer du materiel.',
+                'theme' => 'Solidité noire et récupération du pion avec activité.',
+                'hint' => 'Les Blancs cherchent surtout un développement propre avant de récupérer du matériel.',
                 'moves' => [
                     'd2d4', 'd7d5', 'c2c4', 'c7c6', 'g1f3', 'g8f6', 'b1c3', 'd5c4',
                     'a2a4', 'c8f5', 'e2e3', 'e7e6', 'f1c4', 'b8d7', 'e1g1', 'f8b4',
@@ -217,7 +217,7 @@ final class DammierPuzzleSeeder extends Seeder
                 'slug' => 'anglaise',
                 'name' => 'Ouverture anglaise',
                 'theme' => 'Contre-attaque centrale avec fianchetto et jeu flexible.',
-                'hint' => 'Le plan repose sur un controle souple du centre et un developpement sans faiblesse.',
+                'hint' => 'Le plan repose sur un contrôle souple du centre et un développement sans faiblesse.',
                 'moves' => [
                     'c2c4', 'e7e5', 'b1c3', 'g8f6', 'g2g3', 'd7d5', 'c4d5', 'f6d5',
                     'f1g2', 'd5c3', 'b2c3', 'b8c6', 'g1f3', 'f8e7', 'e1g1', 'e8g8',
@@ -227,7 +227,7 @@ final class DammierPuzzleSeeder extends Seeder
             [
                 'slug' => 'londres',
                 'name' => 'Systeme de Londres',
-                'theme' => 'Developpement simple, structure saine et pression graduelle.',
+                'theme' => 'Développement simple, structure saine et pression graduelle.',
                 'hint' => 'Les coups blancs cherchent surtout des cases naturelles et une structure solide.',
                 'moves' => [
                     'd2d4', 'd7d5', 'g1f3', 'g8f6', 'c1f4', 'c7c5', 'e2e3', 'b8c6',
@@ -238,7 +238,7 @@ final class DammierPuzzleSeeder extends Seeder
             [
                 'slug' => 'kia',
                 'name' => 'Attaque indienne du roi',
-                'theme' => 'Fianchetto, roque rapide et frappe centrale retardee.',
+                'theme' => 'Fianchetto, roque rapide et frappe centrale retardée.',
                 'hint' => 'Le plan blanc est flexible : mise en place puis contre-jeu central.',
                 'moves' => [
                     'g1f3', 'd7d5', 'g2g3', 'c7c6', 'f1g2', 'c8g4', 'e1g1', 'b8d7',
@@ -249,7 +249,7 @@ final class DammierPuzzleSeeder extends Seeder
             [
                 'slug' => 'ecossaise',
                 'name' => 'Partie ecossaise',
-                'theme' => 'Ouverture directe du centre et activite tactique precoce.',
+                'theme' => 'Ouverture directe du centre et activité tactique précoce.',
                 'hint' => 'Le centre s ouvre vite : privilegie les coups qui developpent avec initiative.',
                 'moves' => [
                     'e2e4', 'e7e5', 'g1f3', 'b8c6', 'd2d4', 'e5d4', 'f3d4', 'f8c5',
@@ -260,8 +260,8 @@ final class DammierPuzzleSeeder extends Seeder
             [
                 'slug' => 'pirc',
                 'name' => 'Defense Pirc autrichienne',
-                'theme' => 'Centre large pour les Blancs et contre-jeu noir a distance.',
-                'hint' => 'Les Blancs occupent le centre puis developpent derriere leurs pions avances.',
+                'theme' => 'Centre large pour les Blancs et contre-jeu noir à distance.',
+                'hint' => 'Les Blancs occupent le centre puis développent derrière leurs pions avancés.',
                 'moves' => [
                     'e2e4', 'd7d6', 'd2d4', 'g8f6', 'b1c3', 'g7g6', 'f2f4', 'f8g7',
                     'g1f3', 'e8g8', 'f1d3', 'b8c6', 'e1g1', 'c8g4', 'c1e3', 'e7e5',
@@ -291,8 +291,8 @@ final class DammierPuzzleSeeder extends Seeder
     {
         $indices = [
             $hint,
-            "Observe le centre, la coordination des pieces et la securite du roi. {$theme}",
-            'La suite reste theorique : cherche les coups les plus naturels et economes en tempi.',
+            "Observe le centre, la coordination des pièces et la sécurité du roi. {$theme}",
+            'La suite reste théorique : cherche les coups les plus naturels et économes en tempi.',
             'Plus la ligne avance, plus la precision compte : evite les coups spectaculaires inutiles.',
         ];
 
