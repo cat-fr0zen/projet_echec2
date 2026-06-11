@@ -5878,6 +5878,102 @@ body.burger-open {
     gap: 0.55rem;
 }
 
+.shop-cart-panel {
+    display: grid;
+    gap: 1rem;
+}
+
+.shop-cart-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.85fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.shop-cart-list {
+    grid-template-columns: 1fr;
+}
+
+.shop-cart-item {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.shop-cart-pricing {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.shop-cart-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.shop-cart-update-form,
+.shop-cart-remove-form,
+.shop-clear-form,
+.shop-checkout-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    align-items: center;
+}
+
+.shop-input--compact {
+    width: min(7rem, 100%);
+}
+
+.shop-cart-summary {
+    display: grid;
+    gap: 0.85rem;
+    padding: 1rem;
+    border: 1px solid rgba(88, 66, 44, 0.12);
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.46);
+}
+
+.shop-cart-summary h3 {
+    font-size: clamp(2rem, 4vw, 2.6rem);
+}
+
+.shop-total-list {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    color: var(--muted);
+}
+
+.shop-total-list li {
+    padding: 0.72rem 0.85rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(88, 66, 44, 0.1);
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.shop-payment-card {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.95rem;
+    border-radius: 1rem;
+    border: 1px solid rgba(196, 154, 67, 0.26);
+    background: linear-gradient(180deg, rgba(255, 252, 246, 0.96), rgba(247, 239, 221, 0.92));
+}
+
+.shop-payment-card--pending {
+    border-style: dashed;
+}
+
+.shop-order-batch {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
 .shop-empty-state {
     min-height: 14rem;
     place-content: center;
@@ -5887,8 +5983,11 @@ body[data-theme="dark"] .shop-input,
 body[data-theme="dark"] .shop-select,
 body[data-theme="dark"] .shop-toggle,
 body[data-theme="dark"] .shop-membership-card,
+body[data-theme="dark"] .shop-cart-summary,
 body[data-theme="dark"] .shop-feature-list li,
-body[data-theme="dark"] .shop-inline-note {
+body[data-theme="dark"] .shop-inline-note,
+body[data-theme="dark"] .shop-payment-card,
+body[data-theme="dark"] .shop-total-list li {
     border-color: rgba(238, 243, 236, 0.12);
     background: rgba(255, 255, 255, 0.06);
     color: #f3ecdf;
@@ -5906,6 +6005,10 @@ body[data-theme="dark"] .shop-card-badge {
 
 @media (max-width: 1100px) {
     .shop-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .shop-cart-layout {
         grid-template-columns: 1fr;
     }
 
@@ -5927,7 +6030,12 @@ body[data-theme="dark"] .shop-card-badge {
     .shop-results-meta,
     .shop-card-head,
     .shop-order-head,
-    .shop-results-bar {
+    .shop-results-bar,
+    .shop-cart-actions,
+    .shop-cart-update-form,
+    .shop-cart-remove-form,
+    .shop-clear-form,
+    .shop-checkout-form {
         display: grid;
     }
 }

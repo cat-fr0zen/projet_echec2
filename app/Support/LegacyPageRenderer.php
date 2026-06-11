@@ -36,7 +36,8 @@ final class LegacyPageRenderer
         private ChessComService $chessComService,
         private GoogleReviewsService $googleReviewsService,
         private array $messagesFlash,
-        private array $formState
+        private array $formState,
+        private ?BoutiqueCartService $boutiqueCartService = null
     ) {}
 
     public function afficher(string $segment): string
@@ -76,6 +77,9 @@ final class LegacyPageRenderer
         $siteData['cartes_cours_strategie'] = $this->siteContent->obtenirCartesCoursStrategie();
         $siteData['cartes_mediatheque'] = $this->siteContent->obtenirCartesMediatheque();
         $siteData['cartes_boutique'] = $this->siteContent->obtenirCartesBoutique();
+        $this->boutiqueCartService ??= new BoutiqueCartService;
+        $siteData['panier_boutique'] = $this->boutiqueCartService->obtenirPanier($siteData['cartes_boutique']);
+        $siteData['paiement_boutique'] = $this->boutiqueCartService->configurationPaiementCarte();
         $siteData['constructeur_accueil_blocs'] = $this->constructeurPagesRepository->listerPourPage('accueil');
         $siteData['constructeur_accueil_blocs_actifs'] = $this->constructeurPagesRepository->listerActifsPourPage('accueil');
 
@@ -293,6 +297,20 @@ final class LegacyPageRenderer
         $siteData['all_articles'] = [];
         $siteData['tous_medias'] = [];
         $siteData['all_media'] = [];
+        $siteData['panier_boutique'] = [
+            'lignes' => [],
+            'nombre_lignes' => 0,
+            'quantite_totale' => 0,
+            'sous_total_euros' => 0,
+            'contient_adhesion' => false,
+            'est_vide' => true,
+        ];
+        $siteData['paiement_boutique'] = [
+            'active' => false,
+            'prestataire' => 'Prestataire externe',
+            'checkout_url' => '',
+            'resume' => "Le panier est pret, mais le reglement CB doit encore etre branche sur un prestataire securise.",
+        ];
         $siteData['commandes_membre'] = [];
         $siteData['member_orders'] = [];
         $siteData['toutes_commandes'] = [];

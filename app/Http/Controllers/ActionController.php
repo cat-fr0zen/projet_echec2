@@ -14,6 +14,7 @@ use App\Repositories\OrderRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\UserRepository;
 use App\Services\NewsletterMailerService;
+use App\Support\BoutiqueCartService;
 use App\Support\LegacyActionHandler;
 use App\Support\SensitiveActionRateLimiter;
 use App\Support\UploadStorage;
@@ -40,7 +41,8 @@ final class ActionController extends Controller
             UploadStorage::dossierMedias(),
             $newsletterRepository,
             NewsletterMailerService::depuisEnvironnement($newsletterRepository),
-            new SensitiveActionRateLimiter
+            new SensitiveActionRateLimiter,
+            new BoutiqueCartService
         );
 
         $handler->traiter();

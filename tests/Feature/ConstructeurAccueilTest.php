@@ -31,7 +31,7 @@ final class ConstructeurAccueilTest extends TestCase
         self::assertDatabaseHas('constructeur_page_bloc', [
             'code_page' => 'accueil',
             'code_bloc' => 'casse_tete_hebdomadaire',
-            'libelle_bloc' => 'Casse-tete hebdomadaire',
+            'libelle_bloc' => 'Casse-tête hebdomadaire',
             'ordre_affichage' => 2,
             'est_actif' => 1,
             'est_verrouille' => 1,

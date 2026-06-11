@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\NewsletterRepository;
 use App\Services\ChessComService;
+use App\Support\BoutiqueCartService;
 use App\Support\LegacyPageRenderer;
 use App\Support\SiteContent;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +41,8 @@ final class PageController extends Controller
                 (string) env('GOOGLE_PLACES_API_KEY', '')
             ),
             recuperer_messages_flash(),
-            recuperer_etat_formulaire()
+            recuperer_etat_formulaire(),
+            new BoutiqueCartService
         );
 
         return response($renderer->afficher($page ?? 'accueil'));

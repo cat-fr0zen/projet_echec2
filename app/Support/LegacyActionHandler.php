@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Models\CommandeLocale;
 use App\Repositories\ArticleRepository;
 use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
@@ -76,9 +77,11 @@ final class LegacyActionHandler
         private string $dossierUploadMedias,
         private ?NewsletterRepository $depotNewsletter = null,
         private ?NewsletterMailerService $newsletterMailer = null,
-        private ?SensitiveActionRateLimiter $rateLimiter = null
+        private ?SensitiveActionRateLimiter $rateLimiter = null,
+        private ?BoutiqueCartService $boutiqueCartService = null
     ) {
         $this->rateLimiter ??= new SensitiveActionRateLimiter;
+        $this->boutiqueCartService ??= new BoutiqueCartService;
     }
 
     /**
@@ -148,6 +151,26 @@ final class LegacyActionHandler
             case 'commander_produit':
             case 'order_product':
                 $this->traiterCommandeProduit();
+                break;
+            case 'ajouter_au_panier':
+            case 'add_to_cart':
+                $this->traiterAjoutPanierBoutique();
+                break;
+            case 'mettre_a_jour_panier':
+            case 'update_cart':
+                $this->traiterMiseAJourPanierBoutique();
+                break;
+            case 'retirer_du_panier':
+            case 'remove_from_cart':
+                $this->traiterRetraitPanierBoutique();
+                break;
+            case 'vider_panier':
+            case 'clear_cart':
+                $this->traiterVidagePanierBoutique();
+                break;
+            case 'valider_panier':
+            case 'checkout_cart':
+                $this->traiterValidationPanierBoutique();
                 break;
             case 'moderer_article':
             case 'review_article':
@@ -919,8 +942,14 @@ final class LegacyActionHandler
         rediriger_vers(url_route('admin'));
     }
 
-    /** Cree une commande produit (compte connecte). */
+    /** Ancien point d'entree: redirige vers le nouveau panier boutique. */
     private function traiterCommandeProduit(): void
+    {
+        $this->traiterAjoutPanierBoutique();
+    }
+
+    /** Ajoute un produit du catalogue dans le panier boutique. */
+    private function traiterAjoutPanierBoutique(): void
     {
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
 
@@ -929,26 +958,145 @@ final class LegacyActionHandler
             rediriger_vers(url_route('accueil'));
         }
 
-        $produit = trim((string) ($_POST['produit'] ?? ''));
-        $categorie = trim((string) ($_POST['categorie'] ?? ''));
+        $catalogue = $this->obtenirCatalogueBoutique();
+        $identifiantProduit = trim((string) ($_POST['identifiant_produit'] ?? ''));
 
-        if ($produit === '' || $categorie === '') {
+        if ($identifiantProduit === '' || $this->trouverProduitBoutique($catalogue, $identifiantProduit) === null) {
             ajouter_message_flash('error', 'Produit invalide.');
             rediriger_vers(url_route('boutique'));
         }
 
-        $nomUtilisateur = trim((string) $utilisateurCourant['prenom'].' '.(string) $utilisateurCourant['nom']);
+        $produit = $this->trouverProduitBoutique($catalogue, $identifiantProduit);
 
-        $this->depotCommandes->creer([
-            'identifiant_utilisateur' => $utilisateurCourant['identifiant'],
-            'nom_utilisateur' => $nomUtilisateur !== '' ? $nomUtilisateur : (string) $utilisateurCourant['courriel'],
-            'produit' => $produit,
-            'categorie' => $categorie,
-        ]);
+        if (! is_array($produit) || ! $this->produitBoutiqueEstReservable($produit)) {
+            ajouter_message_flash('error', 'Ce produit ne peut pas etre ajoute au panier pour le moment.');
+            rediriger_vers(url_route('boutique'));
+        }
 
-        $messageSucces = mb_strtolower($categorie) === 'adhesion'
+        $this->boutiqueCartService?->ajouterProduit($catalogue, $identifiantProduit);
+        $estAdhesion = (string) ($produit['categorie'] ?? '') === 'adhesion';
+
+        $messageSucces = $estAdhesion
             ? "La demande d'adhésion a été enregistrée avec le statut En attente."
             : 'La réservation a été enregistrée avec le statut En attente.';
+
+        $messageSucces = $estAdhesion
+            ? "La formule d'adhesion a ete ajoutee au panier."
+            : 'Le produit a ete ajoute au panier.';
+
+        ajouter_message_flash('success', $messageSucces);
+        rediriger_vers(url_route('boutique').'#boutique-panier');
+    }
+
+    /** Met a jour une quantite de panier. */
+    private function traiterMiseAJourPanierBoutique(): void
+    {
+        $utilisateurCourant = $this->obtenirUtilisateurCourant();
+
+        if ($utilisateurCourant === null || ($utilisateurCourant['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF) {
+            ajouter_message_flash('error', 'Vous devez etre connecte pour utiliser la boutique.');
+            rediriger_vers(url_route('accueil'));
+        }
+
+        $catalogue = $this->obtenirCatalogueBoutique();
+        $identifiantProduit = trim((string) ($_POST['identifiant_produit'] ?? ''));
+        $quantite = (int) ($_POST['quantite_panier'] ?? 1);
+
+        if ($identifiantProduit === '' || $this->trouverProduitBoutique($catalogue, $identifiantProduit) === null) {
+            ajouter_message_flash('error', 'Produit invalide.');
+            rediriger_vers(url_route('boutique').'#boutique-panier');
+        }
+
+        $this->boutiqueCartService?->mettreAJourQuantite($catalogue, $identifiantProduit, $quantite);
+        ajouter_message_flash('success', 'Le panier a ete mis a jour.');
+        rediriger_vers(url_route('boutique').'#boutique-panier');
+    }
+
+    /** Retire une ligne du panier. */
+    private function traiterRetraitPanierBoutique(): void
+    {
+        $utilisateurCourant = $this->obtenirUtilisateurCourant();
+
+        if ($utilisateurCourant === null || ($utilisateurCourant['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF) {
+            ajouter_message_flash('error', 'Vous devez etre connecte pour utiliser la boutique.');
+            rediriger_vers(url_route('accueil'));
+        }
+
+        $identifiantProduit = trim((string) ($_POST['identifiant_produit'] ?? ''));
+
+        if ($identifiantProduit === '') {
+            ajouter_message_flash('error', 'Produit invalide.');
+            rediriger_vers(url_route('boutique').'#boutique-panier');
+        }
+
+        $this->boutiqueCartService?->retirerProduit($identifiantProduit);
+        ajouter_message_flash('success', 'Le produit a ete retire du panier.');
+        rediriger_vers(url_route('boutique').'#boutique-panier');
+    }
+
+    /** Vide completement le panier. */
+    private function traiterVidagePanierBoutique(): void
+    {
+        $utilisateurCourant = $this->obtenirUtilisateurCourant();
+
+        if ($utilisateurCourant === null || ($utilisateurCourant['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF) {
+            ajouter_message_flash('error', 'Vous devez etre connecte pour utiliser la boutique.');
+            rediriger_vers(url_route('accueil'));
+        }
+
+        $this->boutiqueCartService?->vider();
+        ajouter_message_flash('success', 'Le panier a ete vide.');
+        rediriger_vers(url_route('boutique').'#boutique-panier');
+    }
+
+    /** Transforme le panier en commandes locales. */
+    private function traiterValidationPanierBoutique(): void
+    {
+        $utilisateurCourant = $this->obtenirUtilisateurCourant();
+
+        if ($utilisateurCourant === null || ($utilisateurCourant['statut_compte'] ?? '') !== DepotUtilisateurs::STATUT_COMPTE_ACTIF) {
+            ajouter_message_flash('error', 'Vous devez etre connecte pour finaliser le panier.');
+            rediriger_vers(url_route('accueil'));
+        }
+
+        $catalogue = $this->obtenirCatalogueBoutique();
+        $panier = $this->boutiqueCartService?->obtenirPanier($catalogue) ?? ['lignes' => []];
+        $lignes = is_array($panier['lignes'] ?? null) ? $panier['lignes'] : [];
+
+        if ($lignes === []) {
+            ajouter_message_flash('error', 'Le panier est vide.');
+            rediriger_vers(url_route('boutique').'#boutique-panier');
+        }
+
+        $modePaiement = trim((string) ($_POST['mode_paiement'] ?? CommandeLocale::MODE_PAIEMENT_SUR_PLACE));
+        $modePaiement = $modePaiement === CommandeLocale::MODE_PAIEMENT_CARTE_BANCAIRE
+            ? CommandeLocale::MODE_PAIEMENT_CARTE_BANCAIRE
+            : CommandeLocale::MODE_PAIEMENT_SUR_PLACE;
+        $statutPaiement = $modePaiement === CommandeLocale::MODE_PAIEMENT_CARTE_BANCAIRE
+            ? CommandeLocale::STATUT_PAIEMENT_EN_ATTENTE_PRESTATAIRE
+            : CommandeLocale::STATUT_PAIEMENT_A_FINALISER;
+        $lotCommande = 'lot_' . bin2hex(random_bytes(6));
+
+        foreach ($lignes as $lignePanier) {
+            $this->depotCommandes->creer([
+                'lot_commande' => $lotCommande,
+                'identifiant_utilisateur' => $utilisateurCourant['identifiant'],
+                'reference_produit' => (string) ($lignePanier['identifiant'] ?? ''),
+                'produit' => (string) ($lignePanier['titre'] ?? 'Produit'),
+                'categorie' => (string) ($lignePanier['categorie_label'] ?? 'Produit'),
+                'quantite' => (int) ($lignePanier['quantite'] ?? 1),
+                'prix_unitaire_euros' => (int) ($lignePanier['prix_unitaire_euros'] ?? 0),
+                'prix_total_euros' => (int) ($lignePanier['prix_total_euros'] ?? 0),
+                'code_mode_paiement' => $modePaiement,
+                'code_statut_paiement' => $statutPaiement,
+            ]);
+        }
+
+        $this->boutiqueCartService?->vider();
+
+        $messageSucces = $modePaiement === CommandeLocale::MODE_PAIEMENT_CARTE_BANCAIRE
+            ? 'Le panier a ete transforme en commande. Le reglement CB reste a connecter a un prestataire securise.'
+            : 'Le panier a ete transforme en commande locale.';
 
         ajouter_message_flash('success', $messageSucces);
         rediriger_vers(url_route('boutique').'#boutique-commandes');
@@ -1743,6 +1891,41 @@ final class LegacyActionHandler
         $page = $this->pageCoursDepuisRubrique($rubrique);
 
         return url_route($page).'#'.$this->ancreDocumentCours($rubrique);
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function obtenirCatalogueBoutique(): array
+    {
+        return (new SiteContent())->obtenirCartesBoutique();
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $catalogue
+     * @return array<string, mixed>|null
+     */
+    private function trouverProduitBoutique(array $catalogue, string $identifiantProduit): ?array
+    {
+        foreach ($catalogue as $produit) {
+            if ((string) ($produit['identifiant'] ?? '') === $identifiantProduit) {
+                return $produit;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $produit
+     */
+    private function produitBoutiqueEstReservable(array $produit): bool
+    {
+        if ((bool) ($produit['en_stock'] ?? false)) {
+            return true;
+        }
+
+        return in_array((string) ($produit['mode_vente'] ?? ''), ['precommande', 'adhesion'], true);
     }
 
     /** Verifie le format du numero de licence federale. */
