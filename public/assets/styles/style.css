@@ -5627,3 +5627,307 @@ body.burger-open {
         min-height: 3rem;
     }
 }
+
+/*
+ * Mini boutique.
+ */
+
+.shop-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.shop-summary-card {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.shop-summary-value {
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(2.2rem, 4vw, 3rem);
+    line-height: 0.95;
+    color: var(--text);
+}
+
+.shop-layout {
+    display: grid;
+    grid-template-columns: minmax(18rem, 0.88fr) minmax(0, 1.75fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.shop-sidebar {
+    position: sticky;
+    top: 6.2rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.shop-filter-form {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.shop-field {
+    display: grid;
+    gap: 0.38rem;
+}
+
+.shop-field > span {
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.shop-input,
+.shop-select {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.82rem 0.95rem;
+    border: 1px solid rgba(88, 66, 44, 0.18);
+    border-radius: 0.95rem;
+    background: rgba(255, 255, 255, 0.72);
+    color: var(--text);
+    font: inherit;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.shop-help {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.shop-toggle {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.7rem;
+    align-items: start;
+    padding: 0.9rem 0.95rem;
+    border: 1px solid rgba(88, 66, 44, 0.12);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.46);
+}
+
+.shop-toggle input {
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-top: 0.16rem;
+    accent-color: var(--accent);
+}
+
+.shop-filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+}
+
+.shop-membership-card {
+    display: grid;
+    gap: 0.6rem;
+    padding: 1rem;
+    border: 1px solid rgba(88, 66, 44, 0.12);
+    border-radius: 1.15rem;
+    background: linear-gradient(180deg, rgba(255, 252, 246, 0.92), rgba(241, 232, 216, 0.88));
+}
+
+.shop-membership-card h3 {
+    font-size: 1.45rem;
+}
+
+.shop-membership-note {
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.shop-main {
+    display: grid;
+    gap: 1rem;
+}
+
+.shop-results-bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.shop-results-bar h2 {
+    font-size: clamp(2rem, 4vw, 2.7rem);
+}
+
+.shop-results-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    align-items: flex-start;
+}
+
+.shop-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.shop-card {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.shop-card--muted {
+    opacity: 0.82;
+}
+
+.shop-card-head,
+.shop-order-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+.shop-card-reference,
+.shop-order-category {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.shop-card-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(196, 154, 67, 0.16);
+    color: var(--accent-dark);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.shop-card-price {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f1713;
+}
+
+.shop-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.shop-card-summary {
+    color: var(--muted);
+}
+
+.shop-feature-list {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.shop-feature-list li {
+    padding: 0.68rem 0.82rem;
+    border-radius: 0.9rem;
+    border: 1px solid rgba(88, 66, 44, 0.1);
+    background: rgba(255, 255, 255, 0.44);
+}
+
+.shop-inline-note {
+    margin: 0;
+    padding: 0.8rem 0.9rem;
+    border-radius: 0.9rem;
+    background: rgba(196, 154, 67, 0.12);
+    color: var(--text);
+}
+
+.shop-card-form {
+    margin-top: auto;
+}
+
+.shop-card-button {
+    width: 100%;
+}
+
+.shop-card-button:disabled {
+    opacity: 0.56;
+    cursor: not-allowed;
+}
+
+.shop-orders-panel {
+    display: grid;
+    gap: 1rem;
+}
+
+.shop-order-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.shop-order-card {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.shop-empty-state {
+    min-height: 14rem;
+    place-content: center;
+}
+
+body[data-theme="dark"] .shop-input,
+body[data-theme="dark"] .shop-select,
+body[data-theme="dark"] .shop-toggle,
+body[data-theme="dark"] .shop-membership-card,
+body[data-theme="dark"] .shop-feature-list li,
+body[data-theme="dark"] .shop-inline-note {
+    border-color: rgba(238, 243, 236, 0.12);
+    background: rgba(255, 255, 255, 0.06);
+    color: #f3ecdf;
+}
+
+body[data-theme="dark"] .shop-card-price,
+body[data-theme="dark"] .shop-summary-value {
+    color: #fff3dc;
+}
+
+body[data-theme="dark"] .shop-card-badge {
+    background: rgba(212, 166, 80, 0.18);
+    color: #f4dca8;
+}
+
+@media (max-width: 1100px) {
+    .shop-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .shop-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 900px) {
+    .shop-summary-grid,
+    .shop-grid,
+    .shop-order-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .shop-filter-actions,
+    .shop-results-meta,
+    .shop-card-head,
+    .shop-order-head,
+    .shop-results-bar {
+        display: grid;
+    }
+}

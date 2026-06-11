@@ -946,8 +946,12 @@ final class LegacyActionHandler
             'categorie' => $categorie,
         ]);
 
-        ajouter_message_flash('success', 'La commande a été enregistrée avec le statut En attente.');
-        rediriger_vers(url_route('boutique'));
+        $messageSucces = mb_strtolower($categorie) === 'adhesion'
+            ? "La demande d'adhésion a été enregistrée avec le statut En attente."
+            : 'La réservation a été enregistrée avec le statut En attente.';
+
+        ajouter_message_flash('success', $messageSucces);
+        rediriger_vers(url_route('boutique').'#boutique-commandes');
     }
 
     /** Met a jour le statut d'une commande (admin). */
