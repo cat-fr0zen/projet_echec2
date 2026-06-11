@@ -440,10 +440,6 @@ final class LegacyPageRenderer
 
     private function filtrerNavigationSecondaire(array $navigationSecondaire, array $auth): array
     {
-        if ($auth['est_admin'] ?? false) {
-            $navigationSecondaire[] = ['slug' => 'admin', 'label' => 'Admin'];
-        }
-
         return $navigationSecondaire;
     }
 
