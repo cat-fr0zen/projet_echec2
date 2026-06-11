@@ -1366,7 +1366,11 @@ function initArticleEditor() {
 function initDeleteConfirmations() {
     document.querySelectorAll("[data-confirm-delete]").forEach((form) => {
         form.addEventListener("submit", (event) => {
-            if (!window.confirm("Supprimer definitivement cet article ?")) {
+            const message =
+                form.getAttribute("data-confirm-message") ||
+                "Supprimer definitivement cet element ?";
+
+            if (!window.confirm(message)) {
                 event.preventDefault();
             }
         });

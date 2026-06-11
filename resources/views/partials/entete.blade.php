@@ -10,6 +10,7 @@ $navigationSecondaire = $donneesSite['navigation_secondaire'] ?? $donneesSite['s
 $donneesAuthentification = $donneesSite['authentification'];
 $themeSunIconUrl = url_ressource('assets/media/image/theme-soleil.svg');
 $themeMoonIconUrl = url_ressource('assets/media/image/theme-lune.svg');
+$slugNavigationActive = str_starts_with((string) $pageCourante, 'cours-') ? 'guide' : (string) $pageCourante;
 ?>
 
 <header class="site-header reveal reveal-1" data-site-header>
@@ -32,7 +33,7 @@ $themeMoonIconUrl = url_ressource('assets/media/image/theme-lune.svg');
         <div class="header-main-nav">
             <nav class="primary-nav" aria-label="Navigation principale">
                 <?php foreach ($navigationPrincipale as $elementNavigation): ?>
-                    <?php $estActive = $elementNavigation['slug'] === $pageCourante; ?>
+                    <?php $estActive = $elementNavigation['slug'] === $slugNavigationActive; ?>
                     <a
                         class="nav-link<?= $estActive ? ' is-active' : '' ?>"
                         href="<?= e(url_route($elementNavigation['slug'])) ?>"
@@ -124,7 +125,7 @@ $themeMoonIconUrl = url_ressource('assets/media/image/theme-lune.svg');
                     <p class="eyebrow">Pages principales</p>
                     <nav class="burger-links" aria-label="Navigation principale du menu">
                         <?php foreach ($navigationPrincipale as $elementNavigation): ?>
-                            <?php $estActive = $elementNavigation['slug'] === $pageCourante; ?>
+                            <?php $estActive = $elementNavigation['slug'] === $slugNavigationActive; ?>
                             <a
                                 class="burger-link<?= $estActive ? ' is-active' : '' ?>"
                                 href="<?= e(url_route($elementNavigation['slug'])) ?>"

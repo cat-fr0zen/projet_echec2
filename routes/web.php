@@ -9,6 +9,30 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 
+$pagesRoutables = implode('|', [
+    'accueil',
+    'guide',
+    'cours-livrets',
+    'cours-livret-a',
+    'cours-livret-b',
+    'cours-livret-c',
+    'cours-livret-d',
+    'cours-livret-e',
+    'cours-seances',
+    'cours-progression',
+    'cours-methodologie',
+    'cours-strategie',
+    'mediatheque',
+    'articles',
+    'boutique',
+    'club',
+    'activites',
+    'contact',
+    'profil',
+    'parametres',
+    'admin',
+]);
+
 Route::get('/fichiers/medias/{nomFichier}', [MediaAssetController::class, 'showPublication'])
     ->where('nomFichier', '[A-Za-z0-9._-]+')
     ->name('fichiers.medias.show');
@@ -36,8 +60,8 @@ Route::post('/mot-de-passe/reinitialiser', [ResetPasswordController::class, 'upd
 Route::get('/merch', fn () => redirect()->route('boutique'))->name('merch');
 
 Route::get('/{page}', [PageController::class, 'show'])
-    ->where('page', 'accueil|guide|mediatheque|articles|boutique|club|activites|contact|profil|parametres|admin')
+    ->where('page', $pagesRoutables)
     ->name('page.show');
 
 Route::post('/{page}', [ActionController::class, 'handle'])
-    ->where('page', 'accueil|guide|mediatheque|articles|boutique|club|activites|contact|profil|parametres|admin');
+    ->where('page', $pagesRoutables);

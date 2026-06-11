@@ -28,25 +28,25 @@ final class CoursPdfManagementTest extends TestCase
         $professeur = $this->creerProfesseur('prof-cours@example.test');
         $this->withSession([
             'identifiant_utilisateur' => (string) $professeur['identifiant'],
-        ])->get('/guide')->assertOk();
+        ])->get('/cours-livret-a')->assertOk();
 
         $jetonCsrf = (string) session()->token();
 
         $reponse = $this->withSession([
             'identifiant_utilisateur' => (string) $professeur['identifiant'],
             '_token' => $jetonCsrf,
-        ])->post('/guide', [
+        ])->post('/cours-livret-a', [
             '_token' => $jetonCsrf,
             'jeton_csrf' => $jetonCsrf,
             'action' => 'ajouter_document_cours',
-            'page_redirection' => 'guide',
+            'page_redirection' => 'cours-livret-a',
             'rubrique_document_cours' => 'livret_a',
             'titre_document_cours' => 'Tactiques debutants',
             'description_document_cours' => 'Premier livret PDF',
             'fichier_document_cours' => UploadedFile::fake()->createWithContent('livret-a.pdf', '%PDF-1.4 test cours'),
         ]);
 
-        $reponse->assertRedirect('/guide#cours-livret-a');
+        $reponse->assertRedirect('/cours-livret-a#cours-livret-a');
         $reponse->assertSessionHas('messages_flash.0.type', 'success');
 
         $this->assertDatabaseHas('document_cours', [
@@ -96,20 +96,57 @@ final class CoursPdfManagementTest extends TestCase
         $reponse = $this->withSession([
             'identifiant_utilisateur' => (string) $administrateur['identifiant'],
             '_token' => $jetonCsrf,
-        ])->post('/guide', [
+        ])->post('/cours-seances', [
             '_token' => $jetonCsrf,
             'jeton_csrf' => $jetonCsrf,
             'action' => 'supprimer_document_cours',
-            'page_redirection' => 'guide',
+            'page_redirection' => 'cours-seances',
             'identifiant_document_cours' => $document['identifiant_document'],
         ]);
 
-        $reponse->assertRedirect('/guide#cours-cours');
+        $reponse->assertRedirect('/cours-seances#cours-cours');
 
         $this->assertDatabaseMissing('document_cours', [
             'identifiant_document' => $document['identifiant_document'],
         ]);
         $this->assertFileDoesNotExist(storage_path('app/private/uploads/cours/'.$document['nom_fichier_stocke']));
+    }
+
+    public function test_un_prof_peut_modifier_un_pdf_de_cours_et_le_deplacer_dans_une_autre_rubrique(): void
+    {
+        $professeur = $this->creerProfesseur('prof-modification@example.test');
+        $document = $this->creerDocumentCours('livret_a', (string) $professeur['identifiant'], 'ancien-livret.pdf');
+        $jetonCsrf = 'jeton-cours-update';
+
+        $reponse = $this->withSession([
+            'identifiant_utilisateur' => (string) $professeur['identifiant'],
+            '_token' => $jetonCsrf,
+        ])->post('/cours-livret-a', [
+            '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
+            'action' => 'modifier_document_cours',
+            'page_redirection' => 'cours-livret-a',
+            'identifiant_document_cours' => $document['identifiant_document'],
+            'rubrique_document_cours' => 'strategie',
+            'titre_document_cours' => 'Plan de jeu avance',
+            'description_document_cours' => 'Nouvelle version du PDF',
+            'fichier_document_cours_remplacement' => UploadedFile::fake()->createWithContent('nouveau-plan.pdf', '%PDF-1.4 remplacement'),
+        ]);
+
+        $reponse->assertRedirect('/cours-strategie#cours-strategie');
+        $reponse->assertSessionHas('messages_flash.0.type', 'success');
+
+        $documentMisAJour = DB::table('document_cours')
+            ->where('identifiant_document', $document['identifiant_document'])
+            ->first();
+
+        $this->assertNotNull($documentMisAJour);
+        $this->assertSame('strategie', $documentMisAJour->code_rubrique);
+        $this->assertSame('Plan de jeu avance', $documentMisAJour->titre_document);
+        $this->assertSame('Nouvelle version du PDF', $documentMisAJour->description_document);
+        $this->assertNotSame($document['nom_fichier_stocke'], $documentMisAJour->nom_fichier_stocke);
+        $this->assertFileDoesNotExist(storage_path('app/private/uploads/cours/'.$document['nom_fichier_stocke']));
+        $this->assertFileExists(storage_path('app/private/uploads/cours/'.$documentMisAJour->nom_fichier_stocke));
     }
 
     /**

@@ -123,6 +123,44 @@ final class CoursDocumentRepository
             ->delete() > 0;
     }
 
+    /**
+     * @param  array<string, mixed>  $donnees
+     * @return array<string, mixed>|null
+     */
+    public function mettreAJour(string $identifiantDocument, array $donnees): ?array
+    {
+        $identifiantDocument = trim($identifiantDocument);
+
+        if ($identifiantDocument === '') {
+            return null;
+        }
+
+        $miseAJour = [
+            'code_rubrique' => (string) ($donnees['code_rubrique'] ?? ''),
+            'titre_document' => (string) ($donnees['titre_document'] ?? ''),
+            'description_document' => $this->normaliserTexteOptionnel($donnees['description_document'] ?? null),
+            'mis_a_jour_le' => date('Y-m-d H:i:s'),
+        ];
+
+        foreach ([
+            'nom_fichier_original',
+            'nom_fichier_stocke',
+            'chemin_fichier',
+            'type_mime',
+            'taille_octets',
+        ] as $champOptionnel) {
+            if (array_key_exists($champOptionnel, $donnees)) {
+                $miseAJour[$champOptionnel] = $donnees[$champOptionnel];
+            }
+        }
+
+        DB::table('document_cours')
+            ->where('identifiant_document', $identifiantDocument)
+            ->update($miseAJour);
+
+        return $this->trouverParIdentifiant($identifiantDocument);
+    }
+
     public function rubriqueEstValide(string $rubrique): bool
     {
         return array_key_exists($rubrique, self::RUBRIQUES);

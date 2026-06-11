@@ -313,6 +313,96 @@ final class SiteContent
                 'Guides de stratégie, principes de jeu et cartes de progression.',
                 intro: "Des cartes simples pour rappeler les principes stratégiques les plus utiles à un joueur de club."
             ),
+            'cours-livrets' => $this->page(
+                'Livrets',
+                'guide_livrets.php',
+                'Page d entree des livrets A a E du parcours pedagogique.',
+                intro: "Choisis un niveau pour ouvrir la page dediee au livret et retrouver les PDF du club."
+            ),
+            'cours-livret-a' => [
+                ...$this->page(
+                    'Livret A',
+                    'guide_livret.php',
+                    'Livret A du parcours pédagogique du club.',
+                    intro: "Les bases du jeu, les premières règles et les automatismes à consolider au début de la progression."
+                ),
+                'rubrique_document_cours' => 'livret_a',
+            ],
+            'cours-livret-b' => [
+                ...$this->page(
+                    'Livret B',
+                    'guide_livret.php',
+                    'Livret B du parcours pédagogique du club.',
+                    intro: "Un niveau pour mieux protéger ses pièces, voir les menaces simples et construire une partie plus propre."
+                ),
+                'rubrique_document_cours' => 'livret_b',
+            ],
+            'cours-livret-c' => [
+                ...$this->page(
+                    'Livret C',
+                    'guide_livret.php',
+                    'Livret C du parcours pédagogique du club.',
+                    intro: "La coordination des pièces, les plans simples et la lecture des positions fréquentes du joueur de club."
+                ),
+                'rubrique_document_cours' => 'livret_c',
+            ],
+            'cours-livret-d' => [
+                ...$this->page(
+                    'Livret D',
+                    'guide_livret.php',
+                    'Livret D du parcours pédagogique du club.',
+                    intro: "Un palier pour renforcer le calcul, l'évaluation et les transitions plus exigeantes."
+                ),
+                'rubrique_document_cours' => 'livret_d',
+            ],
+            'cours-livret-e' => [
+                ...$this->page(
+                    'Livret E',
+                    'guide_livret.php',
+                    'Livret E du parcours pédagogique du club.',
+                    intro: "Le niveau de consolidation pour structurer l'analyse, les choix stratégiques et l'autonomie."
+                ),
+                'rubrique_document_cours' => 'livret_e',
+            ],
+            'cours-seances' => [
+                ...$this->page(
+                    'Cours',
+                    'guide_rubrique.php',
+                    'Supports de seance du club et continuité pédagogique.',
+                    intro: "Retrouver les supports de seance du club dans une page dediee, claire et facile a maintenir."
+                ),
+                'rubrique_document_cours' => 'cours',
+                'section_groupe_cours' => 'pedagogie',
+                'retour_page_cours' => 'guide',
+            ],
+            'cours-progression' => $this->page(
+                'Methodologie / strategie',
+                'guide_progression.php',
+                'Espace d entree vers les pages methodologie et strategie.',
+                intro: "Choisis un angle de travail : methode de reflexion ou plans de jeu."
+            ),
+            'cours-methodologie' => [
+                ...$this->page(
+                    'Methodologie',
+                    'guide_rubrique.php',
+                    'Methodologie de reflexion devant l echiquier.',
+                    intro: "Une page dediee aux routines de reflexion, a la verification et a la prise de decision."
+                ),
+                'rubrique_document_cours' => 'methodologie',
+                'section_groupe_cours' => 'progression',
+                'retour_page_cours' => 'cours-progression',
+            ],
+            'cours-strategie' => [
+                ...$this->page(
+                    'Strategie',
+                    'guide_rubrique.php',
+                    'Strategie, plans et lecture positionnelle.',
+                    intro: "Une page dediee aux plans de jeu, aux faiblesses, aux bonnes cases et aux priorites de la position."
+                ),
+                'rubrique_document_cours' => 'strategie',
+                'section_groupe_cours' => 'progression',
+                'retour_page_cours' => 'cours-progression',
+            ],
             'mediatheque' => $this->page(
                 'Médiathèque',
                 'mediatheque.php',

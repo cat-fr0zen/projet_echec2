@@ -338,7 +338,22 @@ final class LegacyPageRenderer
         $estConnecte = $this->estUtilisateurActif($utilisateur);
         $estAdmin = $this->estAdmin($utilisateur);
 
-        if (in_array($segment, ['guide', 'boutique', 'profil', 'parametres'], true) && ! $estConnecte) {
+        if (in_array($segment, [
+            'guide',
+            'cours-livrets',
+            'cours-livret-a',
+            'cours-livret-b',
+            'cours-livret-c',
+            'cours-livret-d',
+            'cours-livret-e',
+            'cours-seances',
+            'cours-progression',
+            'cours-methodologie',
+            'cours-strategie',
+            'boutique',
+            'profil',
+            'parametres',
+        ], true) && ! $estConnecte) {
             ajouter_message_flash('error', 'Connecte-toi pour acceder a cette page.');
             rediriger_vers(url_route('accueil'));
         }

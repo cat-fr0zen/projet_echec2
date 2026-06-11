@@ -43,6 +43,16 @@ final class LegacyActionHandler
     private const PAGES_AUTORISEES = [
         'accueil',
         'guide',
+        'cours-livrets',
+        'cours-livret-a',
+        'cours-livret-b',
+        'cours-livret-c',
+        'cours-livret-d',
+        'cours-livret-e',
+        'cours-seances',
+        'cours-progression',
+        'cours-methodologie',
+        'cours-strategie',
         'mediatheque',
         'articles',
         'boutique',
@@ -122,6 +132,10 @@ final class LegacyActionHandler
             case 'ajouter_document_cours':
             case 'upload_course_document':
                 $this->traiterAjoutDocumentCours();
+                break;
+            case 'modifier_document_cours':
+            case 'update_course_document':
+                $this->traiterMiseAJourDocumentCours();
                 break;
             case 'supprimer_document_cours':
             case 'delete_course_document':
@@ -466,16 +480,19 @@ final class LegacyActionHandler
     private function traiterAjoutDocumentCours(): void
     {
         $utilisateurCourant = $this->exigerProfOuAdmin();
+        $pageOrigine = $this->resoudrePageRedirection('guide');
         $rubrique = trim((string) ($_POST['rubrique_document_cours'] ?? ''));
         $titre = trim((string) ($_POST['titre_document_cours'] ?? ''));
         $description = trim((string) ($_POST['description_document_cours'] ?? ''));
         $fichier = $_FILES['fichier_document_cours'] ?? null;
-        $pageRedirection = url_route('guide').'#'.$this->ancreDocumentCours($rubrique);
+        $pageRedirection = url_route($pageOrigine);
 
         if (! $this->depotDocumentsCours->rubriqueEstValide($rubrique)) {
             ajouter_message_flash('error', 'La rubrique de cours demandée est invalide.');
             rediriger_vers($pageRedirection);
         }
+
+        $pageRedirection = $this->urlPageCoursRubrique($rubrique);
 
         if ($titre === '' || mb_strlen($titre) > 160) {
             ajouter_message_flash('error', 'Le titre du document est obligatoire et doit rester inférieur à 160 caractères.');
@@ -532,6 +549,117 @@ final class LegacyActionHandler
         rediriger_vers($pageRedirection);
     }
 
+    /** Met a jour un document PDF de cours, avec remplacement optionnel du fichier protege. */
+    private function traiterMiseAJourDocumentCours(): void
+    {
+        $utilisateurCourant = $this->exigerProfOuAdmin();
+        $identifiantDocument = trim((string) ($_POST['identifiant_document_cours'] ?? ''));
+        $documentExistant = $this->depotDocumentsCours->trouverParIdentifiant($identifiantDocument);
+
+        if ($documentExistant === null) {
+            ajouter_message_flash('error', 'Le document demandé est introuvable.');
+            rediriger_vers(url_route('guide').'#cours-livrets');
+        }
+
+        $rubrique = trim((string) ($_POST['rubrique_document_cours'] ?? ''));
+        $titre = trim((string) ($_POST['titre_document_cours'] ?? ''));
+        $description = trim((string) ($_POST['description_document_cours'] ?? ''));
+        $fichierRemplacement = $_FILES['fichier_document_cours_remplacement'] ?? null;
+        $rubriqueOrigine = (string) ($documentExistant['code_rubrique'] ?? 'cours');
+        $pageOrigine = $this->resoudrePageRedirection($this->pageCoursDepuisRubrique($rubriqueOrigine));
+        $pageRedirection = url_route($pageOrigine).'#'.$this->ancreDocumentCours($rubriqueOrigine);
+
+        if (! $this->depotDocumentsCours->rubriqueEstValide($rubrique)) {
+            ajouter_message_flash('error', 'La rubrique de cours demandée est invalide.');
+            rediriger_vers($pageRedirection);
+        }
+
+        if ($pageOrigine === 'guide') {
+            $pageRedirection = url_route('guide').'#'.$this->ancreDocumentCours($rubrique);
+        }
+
+        if ($titre === '' || mb_strlen($titre) > 160) {
+            ajouter_message_flash('error', 'Le titre du document est obligatoire et doit rester inférieur à 160 caractères.');
+            rediriger_vers($pageRedirection);
+        }
+
+        if (mb_strlen($description) > 2000) {
+            ajouter_message_flash('error', 'La description du document doit rester inférieure à 2000 caractères.');
+            rediriger_vers($pageRedirection);
+        }
+
+        $donneesMiseAJour = [
+            'code_rubrique' => $rubrique,
+            'titre_document' => $titre,
+            'description_document' => $description,
+        ];
+
+        $nomStockeRemplacement = null;
+
+        if (is_array($fichierRemplacement)) {
+            $erreurTeleversement = (int) ($fichierRemplacement['error'] ?? UPLOAD_ERR_NO_FILE);
+
+            if ($erreurTeleversement !== UPLOAD_ERR_NO_FILE && $erreurTeleversement !== UPLOAD_ERR_OK) {
+                ajouter_message_flash('error', 'Le remplacement du PDF a échoué.');
+                rediriger_vers($pageRedirection);
+            }
+
+            if ($erreurTeleversement === UPLOAD_ERR_OK) {
+                $validation = $this->validerFichierPdfCours($fichierRemplacement);
+
+                if ($validation['erreurs'] !== []) {
+                    ajouter_message_flash('error', implode(' ', $validation['erreurs']));
+                    rediriger_vers($pageRedirection);
+                }
+
+                $dossierCours = UploadStorage::dossierCours();
+
+                if (! $this->preparerDossierUpload($dossierCours)) {
+                    ajouter_message_flash('error', "Le dossier des documents de cours n'est pas disponible.");
+                    rediriger_vers($pageRedirection);
+                }
+
+                $nomStockeRemplacement = 'cours_'.bin2hex(random_bytes(12)).'.pdf';
+                $cheminDestination = $dossierCours.DIRECTORY_SEPARATOR.$nomStockeRemplacement;
+
+                if (! $this->deplacerFichierTeleverse((string) ($fichierRemplacement['tmp_name'] ?? ''), $cheminDestination)) {
+                    ajouter_message_flash('error', "Le téléversement du PDF a échoué.");
+                    rediriger_vers($pageRedirection);
+                }
+
+                $this->securiserFichierTeleverse($cheminDestination);
+
+                $donneesMiseAJour['nom_fichier_original'] = (string) ($fichierRemplacement['name'] ?? 'document.pdf');
+                $donneesMiseAJour['nom_fichier_stocke'] = $nomStockeRemplacement;
+                $donneesMiseAJour['chemin_fichier'] = UploadStorage::cheminCours($nomStockeRemplacement);
+                $donneesMiseAJour['type_mime'] = $validation['mime'];
+                $donneesMiseAJour['taille_octets'] = (int) ($fichierRemplacement['size'] ?? 0);
+            }
+        }
+
+        $documentMisAJour = $this->depotDocumentsCours->mettreAJour($identifiantDocument, $donneesMiseAJour);
+
+        if ($documentMisAJour === null) {
+            if ($nomStockeRemplacement !== null) {
+                UploadStorage::supprimerCheminCours($nomStockeRemplacement);
+            }
+
+            ajouter_message_flash('error', 'La mise à jour du document a échoué.');
+            rediriger_vers($pageRedirection);
+        }
+
+        if (
+            $nomStockeRemplacement !== null
+            && (string) ($documentExistant['nom_fichier_stocke'] ?? '') !== ''
+            && (string) ($documentExistant['nom_fichier_stocke'] ?? '') !== $nomStockeRemplacement
+        ) {
+            UploadStorage::supprimerCheminCours((string) $documentExistant['nom_fichier_stocke']);
+        }
+
+        ajouter_message_flash('success', 'Le document de cours a été modifié.');
+        rediriger_vers($this->urlPageCoursRubrique((string) ($documentMisAJour['code_rubrique'] ?? $rubrique)));
+    }
+
     /** Supprime un document PDF de cours avec nettoyage du fichier protege. */
     private function traiterSuppressionDocumentCours(): void
     {
@@ -548,7 +676,7 @@ final class LegacyActionHandler
         UploadStorage::supprimerCheminCours((string) ($document['nom_fichier_stocke'] ?? ''));
 
         ajouter_message_flash('success', 'Le document de cours a été supprimé.');
-        rediriger_vers(url_route('guide').'#'.$this->ancreDocumentCours((string) ($document['code_rubrique'] ?? '')));
+        rediriger_vers($this->urlPageCoursRubrique((string) ($document['code_rubrique'] ?? '')));
     }
 
     /** Soumission d'article (reserve adherent/admin). */
@@ -1567,6 +1695,28 @@ final class LegacyActionHandler
             'strategie' => 'cours-strategie',
             default => 'cours-cours',
         };
+    }
+
+    private function pageCoursDepuisRubrique(string $rubrique): string
+    {
+        return match ($rubrique) {
+            'livret_a' => 'cours-livret-a',
+            'livret_b' => 'cours-livret-b',
+            'livret_c' => 'cours-livret-c',
+            'livret_d' => 'cours-livret-d',
+            'livret_e' => 'cours-livret-e',
+            'cours' => 'cours-seances',
+            'methodologie' => 'cours-methodologie',
+            'strategie' => 'cours-strategie',
+            default => 'guide',
+        };
+    }
+
+    private function urlPageCoursRubrique(string $rubrique): string
+    {
+        $page = $this->pageCoursDepuisRubrique($rubrique);
+
+        return url_route($page).'#'.$this->ancreDocumentCours($rubrique);
     }
 
     /** Verifie le format du numero de licence federale. */

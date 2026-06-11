@@ -1,30 +1,29 @@
 <?php
 /**
- * Vue: Cours.
- *
- * La page reste volontairement tres simple :
- * - un bandeau de page
- * - trois petits blocs cliquables en haut
- *
- * Les autres zones de travail PDF restent disponibles cote code pour la suite,
- * mais ne sont plus affichees ici tant que le contenu final n'est pas pret.
+ * Vue: hub principal des cours.
  */
 
-$blocsCours = [
+$blocsNavigation = [
     [
         'tag' => 'Parcours',
         'title' => 'Livrets',
-        'text' => 'Accéder rapidement aux niveaux A à E.',
+        'text' => 'Acceder rapidement aux niveaux A a E.',
+        'href' => url_route('cours-livrets'),
+        'meta' => 'Ouvrir les niveaux',
     ],
     [
-        'tag' => 'Pédagogie',
+        'tag' => 'Pedagogie',
         'title' => 'Cours',
-        'text' => 'Retrouver les supports de séance du club.',
+        'text' => 'Retrouver les supports de seance du club.',
+        'href' => url_route('cours-seances'),
+        'meta' => 'Voir les supports',
     ],
     [
         'tag' => 'Progression',
-        'title' => 'Méthodologie / stratégie',
-        'text' => 'Ranger les PDF de méthode et de plan de jeu.',
+        'title' => 'Methodologie / strategie',
+        'text' => 'Ranger les PDF de methode et de plan de jeu.',
+        'href' => url_route('cours-progression'),
+        'meta' => 'Voir les documents',
     ],
 ];
 ?>
@@ -36,11 +35,12 @@ $blocsCours = [
 </section>
 
 <section class="card-grid card-grid--three reveal reveal-3">
-    <?php foreach ($blocsCours as $blocCours): ?>
-        <article class="info-card">
-            <p class="card-tag"><?= e((string) $blocCours['tag']) ?></p>
-            <h2><?= e((string) $blocCours['title']) ?></h2>
-            <p><?= e((string) $blocCours['text']) ?></p>
-        </article>
+    <?php foreach ($blocsNavigation as $blocNavigation): ?>
+        <a class="info-card info-card--link course-nav-card" href="<?= e((string) $blocNavigation['href']) ?>">
+            <p class="card-tag"><?= e((string) $blocNavigation['tag']) ?></p>
+            <h2><?= e((string) $blocNavigation['title']) ?></h2>
+            <p><?= e((string) $blocNavigation['text']) ?></p>
+            <p class="card-meta"><?= e((string) $blocNavigation['meta']) ?></p>
+        </a>
     <?php endforeach; ?>
 </section>
