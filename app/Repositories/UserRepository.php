@@ -64,6 +64,40 @@ final class UserRepository
         return $row !== null ? $this->normaliserUtilisateur((array) $row) : null;
     }
 
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function listerParCourriel(string $courriel): array
+    {
+        $email = mb_strtolower(trim($courriel));
+
+        if ($email === '') {
+            return [];
+        }
+
+        return array_map(
+            fn (object $row): array => $this->normaliserUtilisateur((array) $row),
+            DB::table('compte_membre')
+                ->where('courriel_normalise', $email)
+                ->orderBy('cree_le')
+                ->get()
+                ->all()
+        );
+    }
+
+    public function compterParCourriel(string $courriel): int
+    {
+        $email = mb_strtolower(trim($courriel));
+
+        if ($email === '') {
+            return 0;
+        }
+
+        return (int) DB::table('compte_membre')
+            ->where('courriel_normalise', $email)
+            ->count();
+    }
+
     public function trouverModeleParCourriel(string $courriel): ?User
     {
         $email = mb_strtolower(trim($courriel));
@@ -74,6 +108,19 @@ final class UserRepository
 
         return User::query()
             ->where('courriel_normalise', $email)
+            ->first();
+    }
+
+    public function trouverModeleParNumeroLicence(string $numeroLicence): ?User
+    {
+        $license = $this->normaliserNumeroLicenceFederale($numeroLicence);
+
+        if ($license === '') {
+            return null;
+        }
+
+        return User::query()
+            ->whereRaw('UPPER(numero_licence_federale) = ?', [$license])
             ->first();
     }
 
@@ -101,7 +148,9 @@ final class UserRepository
         }
 
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
-            return $this->trouverParCourriel($identifier);
+            return $this->compterParCourriel($identifier) === 1
+                ? $this->trouverParCourriel($identifier)
+                : null;
         }
 
         return $this->trouverParNumeroLicence($identifier);
@@ -116,7 +165,9 @@ final class UserRepository
         }
 
         if (filter_var($identifier, FILTER_VALIDATE_EMAIL)) {
-            return $this->trouverModeleParCourriel($identifier);
+            return $this->compterParCourriel($identifier) === 1
+                ? $this->trouverModeleParCourriel($identifier)
+                : null;
         }
 
         $numeroLicence = $this->normaliserNumeroLicenceFederale($identifier);
@@ -125,9 +176,7 @@ final class UserRepository
             return null;
         }
 
-        return User::query()
-            ->whereRaw('UPPER(numero_licence_federale) = ?', [$numeroLicence])
-            ->first();
+        return $this->trouverModeleParNumeroLicence($numeroLicence);
     }
 
     public function creer(array $donnees): array

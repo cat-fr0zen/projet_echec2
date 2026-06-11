@@ -198,7 +198,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                             <?= $champConnexionIdentifiant['describedby'] !== '' ? 'aria-describedby="' . e($champConnexionIdentifiant['describedby']) . '"' : '' ?>
                             <?= $champConnexionIdentifiant['invalid'] ? 'aria-invalid="true"' : '' ?>
                         >
-                        <small class="form-helper">Adhérents et administrateurs : numéro de licence ou email. Autres comptes : email.</small>
+                        <small class="form-helper">Adhérents et administrateurs : numéro de licence ou email. Si plusieurs comptes partagent un même email, la connexion se fait avec le numéro de licence.</small>
                         <?php if ($champConnexionIdentifiant['error_message'] !== ''): ?>
                             <span id="<?= e($champConnexionIdentifiant['error_id']) ?>" class="form-error">
                                 <?= e($champConnexionIdentifiant['error_message']) ?>
@@ -330,6 +330,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                                 <?= e($champInscriptionCourriel['error_message']) ?>
                             </span>
                         <?php endif; ?>
+                        <small class="form-helper">Par défaut, un email correspond à un seul compte. Le même email peut être partagé seulement si chaque compte concerné possède son propre numéro de licence.</small>
                     </label>
 
                     <label class="form-group">
@@ -346,7 +347,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                             <?= $champInscriptionNumeroLicence['describedby'] !== '' ? 'aria-describedby="' . e($champInscriptionNumeroLicence['describedby']) . '"' : '' ?>
                             <?= $champInscriptionNumeroLicence['invalid'] ? 'aria-invalid="true"' : '' ?>
                         >
-                        <small class="form-helper">À remplir seulement si la fédération vous a déjà attribué un numéro de licence.</small>
+                        <small class="form-helper">À remplir seulement si la fédération vous a déjà attribué un numéro de licence. Ce numéro permet aussi de distinguer plusieurs comptes qui partagent un même email familial.</small>
                         <?php if ($champInscriptionNumeroLicence['error_message'] !== ''): ?>
                             <span id="<?= e($champInscriptionNumeroLicence['error_id']) ?>" class="form-error">
                                 <?= e($champInscriptionNumeroLicence['error_message']) ?>

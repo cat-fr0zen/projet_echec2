@@ -216,8 +216,13 @@ final class LegacyActionHandler
 
         $erreurs = $this->validerDonneesProfil($donnees, true);
 
-        if ($this->depotUtilisateurs->trouverParCourriel($donnees['courriel']) !== null) {
-            $erreurs[] = 'Un compte existe deja avec cet email.';
+        $erreurCourrielPartage = $this->validerCourrielPourInscription(
+            $donnees['courriel'],
+            (string) $donnees['numero_licence']
+        );
+
+        if ($erreurCourrielPartage !== null) {
+            $erreurs[] = $erreurCourrielPartage;
         }
 
         if ($this->numeroLicenceDejaUtilise($donnees['numero_licence'])) {
@@ -297,6 +302,23 @@ final class LegacyActionHandler
         $pageRedirection = $this->resoudrePageRedirection('accueil');
         $identifiantConnexion = trim((string) ($_POST['identifiant_connexion'] ?? $_POST['login_identifier'] ?? $_POST['courriel'] ?? $_POST['email'] ?? ''));
         $motDePasse = (string) ($_POST['mot_de_passe'] ?? $_POST['password'] ?? '');
+
+        if (
+            filter_var($identifiantConnexion, FILTER_VALIDATE_EMAIL)
+            && $this->depotUtilisateurs->compterParCourriel($identifiantConnexion) > 1
+        ) {
+            memoriser_etat_formulaire([
+                'ouverte' => true,
+                'onglet' => 'connexion',
+                'erreurs' => ['Plusieurs comptes partagent cet email. Connectez-vous avec le numero de licence du compte concerne.'],
+                'anciennes_valeurs' => [
+                    'identifiant_connexion' => $identifiantConnexion,
+                    'courriel' => $identifiantConnexion,
+                ],
+            ]);
+            rediriger_vers(url_route($pageRedirection));
+        }
+
         $utilisateurAuthentifiable = $this->depotUtilisateurs->trouverModeleParIdentifiantConnexion($identifiantConnexion);
         $utilisateur = $utilisateurAuthentifiable !== null
             ? $this->depotUtilisateurs->trouverParIdentifiant((string) $utilisateurAuthentifiable->getAuthIdentifier())
@@ -1741,6 +1763,27 @@ final class LegacyActionHandler
 
         return $utilisateur !== null
             && ($identifiantIgnore === null || ($utilisateur['identifiant'] ?? '') !== $identifiantIgnore);
+    }
+
+    private function validerCourrielPourInscription(string $courriel, string $numeroLicence): ?string
+    {
+        $comptesMemeCourriel = $this->depotUtilisateurs->listerParCourriel($courriel);
+
+        if ($comptesMemeCourriel === []) {
+            return null;
+        }
+
+        if ($numeroLicence === '') {
+            return 'Un compte existe deja avec cet email. Pour partager cet email entre plusieurs comptes, chaque compte doit avoir son propre numero de licence.';
+        }
+
+        foreach ($comptesMemeCourriel as $compte) {
+            if (trim((string) ($compte['numero_licence'] ?? '')) === '') {
+                return 'Cet email est deja utilise par un compte sans numero de licence. Ajoute d abord un numero de licence a ce compte ou utilise un autre email.';
+            }
+        }
+
+        return null;
     }
 
     /** Verifie le format de date 'Y-m-d'. */

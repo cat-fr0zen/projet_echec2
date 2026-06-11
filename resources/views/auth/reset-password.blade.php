@@ -9,9 +9,9 @@
 <body class="theme-light">
     <main class="section-block" style="max-width: 44rem; margin: 3rem auto;">
         <div class="section-head">
-            <p class="eyebrow">Sécurité</p>
+            <p class="eyebrow">Securite</p>
             <h1>Choisir un nouveau mot de passe</h1>
-            <p>Utilise un mot de passe d'au moins 8 caractères.</p>
+            <p>Utilise un mot de passe d'au moins 8 caracteres.</p>
         </div>
 
         @if ($errors->any())
@@ -27,8 +27,14 @@
             <input type="hidden" name="token" value="{{ $token }}">
 
             <label class="form-group">
-                <span>Adresse email</span>
-                <input type="email" name="courriel" value="{{ old('courriel', $courriel) }}" required autocomplete="email">
+                <span>Email ou numero de licence</span>
+                <input
+                    type="text"
+                    name="identifiant_reinitialisation"
+                    value="{{ old('identifiant_reinitialisation', $identifiant_reinitialisation) }}"
+                    required
+                    autocomplete="username"
+                >
             </label>
 
             <label class="form-group">
@@ -42,7 +48,7 @@
             </label>
 
             <div class="button-row">
-                <button type="submit" class="button button-primary">Mettre à jour le mot de passe</button>
+                <button type="submit" class="button button-primary">Mettre a jour le mot de passe</button>
                 <a href="{{ url('/') }}" class="button button-secondary">Retour au site</a>
             </div>
         </form>

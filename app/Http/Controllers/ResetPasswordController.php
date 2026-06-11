@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Repositories\UserRepository;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -18,25 +19,55 @@ final class ResetPasswordController extends Controller
     {
         return view('auth.reset-password', [
             'token' => $token,
-            'courriel' => trim((string) $request->query('courriel', '')),
+            'identifiant_reinitialisation' => trim((string) $request->query('identifiant_reinitialisation', $request->query('courriel', ''))),
         ]);
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request, UserRepository $userRepository): RedirectResponse
     {
         $validated = $request->validate([
             'token' => ['required', 'string'],
-            'courriel' => ['required', 'email'],
+            'identifiant_reinitialisation' => ['required', 'string', 'max:254'],
             'mot_de_passe' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
+        $identifiant = trim((string) $validated['identifiant_reinitialisation']);
+        $credentials = [
+            'password' => (string) $validated['mot_de_passe'],
+            'password_confirmation' => (string) $request->input('mot_de_passe_confirmation'),
+            'token' => (string) $validated['token'],
+        ];
+        $messageCourrielPartage = "La reinitialisation automatique n'est pas disponible pour un email partage. Contactez l'administrateur du club.";
+
+        if (filter_var($identifiant, FILTER_VALIDATE_EMAIL)) {
+            if ($userRepository->compterParCourriel($identifiant) > 1) {
+                throw ValidationException::withMessages([
+                    'identifiant_reinitialisation' => [$messageCourrielPartage],
+                ]);
+            }
+
+            $credentials['courriel'] = mb_strtolower($identifiant);
+        } else {
+            $numeroLicence = $userRepository->normaliserNumeroLicenceFederale($identifiant);
+            $utilisateur = $userRepository->trouverModeleParNumeroLicence($numeroLicence);
+
+            if ($utilisateur === null) {
+                throw ValidationException::withMessages([
+                    'identifiant_reinitialisation' => ['Le lien de reinitialisation est invalide ou expire.'],
+                ]);
+            }
+
+            if ($userRepository->compterParCourriel((string) $utilisateur->courriel) > 1) {
+                throw ValidationException::withMessages([
+                    'identifiant_reinitialisation' => [$messageCourrielPartage],
+                ]);
+            }
+
+            $credentials['numero_licence_federale'] = $numeroLicence;
+        }
+
         $status = Password::broker()->reset(
-            [
-                'courriel' => mb_strtolower(trim((string) $validated['courriel'])),
-                'password' => (string) $validated['mot_de_passe'],
-                'password_confirmation' => (string) $request->input('mot_de_passe_confirmation'),
-                'token' => (string) $validated['token'],
-            ],
+            $credentials,
             static function (User $user, string $password): void {
                 $user->forceFill([
                     'mot_de_passe_hache' => Hash::make($password),
@@ -47,11 +78,11 @@ final class ResetPasswordController extends Controller
 
         if ($status !== Password::PASSWORD_RESET) {
             throw ValidationException::withMessages([
-                'courriel' => ['Le lien de réinitialisation est invalide ou expiré.'],
+                'identifiant_reinitialisation' => ['Le lien de reinitialisation est invalide ou expire.'],
             ]);
         }
 
-        ajouter_message_flash('success', 'Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.');
+        ajouter_message_flash('success', 'Votre mot de passe a ete reinitialise. Vous pouvez maintenant vous connecter.');
 
         return redirect(url_route('accueil'));
     }
