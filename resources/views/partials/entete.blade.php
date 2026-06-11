@@ -56,7 +56,7 @@ $slugNavigationActive = str_starts_with((string) $pageCourante, 'cours-') ? 'gui
                 type="button"
                 class="theme-toggle"
                 data-theme-toggle
-                aria-label="<?= $donneesSite['theme'] === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre' ?>"
+                aria-label="<?= $donneesSite['theme'] === 'dark' ? 'Activer le theme clair' : 'Activer le theme sombre' ?>"
                 aria-pressed="<?= $donneesSite['theme'] === 'dark' ? 'true' : 'false' ?>"
             >
                 <span class="theme-icon theme-icon--sun" aria-hidden="true">
@@ -84,92 +84,93 @@ $slugNavigationActive = str_starts_with((string) $pageCourante, 'cours-') ? 'gui
             </button>
         </div>
     </div>
-
-    <button
-        type="button"
-        class="burger-backdrop"
-        data-burger-backdrop
-        data-burger-close
-        hidden
-        tabindex="-1"
-        aria-label="Fermer le menu"
-    ></button>
-
-    <div
-        id="burger-panel"
-        class="burger-panel"
-        data-burger-panel
-        hidden
-        tabindex="-1"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="burger-panel-title"
-        aria-hidden="true"
-    >
-        <div class="burger-panel-topbar">
-            <div class="burger-panel-heading">
-                <p class="burger-panel-title" id="burger-panel-title">
-                    <?= e($donneesAuthentification['est_connecte'] ? $donneesAuthentification['nom_affichage'] : 'Menu secondaire') ?>
-                </p>
-                <?php if ($donneesAuthentification['est_connecte']): ?>
-                    <p class="burger-panel-role"><?= e($donneesAuthentification['role_label'] ?? 'Compte') ?></p>
-                <?php endif; ?>
-            </div>
-            <button type="button" class="burger-panel-close" data-burger-close aria-label="Fermer le menu">
-                Fermer
-            </button>
-        </div>
-        <div class="burger-columns">
-            <?php if ($navigationPrincipale): ?>
-                <section class="burger-group burger-group--primary-mobile">
-                    <p class="eyebrow">Pages principales</p>
-                    <nav class="burger-links" aria-label="Navigation principale du menu">
-                        <?php foreach ($navigationPrincipale as $elementNavigation): ?>
-                            <?php $estActive = $elementNavigation['slug'] === $slugNavigationActive; ?>
-                            <a
-                                class="burger-link<?= $estActive ? ' is-active' : '' ?>"
-                                href="<?= e(url_route($elementNavigation['slug'])) ?>"
-                                <?= $estActive ? 'aria-current="page"' : '' ?>
-                            >
-                                <?= e($elementNavigation['label']) ?>
-                            </a>
-                        <?php endforeach; ?>
-                    </nav>
-                </section>
-            <?php endif; ?>
-
-            <?php if ($navigationSecondaire): ?>
-                <section class="burger-group">
-                    <p class="eyebrow">Menu secondaire</p>
-                    <nav class="burger-links" aria-label="Navigation secondaire du menu">
-                        <?php foreach ($navigationSecondaire as $elementNavigation): ?>
-                            <a class="burger-link" href="<?= e(url_route($elementNavigation['slug'])) ?>"><?= e($elementNavigation['label']) ?></a>
-                        <?php endforeach; ?>
-                    </nav>
-                </section>
-            <?php endif; ?>
-
-            <section class="burger-group">
-                <p class="eyebrow">Espace membre</p>
-                <?php if ($donneesAuthentification['est_connecte']): ?>
-                    <div class="burger-links">
-                        <a class="burger-link" href="<?= e(url_route('profil')) ?>">Profil</a>
-                        <a class="burger-link" href="<?= e(url_route('parametres')) ?>">Paramètres</a>
-                        <?php if ($donneesAuthentification['est_admin'] ?? false): ?>
-                            <a class="burger-link" href="<?= e(url_route('admin')) ?>">Administration</a>
-                        <?php endif; ?>
-                    </div>
-                    <form method="post" action="<?= e(url_route($pageCourante)) ?>" class="burger-logout-form">
-                        <input type="hidden" name="action" value="deconnexion">
-                        <input type="hidden" name="_token" value="<?= e($donneesSite['jeton_csrf']) ?>">
-                        <input type="hidden" name="jeton_csrf" value="<?= e($donneesSite['jeton_csrf']) ?>">
-                        <button type="submit" class="button button-secondary burger-logout-button">Déconnexion</button>
-                    </form>
-                <?php else: ?>
-                    <p class="burger-helper">Connecte-toi pour accéder aux cours, à la boutique et à ton profil membre.</p>
-                    <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
-                <?php endif; ?>
-            </section>
-        </div>
-    </div>
 </header>
+
+<button
+    type="button"
+    class="burger-backdrop"
+    data-burger-backdrop
+    data-burger-close
+    hidden
+    tabindex="-1"
+    aria-label="Fermer le menu"
+></button>
+
+<div
+    id="burger-panel"
+    class="burger-panel"
+    data-burger-panel
+    hidden
+    tabindex="-1"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="burger-panel-title"
+    aria-hidden="true"
+>
+    <div class="burger-panel-topbar">
+        <div class="burger-panel-heading">
+            <p class="burger-panel-title" id="burger-panel-title">
+                <?= e($donneesAuthentification['est_connecte'] ? $donneesAuthentification['nom_affichage'] : 'Menu secondaire') ?>
+            </p>
+            <?php if ($donneesAuthentification['est_connecte']): ?>
+                <p class="burger-panel-role"><?= e($donneesAuthentification['role_label'] ?? 'Compte') ?></p>
+            <?php endif; ?>
+        </div>
+        <button type="button" class="burger-panel-close" data-burger-close aria-label="Fermer le menu">
+            Fermer
+        </button>
+    </div>
+
+    <div class="burger-columns">
+        <?php if ($navigationPrincipale): ?>
+            <section class="burger-group burger-group--primary-mobile">
+                <p class="eyebrow">Pages principales</p>
+                <nav class="burger-links" aria-label="Navigation principale du menu">
+                    <?php foreach ($navigationPrincipale as $elementNavigation): ?>
+                        <?php $estActive = $elementNavigation['slug'] === $slugNavigationActive; ?>
+                        <a
+                            class="burger-link<?= $estActive ? ' is-active' : '' ?>"
+                            href="<?= e(url_route($elementNavigation['slug'])) ?>"
+                            <?= $estActive ? 'aria-current="page"' : '' ?>
+                        >
+                            <?= e($elementNavigation['label']) ?>
+                        </a>
+                    <?php endforeach; ?>
+                </nav>
+            </section>
+        <?php endif; ?>
+
+        <?php if ($navigationSecondaire): ?>
+            <section class="burger-group">
+                <p class="eyebrow">Menu secondaire</p>
+                <nav class="burger-links" aria-label="Navigation secondaire du menu">
+                    <?php foreach ($navigationSecondaire as $elementNavigation): ?>
+                        <a class="burger-link" href="<?= e(url_route($elementNavigation['slug'])) ?>"><?= e($elementNavigation['label']) ?></a>
+                    <?php endforeach; ?>
+                </nav>
+            </section>
+        <?php endif; ?>
+
+        <section class="burger-group">
+            <p class="eyebrow">Espace membre</p>
+            <?php if ($donneesAuthentification['est_connecte']): ?>
+                <div class="burger-links">
+                    <a class="burger-link" href="<?= e(url_route('profil')) ?>">Profil</a>
+                    <a class="burger-link" href="<?= e(url_route('parametres')) ?>">Parametres</a>
+                    <?php if ($donneesAuthentification['est_admin'] ?? false): ?>
+                        <a class="burger-link" href="<?= e(url_route('admin')) ?>">Administration</a>
+                    <?php endif; ?>
+                </div>
+                <form method="post" action="<?= e(url_route($pageCourante)) ?>" class="burger-logout-form">
+                    <input type="hidden" name="action" value="deconnexion">
+                    <input type="hidden" name="_token" value="<?= e($donneesSite['jeton_csrf']) ?>">
+                    <input type="hidden" name="jeton_csrf" value="<?= e($donneesSite['jeton_csrf']) ?>">
+                    <button type="submit" class="button button-secondary burger-logout-button">Deconnexion</button>
+                </form>
+            <?php else: ?>
+                <p class="burger-helper">Connecte-toi pour acceder aux cours, a la boutique et a ton profil membre.</p>
+                <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
+            <?php endif; ?>
+        </section>
+    </div>
+</div>

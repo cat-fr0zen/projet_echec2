@@ -3877,6 +3877,12 @@ h3,
     box-shadow: var(--shadow-soft);
 }
 
+.site-header.reveal {
+    opacity: 1;
+    animation: none;
+    transform: none;
+}
+
 .site-header,
 .panel,
 .page-banner,
@@ -4601,14 +4607,9 @@ body.burger-open {
 }
 
 .burger-panel-topbar {
-    position: sticky;
-    top: 0;
-    z-index: 1;
     align-items: center;
-    margin: -0.25rem -0.25rem 0.75rem;
-    padding: 0.25rem;
-    border-radius: 1rem;
-    background: inherit;
+    margin: 0 0 0.75rem;
+    padding: 0;
 }
 
 .burger-panel-heading {
@@ -4702,8 +4703,7 @@ body[data-theme="dark"] .burger-link:focus-visible {
     max-height: min(72dvh, 36rem);
 }
 
-.site-header.is-menu-open .burger-panel .burger-panel-title,
-.site-header .burger-panel:not([hidden]) .burger-panel-title {
+.burger-panel .burger-panel-title {
     max-width: none;
 }
 
@@ -4833,7 +4833,7 @@ body[data-theme="dark"] .burger-link:focus-visible {
 
     .site-header.is-menu-open,
     .site-header:has(.burger-panel:not([hidden])) {
-        padding-bottom: 0.72rem;
+        padding-bottom: 0;
     }
 
     .site-header.is-menu-open .burger-panel,
@@ -5262,7 +5262,10 @@ body.burger-open {
 
 .burger-backdrop {
     position: fixed;
-    inset: 0;
+    top: var(--burger-backdrop-top, 0);
+    right: 0;
+    bottom: 0;
+    left: 0;
     z-index: 88;
     border: 0;
     padding: 0;
@@ -5280,7 +5283,7 @@ body.burger-open {
 .site-header.is-menu-open .burger-panel,
 .site-header .burger-panel:not([hidden]) {
     position: fixed;
-    top: var(--burger-panel-top, calc(max(0.5rem, env(safe-area-inset-top)) + 4.5rem));
+    top: var(--burger-panel-top, calc(max(0.5rem, env(safe-area-inset-top)) + 4rem));
     right: var(--burger-panel-right, max(0.5rem, env(safe-area-inset-right)));
     left: auto;
     z-index: 89;
@@ -5300,8 +5303,7 @@ body.burger-open {
     grid-template-columns: 1fr;
 }
 
-.site-header.is-menu-open .burger-panel .burger-panel-title,
-.site-header .burger-panel:not([hidden]) .burger-panel-title {
+.burger-panel .burger-panel-title {
     max-width: none;
     white-space: normal;
 }
@@ -5310,7 +5312,7 @@ body.burger-open {
     .burger-panel,
     .site-header.is-menu-open .burger-panel,
     .site-header .burger-panel:not([hidden]) {
-        width: min(22rem, calc(100dvw - 1rem));
+        width: min(21rem, calc(100dvw - 1rem));
     }
 }
 
@@ -5323,6 +5325,7 @@ body.burger-open {
         width: auto;
         max-width: none;
         padding: 0.85rem;
+        top: var(--burger-panel-top, calc(max(0.5rem, env(safe-area-inset-top)) + 3.5rem));
     }
 
     .auth-modal,

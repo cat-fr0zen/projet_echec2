@@ -341,15 +341,18 @@ function initBurgerMenu() {
         }
 
         const headerRect = siteHeader.getBoundingClientRect();
+        const toggleRect = burgerToggle.getBoundingClientRect();
         const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
         const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
-        const panelTop = Math.max(headerRect.bottom + 8, 8);
-        const panelRight = Math.max(viewportWidth - headerRect.right, 8);
-        const panelMaxHeight = Math.max(viewportHeight - panelTop - 8, 240);
+        const panelTop = Math.max(toggleRect.bottom + 4, headerRect.top + 4, 8);
+        const panelRight = Math.max(viewportWidth - toggleRect.right, 8);
+        const panelMaxHeight = Math.max(viewportHeight - panelTop - 12, 240);
+        const backdropTop = Math.max(headerRect.bottom + 4, 0);
 
         document.documentElement.style.setProperty("--burger-panel-top", `${Math.round(panelTop)}px`);
         document.documentElement.style.setProperty("--burger-panel-right", `${Math.round(panelRight)}px`);
         document.documentElement.style.setProperty("--burger-panel-max-height", `${Math.round(panelMaxHeight)}px`);
+        document.documentElement.style.setProperty("--burger-backdrop-top", `${Math.round(backdropTop)}px`);
     }
 
     function requestPanelLayoutSync() {
