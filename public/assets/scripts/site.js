@@ -554,12 +554,6 @@ function initAuthModal() {
         });
     });
 
-    modalRoot.addEventListener("click", (event) => {
-        if (event.target === modalRoot) {
-            closeModal();
-        }
-    });
-
     document.addEventListener("keydown", (event) => {
         if (!modalRoot.hidden) {
             trapFocus(event, modalRoot);
