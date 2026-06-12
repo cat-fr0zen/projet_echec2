@@ -4470,6 +4470,7 @@ body[data-theme="dark"] .hero-board,
 body[data-theme="dark"] .dammier_panel,
 body[data-theme="dark"] .panel-contrast,
 body[data-theme="dark"] .piece-visual,
+body[data-theme="dark"] .schedule-full-card,
 body[data-theme="dark"] .consent-panel {
     background:
         linear-gradient(180deg, rgba(18, 14, 12, 0.98), rgba(31, 22, 18, 0.96));
@@ -4477,8 +4478,42 @@ body[data-theme="dark"] .consent-panel {
 
 body[data-theme="dark"] .brand,
 body[data-theme="dark"] .site-header .nav-link,
-body[data-theme="dark"] .site-header .burger-label {
+body[data-theme="dark"] .site-header .burger-label,
+body[data-theme="dark"] .schedule-full-content h3,
+body[data-theme="dark"] .schedule-full-item h4 {
     color: #fbf3e6;
+}
+
+body[data-theme="dark"] .schedule-full-card {
+    border-color: rgba(212, 166, 80, 0.18);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 18px 40px rgba(0, 0, 0, 0.24);
+}
+
+body[data-theme="dark"] .schedule-full-card summary {
+    color: #fbf3e6;
+    border-color: rgba(212, 166, 80, 0.3);
+    background: linear-gradient(180deg, rgba(255, 245, 228, 0.12), rgba(72, 51, 37, 0.72));
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.08),
+        0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+body[data-theme="dark"] .schedule-full-card summary:hover,
+body[data-theme="dark"] .schedule-full-card summary:focus-visible {
+    background: linear-gradient(180deg, rgba(255, 245, 228, 0.18), rgba(97, 68, 46, 0.86));
+}
+
+body[data-theme="dark"] .schedule-full-item {
+    border-color: rgba(212, 166, 80, 0.14);
+    background: linear-gradient(180deg, rgba(255, 248, 236, 0.12), rgba(63, 46, 35, 0.5));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body[data-theme="dark"] .schedule-full-item .card-tag {
+    background: rgba(212, 166, 80, 0.16);
+    color: #e6c57f;
 }
 
 body[data-theme="dark"] .piece-figure-core {
