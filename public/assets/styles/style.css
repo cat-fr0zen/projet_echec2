@@ -1064,6 +1064,50 @@ body[data-theme="dark"] .dammier_ranking_item {
     color: var(--muted);
 }
 
+.bureau-grid {
+    align-items: stretch;
+}
+
+.bureau-card {
+    display: grid;
+    gap: 1rem;
+}
+
+.bureau-card-media {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.bureau-card-avatar,
+.bureau-card-fallback {
+    width: 5rem;
+    height: 5rem;
+    border-radius: 1.15rem;
+    flex-shrink: 0;
+}
+
+.bureau-card-avatar {
+    object-fit: cover;
+    border: 1px solid var(--line);
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.bureau-card-fallback {
+    display: grid;
+    place-items: center;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #fff8ee;
+    background: linear-gradient(135deg, var(--forest), var(--forest-deep));
+}
+
+.bureau-card-heading {
+    display: grid;
+    gap: 0.35rem;
+}
+
 .site-footer {
     margin-top: 1.25rem;
     padding: 1.45rem;

@@ -11,7 +11,6 @@
  * - $pageData: textes de la page
  * - $siteData: donnees globales (stats, horaires, etc.)
  */
-$stats = $siteData['stats'];
 $pieceCarousel = $siteData['piece_carousel'];
 $authData = $siteData['authentification'];
 $dammierPuzzle = $siteData['dammier_puzzle'] ?? [];

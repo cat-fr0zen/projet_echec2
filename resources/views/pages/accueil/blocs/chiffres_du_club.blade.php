@@ -1,16 +1,40 @@
+<?php
+$membresBureau = is_array($siteData['membres_bureau'] ?? null) ? $siteData['membres_bureau'] : [];
+?>
 <section class="section-block reveal reveal-6" data-accueil-slot="chiffres_du_club">
     <div class="section-head">
-        <p class="eyebrow">Chiffres du club</p>
-        <h2>Les informations essentielles en un coup d'œil.</h2>
-        <p>Les cartes résumées restent faciles à lire tout en gardant le style du site.</p>
+        <p class="eyebrow">Bureau du club</p>
+        <h2>Les membres du bureau des echecs.</h2>
+        <p>Retrouve les responsables du club avec leur role, leur presentation et une photo quand elle est disponible.</p>
     </div>
 
-    <div class="card-grid card-grid--three">
-        <?php foreach ($stats as $stat): ?>
-            <article class="info-card">
-                <p class="metric-value"><?= e($stat['value']) ?></p>
-                <h3><?= e($stat['label']) ?></h3>
-                <p><?= e($stat['text']) ?></p>
+    <div class="card-grid card-grid--three bureau-grid">
+        <?php foreach ($membresBureau as $membreBureau): ?>
+            <?php
+            $photoMembre = (string) ($membreBureau['photo'] ?? '');
+            $nomCompletMembre = (string) ($membreBureau['nom_complet'] ?? $membreBureau['full_name'] ?? '');
+            $initialesMembre = strtoupper((string) mb_substr($nomCompletMembre !== '' ? $nomCompletMembre : 'Club', 0, 2));
+            ?>
+            <article class="info-card bureau-card">
+                <div class="bureau-card-media">
+                    <?php if ($photoMembre !== ''): ?>
+                        <img
+                            class="bureau-card-avatar"
+                            src="<?= e($photoMembre) ?>"
+                            alt="Photo de <?= e($nomCompletMembre) ?>"
+                            loading="lazy"
+                        >
+                    <?php else: ?>
+                        <div class="bureau-card-fallback" aria-hidden="true"><?= e($initialesMembre) ?></div>
+                    <?php endif; ?>
+
+                    <div class="bureau-card-heading">
+                        <p class="card-tag"><?= e((string) ($membreBureau['role'] ?? 'Bureau')) ?></p>
+                        <h3><?= e($nomCompletMembre) ?></h3>
+                    </div>
+                </div>
+
+                <p><?= e((string) ($membreBureau['description'] ?? '')) ?></p>
             </article>
         <?php endforeach; ?>
     </div>
@@ -25,7 +49,7 @@
                     <p class="eyebrow">Emploi du temps</p>
                     <h3><?= e($libelleSaisonHoraires) ?></h3>
                     <?php if ($messageJourFerie !== ''): ?>
-                        <p><strong>Jour férié :</strong> <?= e($messageJourFerie) ?></p>
+                        <p><strong>Jour ferie :</strong> <?= e($messageJourFerie) ?></p>
                     <?php endif; ?>
                 </div>
 
@@ -35,7 +59,7 @@
                             <p class="card-tag">
                                 <?= e((string) ($horaire['day'] ?? '')) ?>
                                 <?php if (!empty($horaire['is_holiday'])): ?>
-                                    · Jour férié
+                                    · Jour ferie
                                 <?php endif; ?>
                             </p>
                             <h4><?= e((string) ($horaire['time'] ?? '')) ?></h4>

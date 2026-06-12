@@ -40,10 +40,28 @@ final class SiteContent
             ['slug' => 'contact', 'label' => 'Contact'],
         ];
 
-        $statistiques = [
-            $this->blocStatistique('01', 'Espace membre', "Connexion locale par email ou numéro de licence, profil personnel et réglages enregistrés."),
-            $this->blocStatistique('02', 'Cookies encadrés', "Consentement obligatoire, préférence de thème et session membre."),
-            $this->blocStatistique('03', 'Publication modérée', "Les articles, photos et vidéos restent en attente de validation."),
+        $membresBureau = [
+            $this->membreBureau(
+                'Jean-Patrick',
+                'JORON',
+                'President',
+                "Pilote la vie du club, coordonne les decisions associatives et represente officiellement les Cavaliers d'Herouville.",
+                ''
+            ),
+            $this->membreBureau(
+                'Francois',
+                '',
+                'Vice-president',
+                "Accompagne l'organisation des activites, le suivi des groupes et la continuitÃ© des actions du club.",
+                ''
+            ),
+            $this->membreBureau(
+                'Ashot',
+                '',
+                'Professeur / encadrant',
+                "Intervient sur l'accompagnement pedagogique, l'initiation et la progression des jeunes joueurs du club.",
+                ''
+            ),
         ];
 
         $valeurs = [
@@ -193,6 +211,108 @@ final class SiteContent
             ),
         ];
 
+        $documentsLegaux = [
+            $this->documentLegal(
+                'legal-notice',
+                'Mentions legales',
+                "Edition du site, responsabilites, moderation, boutique et propriete intellectuelle.",
+                [
+                    $this->sectionLegale('Edition et publication', [
+                        "Conception et developpement du site : Mattheo Mullois.",
+                        "Publication associative et validation editoriale : Jean Patrick JORON.",
+                        "Le site presente les informations publiques, les contenus pedagogiques, la mediatheque, la newsletter et la boutique du club.",
+                    ]),
+                    $this->sectionLegale('Comptes et moderation', [
+                        "Les utilisateurs peuvent creer un compte membre avec un email, un numero de licence facultatif et un mot de passe securise.",
+                        "Les roles internes peuvent inclure notamment administrateur, professeur, adherent ou compte connecte selon les besoins du club.",
+                        "Les articles, medias, documents de cours et autres contenus soumis via le site peuvent etre moderes, corriges, acceptes ou refuses avant diffusion.",
+                    ]),
+                    $this->sectionLegale('Boutique et reservations', [
+                        "La boutique peut presenter des adhesions, textiles, accessoires, materiel et packs du club.",
+                        "Les commandes, demandes d'adhesion ou reservations effectuees sur le site restent soumises a validation locale tant qu'aucun paiement final n'est confirme.",
+                    ]),
+                    $this->sectionLegale('Propriete intellectuelle', [
+                        "La structure, le design, les textes, scripts, logos, medias, PDF de cours, livrets et supports pedagogiques sont proteges par le droit applicable.",
+                        "Toute reproduction, republication, extraction ou diffusion sans autorisation prealable est interdite, hors exceptions legales.",
+                    ]),
+                    $this->sectionLegale('Responsabilite', [
+                        "Malgre le soin apporte a la publication, l'association et l'auteur du site ne garantissent pas l'absence totale d'erreur, d'omission ou d'interruption.",
+                        "Le site peut renvoyer vers des services tiers comme Google ou Chess.com, qui restent sous la responsabilite de leurs propres editeurs.",
+                    ]),
+                ]
+            ),
+            $this->documentLegal(
+                'privacy-policy',
+                'Politique de confidentialite',
+                "Donnees traitees pour les comptes, la newsletter, les visites, la moderation et les usages du site.",
+                [
+                    $this->sectionLegale('Donnees traitees', [
+                        "Le site peut traiter le nom, le prenom, la date de naissance facultative, l'email, le numero de licence facultatif, le mot de passe hache, la description de profil et le pseudo Chess.com facultatif.",
+                        "La newsletter traite l'adresse email, la date d'inscription, le statut d'abonnement, la version du consentement, un jeton de desabonnement et des traces techniques minimales.",
+                        "Les visites publiques non connectees peuvent generer des donnees techniques internes : page consultee, horodatage, empreinte de session, empreinte IP hachee, referent et agent utilisateur.",
+                    ]),
+                    $this->sectionLegale('Finalites', [
+                        "Creer et maintenir les comptes membres, permettre la connexion, l'edition du profil, la moderation et la gestion des roles.",
+                        "Organiser les contenus du site : cours PDF, livrets, mediatheque, articles, boutique, suivi administratif et statistiques internes de frequentation.",
+                        "Envoyer les emails de newsletter aux personnes inscrites et conserver la preuve minimale du consentement et du retrait.",
+                    ]),
+                    $this->sectionLegale('Cookies, stockage et conservation', [
+                        "Un consentement obligatoire est demande avant l'acces complet au site.",
+                        "Le site utilise des cookies ou mecanismes similaires limites a la session, au consentement et aux preferences d'affichage.",
+                        "Les donnees sont conservees pendant la duree utile au fonctionnement du service, a la gestion associative, a la securite ou au respect des obligations legales.",
+                    ]),
+                    $this->sectionLegale('Droits des personnes', [
+                        "Chaque personne dispose des droits d'acces, de rectification, d'effacement, de limitation, d'opposition et, selon les cas, de portabilite.",
+                        "Les demandes peuvent etre adressees au club via l'adresse publiee sur le site : cavaliers.herouville@gmail.com.",
+                    ]),
+                ]
+            ),
+            $this->documentLegal(
+                'newsletter-privacy',
+                'Newsletter',
+                "Inscription, consentement, confirmation, envois d'emails et desabonnement.",
+                [
+                    $this->sectionLegale('Donnees newsletter', [
+                        "La newsletter traite uniquement l'adresse email, la date d'inscription, la version du consentement, un jeton de desabonnement et une preuve technique minimisee.",
+                        "L'adresse IP peut etre hachee avec un sel serveur afin de prouver le consentement sans conserver l'adresse en clair.",
+                    ]),
+                    $this->sectionLegale('Envois et retrait', [
+                        "Les emails servent a annoncer les nouveaux articles, les mises a jour de cours ou d'horaires, et les informations boutique publiees par le club.",
+                        "Un email de confirmation ou de bienvenue peut etre envoye lors de l'inscription lorsque la configuration mail du site est active.",
+                        "Chaque email contient un lien de desabonnement automatique ; la demande peut aussi etre faite au contact officiel du club.",
+                    ]),
+                    $this->sectionLegale('Gestion interne', [
+                        "Les abonnes et l'historique des envois peuvent etre consultes depuis l'espace d'administration par les personnes habilitees.",
+                        "Le club s'engage a ne pas utiliser cette liste pour des envois sans lien avec sa vie associative, ses contenus ou ses activites.",
+                    ]),
+                ]
+            ),
+            $this->documentLegal(
+                'terms-of-use',
+                "Conditions d'utilisation",
+                "Regles d'usage du site, des comptes, des contenus, des documents PDF et de la boutique.",
+                [
+                    $this->sectionLegale('Usage general', [
+                        "L'utilisateur s'engage a consulter le site dans le respect de la loi, de l'ordre public et de l'objet associatif du club.",
+                        "Toute tentative de detournement, extraction massive, nuisance technique, usurpation de compte ou publication malveillante est interdite.",
+                    ]),
+                    $this->sectionLegale('Comptes membres', [
+                        "Chaque compte doit etre cree avec un email valable et un mot de passe confidentiel choisi par l'utilisateur.",
+                        "Un meme email peut etre reutilise dans les conditions prevues par le site, notamment lorsque plusieurs comptes sont distingues par un numero de licence.",
+                        "L'utilisateur reste responsable des informations qu'il saisit dans son profil et dans les contenus qu'il soumet.",
+                    ]),
+                    $this->sectionLegale('Cours, PDF et contenus', [
+                        "Les espaces Cours, Livrets, Methodologie et Strategie peuvent contenir des PDF reserves a certains profils autorises par le club.",
+                        "Les administrateurs et professeurs peuvent ajouter, modifier, supprimer ou reorganiser ces documents dans le cadre pedagogique du site.",
+                    ]),
+                    $this->sectionLegale('Articles, medias et boutique', [
+                        "Les articles, medias, contenus de boutique et autres publications peuvent etre affiches, modifies, refuses ou retires selon les besoins de moderation, de conformite ou de publication.",
+                        "Aucune offre, commande, reservation ou diffusion de media ne vaut engagement definitif tant qu'elle n'a pas ete publiee ou validee officiellement par l'association.",
+                    ]),
+                ]
+            ),
+        ];
+
         $consentement = [
             'nom_cookie' => 'site_consent',
             'titre' => "Validation obligatoire avant l'entrée",
@@ -265,8 +385,8 @@ final class SiteContent
             'primary_nav' => $navigationPrincipale,
             'navigation_secondaire' => $navigationSecondaire,
             'secondary_nav' => $navigationSecondaire,
-            'statistiques' => $statistiques,
-            'stats' => $statistiques,
+            'membres_bureau' => $membresBureau,
+            'bureau_members' => $membresBureau,
             'valeurs' => $valeurs,
             'values' => $valeurs,
             'planning' => $planning,
@@ -714,6 +834,21 @@ final class SiteContent
             'label' => $libelle,
             'texte' => $texte,
             'text' => $texte,
+        ];
+    }
+
+    private function membreBureau(string $prenom, string $nom, string $role, string $description, string $photo): array
+    {
+        $nomComplet = trim($prenom . ' ' . $nom);
+
+        return [
+            'prenom' => $prenom,
+            'nom' => $nom,
+            'nom_complet' => $nomComplet,
+            'full_name' => $nomComplet,
+            'role' => $role,
+            'description' => $description,
+            'photo' => $photo,
         ];
     }
 
