@@ -10,17 +10,46 @@ use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 final class CoursPdfManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    private string $dossierCoursTests;
+
+    private string $dossierSourceImportTests;
+
     protected function setUp(): void
     {
         parent::setUp();
 
+        $racineTemporaire = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'projet_echec2_tests_cours';
+        $this->dossierCoursTests = $racineTemporaire.DIRECTORY_SEPARATOR.'cours-documents';
+        $this->dossierSourceImportTests = $racineTemporaire.DIRECTORY_SEPARATOR.'cours-source';
+
+        File::deleteDirectory($this->dossierCoursTests);
+        File::deleteDirectory($this->dossierSourceImportTests);
+        File::ensureDirectoryExists($this->dossierCoursTests);
+        File::ensureDirectoryExists($this->dossierSourceImportTests);
+
+        putenv('COURSE_UPLOADS_PATH='.$this->dossierCoursTests);
+        $_ENV['COURSE_UPLOADS_PATH'] = $this->dossierCoursTests;
+        $_SERVER['COURSE_UPLOADS_PATH'] = $this->dossierCoursTests;
+
         $this->seed(DatabaseSeeder::class);
+    }
+
+    protected function tearDown(): void
+    {
+        File::deleteDirectory($this->dossierCoursTests);
+        File::deleteDirectory($this->dossierSourceImportTests);
+
+        putenv('COURSE_UPLOADS_PATH');
+        unset($_ENV['COURSE_UPLOADS_PATH'], $_SERVER['COURSE_UPLOADS_PATH']);
+
+        parent::tearDown();
     }
 
     public function test_un_prof_peut_televerser_un_pdf_dans_un_livret(): void
@@ -60,7 +89,7 @@ final class CoursPdfManagementTest extends TestCase
             ->first();
 
         $this->assertNotNull($document);
-        $this->assertFileExists(storage_path('app/private/uploads/cours/'.$document->nom_fichier_stocke));
+        $this->assertFileExists($this->dossierCoursTests.DIRECTORY_SEPARATOR.$document->nom_fichier_stocke);
     }
 
     public function test_un_prof_peut_telecharger_un_pdf_de_cours(): void
@@ -71,6 +100,35 @@ final class CoursPdfManagementTest extends TestCase
         $this->withSession([
             'identifiant_utilisateur' => (string) $professeur['identifiant'],
         ])->get('/fichiers/cours/'.$document['nom_fichier_stocke'])
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
+
+    public function test_un_pdf_importe_depuis_un_sous_dossier_peut_etre_telecharge(): void
+    {
+        $professeur = $this->creerProfesseur('prof-importe@example.test');
+        $this->creerPdfSource($this->dossierCoursTests, ['livret', 'Nouveaux livrets'], 'Livret A.pdf');
+
+        DB::table('document_cours')->insert([
+            'identifiant_document' => 'document_importe_sous_dossier',
+            'code_rubrique' => 'livrets',
+            'titre_document' => 'Livret A',
+            'description_document' => 'Document importe',
+            'nom_fichier_original' => 'Livret A.pdf',
+            'nom_fichier_stocke' => 'cours_import_livret_a.pdf',
+            'chemin_fichier' => 'fichiers/cours/cours_import_livret_a.pdf',
+            'type_mime' => 'application/pdf',
+            'taille_octets' => 24,
+            'groupe_document' => 'Nouveaux livrets',
+            'sous_groupe_document' => null,
+            'chemin_source_interne' => 'livret/Nouveaux livrets/Livret A.pdf',
+            'identifiant_auteur' => (string) $professeur['identifiant'],
+            'cree_le' => now()->format('Y-m-d H:i:s'),
+        ]);
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $professeur['identifiant'],
+        ])->get('/fichiers/cours/cours_import_livret_a.pdf')
             ->assertOk()
             ->assertHeader('content-type', 'application/pdf');
     }
@@ -145,8 +203,59 @@ final class CoursPdfManagementTest extends TestCase
         $this->assertSame('Plan de jeu avance', $documentMisAJour->titre_document);
         $this->assertSame('Nouvelle version du PDF', $documentMisAJour->description_document);
         $this->assertNotSame($document['nom_fichier_stocke'], $documentMisAJour->nom_fichier_stocke);
-        $this->assertFileDoesNotExist(storage_path('app/private/uploads/cours/'.$document['nom_fichier_stocke']));
-        $this->assertFileExists(storage_path('app/private/uploads/cours/'.$documentMisAJour->nom_fichier_stocke));
+        $this->assertFileDoesNotExist($this->dossierCoursTests.DIRECTORY_SEPARATOR.$document['nom_fichier_stocke']);
+        $this->assertFileExists($this->dossierCoursTests.DIRECTORY_SEPARATOR.$documentMisAJour->nom_fichier_stocke);
+    }
+
+    public function test_la_commande_importe_les_pdf_ranges_dans_des_dossiers_et_reste_idempotente(): void
+    {
+        $administrateur = $this->creerAdministrateur('admin-import@example.test');
+        $dossierSource = $this->dossierSourceImportTests;
+
+        $this->creerPdfSource($dossierSource, ['livret', 'Nouveaux livrets'], 'Livret A.pdf');
+        $this->creerPdfSource($dossierSource, ['cours', 'Cours de tactique', "L'attaque double"], "L'attaque double 1.pdf");
+        $this->creerPdfSource($dossierSource, ['strategie', 'Tableaux de mat', 'Mat du couloir'], 'Mat du couloir.pdf');
+
+        $this->artisan('cours:importer-pdf', [
+            '--source' => $dossierSource,
+            '--auteur' => (string) $administrateur['identifiant'],
+        ])->expectsOutputToContain('Import termine')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('document_cours', [
+            'code_rubrique' => 'livrets',
+            'groupe_document' => 'Nouveaux livrets',
+            'titre_document' => 'Livret A',
+        ]);
+
+        $this->assertDatabaseHas('document_cours', [
+            'code_rubrique' => 'cours',
+            'groupe_document' => 'Cours de tactique',
+            'sous_groupe_document' => "L'attaque double",
+            'titre_document' => "L'attaque double 1",
+        ]);
+
+        $this->assertDatabaseHas('document_cours', [
+            'code_rubrique' => 'strategie',
+            'groupe_document' => 'Tableaux de mat',
+            'sous_groupe_document' => 'Mat du couloir',
+            'titre_document' => 'Mat du couloir',
+        ]);
+
+        $documentImporte = DB::table('document_cours')
+            ->where('titre_document', 'Livret A')
+            ->first();
+
+        $this->assertNotNull($documentImporte);
+        $this->assertSame('livret/Nouveaux livrets/Livret A.pdf', $documentImporte->chemin_source_interne);
+        $this->assertNotSame('', (string) $documentImporte->nom_fichier_stocke);
+
+        $this->artisan('cours:importer-pdf', [
+            '--source' => $dossierSource,
+            '--auteur' => (string) $administrateur['identifiant'],
+        ])->assertExitCode(0);
+
+        $this->assertSame(3, DB::table('document_cours')->count());
     }
 
     /**
@@ -154,7 +263,8 @@ final class CoursPdfManagementTest extends TestCase
      */
     private function creerAdministrateur(string $courriel): array
     {
-        return (new UserRepository())->creer([
+        $repository = new UserRepository();
+        $utilisateur = $repository->creer([
             'nom' => 'Admin',
             'prenom' => 'Cours',
             'date_naissance' => '1990-01-02',
@@ -164,6 +274,13 @@ final class CoursPdfManagementTest extends TestCase
             'description_profil' => '',
             'pseudo_chess' => '',
         ]);
+
+        return $repository->mettreAJourAcces(
+            (string) $utilisateur['identifiant'],
+            User::ROLE_ADMIN,
+            User::STATUT_COMPTE_ACTIF,
+            User::STATUT_ADHESION_ACTIVE
+        ) ?? $utilisateur;
     }
 
     /**
@@ -205,7 +322,7 @@ final class CoursPdfManagementTest extends TestCase
      */
     private function creerDocumentCours(string $rubrique, string $identifiantAuteur, string $nomOriginal): array
     {
-        $dossier = storage_path('app/private/uploads/cours');
+        $dossier = $this->dossierCoursTests;
 
         if (! is_dir($dossier)) {
             mkdir($dossier, 0775, true);
@@ -224,6 +341,9 @@ final class CoursPdfManagementTest extends TestCase
             'chemin_fichier' => 'fichiers/cours/'.$nomStocke,
             'type_mime' => 'application/pdf',
             'taille_octets' => 18,
+            'groupe_document' => null,
+            'sous_groupe_document' => null,
+            'chemin_source_interne' => null,
             'identifiant_auteur' => $identifiantAuteur,
             'cree_le' => now()->format('Y-m-d H:i:s'),
         ];
@@ -231,5 +351,19 @@ final class CoursPdfManagementTest extends TestCase
         DB::table('document_cours')->insert($document);
 
         return $document;
+    }
+
+    /**
+     * @param  array<int, string>  $segments
+     */
+    private function creerPdfSource(string $racine, array $segments, string $nomFichier): void
+    {
+        $dossier = $racine.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segments);
+
+        if (! is_dir($dossier)) {
+            mkdir($dossier, 0775, true);
+        }
+
+        file_put_contents($dossier.DIRECTORY_SEPARATOR.$nomFichier, '%PDF-1.4 test import cours');
     }
 }

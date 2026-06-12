@@ -34,6 +34,13 @@ final class CoursDocumentController extends Controller
         abort_unless($estAutorise, 404);
 
         $cheminFichier = UploadStorage::resoudreCheminCours($nomSecurise);
+
+        if ($cheminFichier === null) {
+            $cheminFichier = UploadStorage::resoudreCheminCoursInterne(
+                (string) ($document['chemin_source_interne'] ?? '')
+            );
+        }
+
         abort_if($cheminFichier === null, 404);
 
         return $responseFactory->download(

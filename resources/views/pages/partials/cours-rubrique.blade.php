@@ -49,6 +49,31 @@ $courseFormaterDate = static function (string $date): string {
 
     return date('d/m/Y H:i', $horodatage);
 };
+
+$courseDocumentsGroupes = [];
+
+foreach ($courseDocuments as $courseDocument) {
+    $courseGroupeDocument = trim((string) ($courseDocument['groupe_document'] ?? ''));
+    $courseSousGroupeDocument = trim((string) ($courseDocument['sous_groupe_document'] ?? ''));
+    $courseCleGroupe = $courseGroupeDocument !== '' ? $courseGroupeDocument : '__racine__';
+    $courseCleSousGroupe = $courseSousGroupeDocument !== '' ? $courseSousGroupeDocument : '__racine__';
+
+    if (! isset($courseDocumentsGroupes[$courseCleGroupe])) {
+        $courseDocumentsGroupes[$courseCleGroupe] = [
+            'label' => $courseGroupeDocument,
+            'sous_groupes' => [],
+        ];
+    }
+
+    if (! isset($courseDocumentsGroupes[$courseCleGroupe]['sous_groupes'][$courseCleSousGroupe])) {
+        $courseDocumentsGroupes[$courseCleGroupe]['sous_groupes'][$courseCleSousGroupe] = [
+            'label' => $courseSousGroupeDocument,
+            'documents' => [],
+        ];
+    }
+
+    $courseDocumentsGroupes[$courseCleGroupe]['sous_groupes'][$courseCleSousGroupe]['documents'][] = $courseDocument;
+}
 ?>
 
 <article id="<?= e($courseAncre) ?>" class="course-rubrique">
@@ -70,156 +95,192 @@ $courseFormaterDate = static function (string $date): string {
                 <p><?= e($courseMessageVide) ?></p>
             </div>
         <?php else: ?>
-            <?php foreach ($courseDocuments as $courseDocument): ?>
+            <?php foreach ($courseDocumentsGroupes as $courseGroupeDocuments): ?>
                 <?php
-                $courseTitreDocument = (string) ($courseDocument['titre_document'] ?? 'Document PDF');
-                $courseDescriptionDocument = trim((string) ($courseDocument['description_document'] ?? ''));
-                $courseLienTelechargement = route('fichiers.cours.show', [
-                    'nomFichier' => (string) ($courseDocument['nom_fichier_stocke'] ?? ''),
-                ]);
-                $courseMetaDocument = ['PDF'];
-                $courseTailleDocument = $courseFormaterTaille((int) ($courseDocument['taille_octets'] ?? 0));
-                $courseDateCreation = $courseFormaterDate((string) ($courseDocument['cree_le'] ?? ''));
-                $courseDateMiseAJour = $courseFormaterDate((string) ($courseDocument['mis_a_jour_le'] ?? ''));
-
-                if ($courseTailleDocument !== '') {
-                    $courseMetaDocument[] = $courseTailleDocument;
-                }
-
-                if ($courseDateCreation !== '') {
-                    $courseMetaDocument[] = 'Ajoute le '.$courseDateCreation;
-                }
-
-                if ($courseDateMiseAJour !== '') {
-                    $courseMetaDocument[] = 'Mis a jour le '.$courseDateMiseAJour;
-                }
+                $courseLabelGroupe = (string) ($courseGroupeDocuments['label'] ?? '');
+                $courseSousGroupes = is_array($courseGroupeDocuments['sous_groupes'] ?? null)
+                    ? $courseGroupeDocuments['sous_groupes']
+                    : [];
                 ?>
 
-                <article class="course-document-row">
-                    <div class="course-document-row-main">
-                        <div class="course-document-main">
-                            <?php if ($coursePeutGererDocuments): ?>
-                                <a class="course-document-download" href="<?= e($courseLienTelechargement) ?>">
-                                    <?= e($courseTitreDocument) ?>
-                                </a>
-                            <?php else: ?>
-                                <span class="course-document-title"><?= e($courseTitreDocument) ?></span>
-                            <?php endif; ?>
-
-                            <?php if ($courseDescriptionDocument !== ''): ?>
-                                <p class="course-document-description"><?= e($courseDescriptionDocument) ?></p>
-                            <?php endif; ?>
-
-                            <p class="card-subtitle course-document-meta"><?= e(implode(' | ', $courseMetaDocument)) ?></p>
+                <section class="course-document-group<?= $courseLabelGroupe === '' ? ' course-document-group--root' : '' ?>">
+                    <?php if ($courseLabelGroupe !== ''): ?>
+                        <div class="course-document-group-head">
+                            <p class="card-tag">Dossier</p>
+                            <h4><?= e($courseLabelGroupe) ?></h4>
                         </div>
+                    <?php endif; ?>
 
-                        <?php if ($coursePeutGererDocuments): ?>
-                            <div class="course-document-actions">
-                                <details class="course-document-edit">
-                                    <summary
-                                        class="course-action-button"
-                                        aria-label="<?= e('Modifier le document '.$courseTitreDocument) ?>"
-                                    >
-                                        <span aria-hidden="true">&#128296;</span>
-                                        <span class="sr-only">Modifier</span>
-                                    </summary>
+                    <?php foreach ($courseSousGroupes as $courseSousGroupeDocuments): ?>
+                        <?php
+                        $courseLabelSousGroupe = (string) ($courseSousGroupeDocuments['label'] ?? '');
+                        $courseListeDocuments = is_array($courseSousGroupeDocuments['documents'] ?? null)
+                            ? $courseSousGroupeDocuments['documents']
+                            : [];
+                        ?>
 
-                                    <div class="course-document-edit-panel">
-                                        <form
-                                            method="post"
-                                            action="<?= e($courseUrlAction) ?>"
-                                            class="course-upload-form course-upload-form--inline"
-                                            enctype="multipart/form-data"
-                                        >
-                                            <input type="hidden" name="action" value="modifier_document_cours">
-                                            <input type="hidden" name="_token" value="<?= e($courseJetonCsrf) ?>">
-                                            <input type="hidden" name="jeton_csrf" value="<?= e($courseJetonCsrf) ?>">
-                                            <input type="hidden" name="page_redirection" value="<?= e((string) $pageCourante) ?>">
-                                            <input
-                                                type="hidden"
-                                                name="identifiant_document_cours"
-                                                value="<?= e((string) ($courseDocument['identifiant_document'] ?? '')) ?>"
-                                            >
+                        <div class="course-document-subgroup<?= $courseLabelSousGroupe === '' ? ' course-document-subgroup--root' : '' ?>">
+                            <?php if ($courseLabelSousGroupe !== ''): ?>
+                                <p class="course-document-subgroup-title"><?= e($courseLabelSousGroupe) ?></p>
+                            <?php endif; ?>
 
-                                            <div class="course-upload-grid">
-                                                <label>
-                                                    Rubrique
-                                                    <select name="rubrique_document_cours">
-                                                        <?php foreach ($courseRubriqueLabels as $courseCodeRubrique => $courseLibelleRubrique): ?>
-                                                            <option
-                                                                value="<?= e($courseCodeRubrique) ?>"
-                                                                <?= $courseCodeRubrique === $courseRubrique ? 'selected' : '' ?>
-                                                            >
-                                                                <?= e($courseLibelleRubrique) ?>
-                                                            </option>
-                                                        <?php endforeach; ?>
-                                                    </select>
-                                                </label>
+                            <div class="course-document-subgroup-list">
+                                <?php foreach ($courseListeDocuments as $courseDocument): ?>
+                                    <?php
+                                    $courseTitreDocument = (string) ($courseDocument['titre_document'] ?? 'Document PDF');
+                                    $courseDescriptionDocument = trim((string) ($courseDocument['description_document'] ?? ''));
+                                    $courseLienTelechargement = route('fichiers.cours.show', [
+                                        'nomFichier' => (string) ($courseDocument['nom_fichier_stocke'] ?? ''),
+                                    ]);
+                                    $courseMetaDocument = ['PDF'];
+                                    $courseTailleDocument = $courseFormaterTaille((int) ($courseDocument['taille_octets'] ?? 0));
+                                    $courseDateCreation = $courseFormaterDate((string) ($courseDocument['cree_le'] ?? ''));
+                                    $courseDateMiseAJour = $courseFormaterDate((string) ($courseDocument['mis_a_jour_le'] ?? ''));
+                                    $courseRubriqueDocument = (string) ($courseDocument['code_rubrique'] ?? $courseRubrique);
 
-                                                <label>
-                                                    Remplacer le PDF
-                                                    <input
-                                                        type="file"
-                                                        name="fichier_document_cours_remplacement"
-                                                        accept="application/pdf,.pdf"
-                                                    >
-                                                </label>
+                                    if ($courseTailleDocument !== '') {
+                                        $courseMetaDocument[] = $courseTailleDocument;
+                                    }
+
+                                    if ($courseDateCreation !== '') {
+                                        $courseMetaDocument[] = 'Ajoute le '.$courseDateCreation;
+                                    }
+
+                                    if ($courseDateMiseAJour !== '') {
+                                        $courseMetaDocument[] = 'Mis a jour le '.$courseDateMiseAJour;
+                                    }
+                                    ?>
+
+                                    <article class="course-document-row">
+                                        <div class="course-document-row-main">
+                                            <div class="course-document-main">
+                                                <?php if ($coursePeutGererDocuments): ?>
+                                                    <a class="course-document-download" href="<?= e($courseLienTelechargement) ?>">
+                                                        <?= e($courseTitreDocument) ?>
+                                                    </a>
+                                                <?php else: ?>
+                                                    <span class="course-document-title"><?= e($courseTitreDocument) ?></span>
+                                                <?php endif; ?>
+
+                                                <?php if ($courseDescriptionDocument !== ''): ?>
+                                                    <p class="course-document-description"><?= e($courseDescriptionDocument) ?></p>
+                                                <?php endif; ?>
+
+                                                <p class="card-subtitle course-document-meta"><?= e(implode(' | ', $courseMetaDocument)) ?></p>
                                             </div>
 
-                                            <label>
-                                                Titre du document
-                                                <input
-                                                    type="text"
-                                                    name="titre_document_cours"
-                                                    maxlength="160"
-                                                    value="<?= e($courseTitreDocument) ?>"
-                                                    required
-                                                >
-                                            </label>
+                                            <?php if ($coursePeutGererDocuments): ?>
+                                                <div class="course-document-actions">
+                                                    <details class="course-document-edit">
+                                                        <summary
+                                                            class="course-action-button"
+                                                            aria-label="<?= e('Modifier le document '.$courseTitreDocument) ?>"
+                                                        >
+                                                            <span aria-hidden="true">&#128296;</span>
+                                                            <span class="sr-only">Modifier</span>
+                                                        </summary>
 
-                                            <label>
-                                                Description
-                                                <textarea
-                                                    name="description_document_cours"
-                                                    rows="4"
-                                                    maxlength="2000"
-                                                ><?= e($courseDescriptionDocument) ?></textarea>
-                                            </label>
+                                                        <div class="course-document-edit-panel">
+                                                            <form
+                                                                method="post"
+                                                                action="<?= e($courseUrlAction) ?>"
+                                                                class="course-upload-form course-upload-form--inline"
+                                                                enctype="multipart/form-data"
+                                                            >
+                                                                <input type="hidden" name="action" value="modifier_document_cours">
+                                                                <input type="hidden" name="_token" value="<?= e($courseJetonCsrf) ?>">
+                                                                <input type="hidden" name="jeton_csrf" value="<?= e($courseJetonCsrf) ?>">
+                                                                <input type="hidden" name="page_redirection" value="<?= e((string) $pageCourante) ?>">
+                                                                <input
+                                                                    type="hidden"
+                                                                    name="identifiant_document_cours"
+                                                                    value="<?= e((string) ($courseDocument['identifiant_document'] ?? '')) ?>"
+                                                                >
 
-                                            <button type="submit" class="button button-primary">Enregistrer</button>
-                                        </form>
-                                    </div>
-                                </details>
+                                                                <div class="course-upload-grid">
+                                                                    <label>
+                                                                        Rubrique
+                                                                        <select name="rubrique_document_cours">
+                                                                            <?php foreach ($courseRubriqueLabels as $courseCodeRubrique => $courseLibelleRubrique): ?>
+                                                                                <option
+                                                                                    value="<?= e($courseCodeRubrique) ?>"
+                                                                                    <?= $courseCodeRubrique === $courseRubriqueDocument ? 'selected' : '' ?>
+                                                                                >
+                                                                                    <?= e($courseLibelleRubrique) ?>
+                                                                                </option>
+                                                                            <?php endforeach; ?>
+                                                                        </select>
+                                                                    </label>
 
-                                <form
-                                    method="post"
-                                    action="<?= e($courseUrlAction) ?>"
-                                    class="inline-form"
-                                    data-confirm-delete
-                                    data-confirm-message="Supprimer definitivement ce document PDF ?"
-                                >
-                                    <input type="hidden" name="action" value="supprimer_document_cours">
-                                    <input type="hidden" name="_token" value="<?= e($courseJetonCsrf) ?>">
-                                    <input type="hidden" name="jeton_csrf" value="<?= e($courseJetonCsrf) ?>">
-                                    <input type="hidden" name="page_redirection" value="<?= e((string) $pageCourante) ?>">
-                                    <input
-                                        type="hidden"
-                                        name="identifiant_document_cours"
-                                        value="<?= e((string) ($courseDocument['identifiant_document'] ?? '')) ?>"
-                                    >
-                                    <button
-                                        type="submit"
-                                        class="course-action-button course-action-button--danger"
-                                        aria-label="<?= e('Supprimer le document '.$courseTitreDocument) ?>"
-                                    >
-                                        <span aria-hidden="true">&#128465;</span>
-                                        <span class="sr-only">Supprimer</span>
-                                    </button>
-                                </form>
+                                                                    <label>
+                                                                        Remplacer le PDF
+                                                                        <input
+                                                                            type="file"
+                                                                            name="fichier_document_cours_remplacement"
+                                                                            accept="application/pdf,.pdf"
+                                                                        >
+                                                                    </label>
+                                                                </div>
+
+                                                                <label>
+                                                                    Titre du document
+                                                                    <input
+                                                                        type="text"
+                                                                        name="titre_document_cours"
+                                                                        maxlength="160"
+                                                                        value="<?= e($courseTitreDocument) ?>"
+                                                                        required
+                                                                    >
+                                                                </label>
+
+                                                                <label>
+                                                                    Description
+                                                                    <textarea
+                                                                        name="description_document_cours"
+                                                                        rows="4"
+                                                                        maxlength="2000"
+                                                                    ><?= e($courseDescriptionDocument) ?></textarea>
+                                                                </label>
+
+                                                                <button type="submit" class="button button-primary">Enregistrer</button>
+                                                            </form>
+                                                        </div>
+                                                    </details>
+
+                                                    <form
+                                                        method="post"
+                                                        action="<?= e($courseUrlAction) ?>"
+                                                        class="inline-form"
+                                                        data-confirm-delete
+                                                        data-confirm-message="Supprimer definitivement ce document PDF ?"
+                                                    >
+                                                        <input type="hidden" name="action" value="supprimer_document_cours">
+                                                        <input type="hidden" name="_token" value="<?= e($courseJetonCsrf) ?>">
+                                                        <input type="hidden" name="jeton_csrf" value="<?= e($courseJetonCsrf) ?>">
+                                                        <input type="hidden" name="page_redirection" value="<?= e((string) $pageCourante) ?>">
+                                                        <input
+                                                            type="hidden"
+                                                            name="identifiant_document_cours"
+                                                            value="<?= e((string) ($courseDocument['identifiant_document'] ?? '')) ?>"
+                                                        >
+                                                        <button
+                                                            type="submit"
+                                                            class="course-action-button course-action-button--danger"
+                                                            aria-label="<?= e('Supprimer le document '.$courseTitreDocument) ?>"
+                                                        >
+                                                            <span aria-hidden="true">&#128465;</span>
+                                                            <span class="sr-only">Supprimer</span>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    </article>
+                                <?php endforeach; ?>
                             </div>
-                        <?php endif; ?>
-                    </div>
-                </article>
+                        </div>
+                    <?php endforeach; ?>
+                </section>
             <?php endforeach; ?>
         <?php endif; ?>
     </div>

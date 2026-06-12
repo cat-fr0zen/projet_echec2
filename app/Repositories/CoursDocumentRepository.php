@@ -17,9 +17,10 @@ final class CoursDocumentRepository
         'livret_c' => 'Livret C',
         'livret_d' => 'Livret D',
         'livret_e' => 'Livret E',
+        'livrets' => 'Bibliotheque des livrets',
         'cours' => 'Cours',
-        'methodologie' => 'Méthodologie',
-        'strategie' => 'Stratégie',
+        'methodologie' => 'Methodologie',
+        'strategie' => 'Strategie',
     ];
 
     /**
@@ -31,6 +32,9 @@ final class CoursDocumentRepository
             fn (object $ligne): array => $this->normaliserDocument((array) $ligne),
             DB::table('document_cours')
                 ->orderBy('code_rubrique')
+                ->orderBy('groupe_document')
+                ->orderBy('sous_groupe_document')
+                ->orderBy('titre_document')
                 ->orderByDesc('cree_le')
                 ->get()
                 ->all()
@@ -73,6 +77,9 @@ final class CoursDocumentRepository
             'chemin_fichier' => (string) ($donnees['chemin_fichier'] ?? ''),
             'type_mime' => (string) ($donnees['type_mime'] ?? 'application/pdf'),
             'taille_octets' => (int) ($donnees['taille_octets'] ?? 0),
+            'groupe_document' => $this->normaliserTexteOptionnel($donnees['groupe_document'] ?? null),
+            'sous_groupe_document' => $this->normaliserTexteOptionnel($donnees['sous_groupe_document'] ?? null),
+            'chemin_source_interne' => $this->normaliserTexteOptionnel($donnees['chemin_source_interne'] ?? null),
             'identifiant_auteur' => (string) ($donnees['identifiant_auteur'] ?? ''),
             'cree_le' => date('Y-m-d H:i:s'),
         ]);
@@ -112,6 +119,24 @@ final class CoursDocumentRepository
         return $ligne !== null ? $this->normaliserDocument((array) $ligne) : null;
     }
 
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function trouverParCheminSourceInterne(string $cheminSourceInterne): ?array
+    {
+        $cheminSourceInterne = trim($cheminSourceInterne);
+
+        if ($cheminSourceInterne === '') {
+            return null;
+        }
+
+        $ligne = DB::table('document_cours')
+            ->where('chemin_source_interne', $cheminSourceInterne)
+            ->first();
+
+        return $ligne !== null ? $this->normaliserDocument((array) $ligne) : null;
+    }
+
     public function supprimer(string $identifiantDocument): bool
     {
         if (trim($identifiantDocument) === '') {
@@ -139,6 +164,8 @@ final class CoursDocumentRepository
             'code_rubrique' => (string) ($donnees['code_rubrique'] ?? ''),
             'titre_document' => (string) ($donnees['titre_document'] ?? ''),
             'description_document' => $this->normaliserTexteOptionnel($donnees['description_document'] ?? null),
+            'groupe_document' => $this->normaliserTexteOptionnel($donnees['groupe_document'] ?? null),
+            'sous_groupe_document' => $this->normaliserTexteOptionnel($donnees['sous_groupe_document'] ?? null),
             'mis_a_jour_le' => date('Y-m-d H:i:s'),
         ];
 
@@ -148,10 +175,15 @@ final class CoursDocumentRepository
             'chemin_fichier',
             'type_mime',
             'taille_octets',
+            'chemin_source_interne',
         ] as $champOptionnel) {
-            if (array_key_exists($champOptionnel, $donnees)) {
-                $miseAJour[$champOptionnel] = $donnees[$champOptionnel];
+            if (! array_key_exists($champOptionnel, $donnees)) {
+                continue;
             }
+
+            $miseAJour[$champOptionnel] = $champOptionnel === 'chemin_source_interne'
+                ? $this->normaliserTexteOptionnel($donnees[$champOptionnel])
+                : $donnees[$champOptionnel];
         }
 
         DB::table('document_cours')
@@ -181,6 +213,9 @@ final class CoursDocumentRepository
             'chemin_fichier' => (string) ($ligne['chemin_fichier'] ?? ''),
             'type_mime' => (string) ($ligne['type_mime'] ?? 'application/pdf'),
             'taille_octets' => (int) ($ligne['taille_octets'] ?? 0),
+            'groupe_document' => (string) ($ligne['groupe_document'] ?? ''),
+            'sous_groupe_document' => (string) ($ligne['sous_groupe_document'] ?? ''),
+            'chemin_source_interne' => (string) ($ligne['chemin_source_interne'] ?? ''),
             'identifiant_auteur' => (string) ($ligne['identifiant_auteur'] ?? ''),
             'cree_le' => (string) ($ligne['cree_le'] ?? ''),
             'mis_a_jour_le' => (string) ($ligne['mis_a_jour_le'] ?? ''),

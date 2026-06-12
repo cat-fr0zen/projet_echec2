@@ -1,6 +1,7 @@
 <?php
 
 use App\Mail\SmtpTestMail;
+use App\Services\CoursPdfImportService;
 use App\Support\MailProviderConfig;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
@@ -61,3 +62,23 @@ Artisan::command('mail:test-envoi {destinataire}', function (string $destinatair
 
     $this->info('Email de test envoye vers '.$destinataire.'.');
 })->purpose('Envoie un email de test avec la configuration SMTP courante');
+
+Artisan::command('cours:importer-pdf {--source=} {--auteur=}', function (): int {
+    $resultat = app(CoursPdfImportService::class)->importer(
+        $this->option('source'),
+        $this->option('auteur')
+    );
+
+    foreach ($resultat['erreurs'] as $erreur) {
+        $this->error($erreur);
+    }
+
+    $this->info(sprintf(
+        'Import termine : %d ajoutes, %d mis a jour, %d ignores.',
+        (int) $resultat['ajoutes'],
+        (int) $resultat['mis_a_jour'],
+        (int) $resultat['ignores']
+    ));
+
+    return $resultat['erreurs'] === [] ? 0 : 1;
+})->purpose('Importe les PDF de cours ranges dans des dossiers vers la base locale');

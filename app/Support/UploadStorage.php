@@ -23,6 +23,12 @@ final class UploadStorage
 
     public static function dossierCours(): string
     {
+        $dossierPersonnalise = trim((string) env('COURSE_UPLOADS_PATH', ''));
+
+        if ($dossierPersonnalise !== '') {
+            return $dossierPersonnalise;
+        }
+
         return self::dossierRacine().DIRECTORY_SEPARATOR.'cours';
     }
 
@@ -93,6 +99,45 @@ final class UploadStorage
         $cheminPrive = self::dossierCours().DIRECTORY_SEPARATOR.$nomSecurise;
 
         return is_file($cheminPrive) ? $cheminPrive : null;
+    }
+
+    public static function resoudreCheminCoursInterne(string $cheminInterne): ?string
+    {
+        $cheminInterne = trim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $cheminInterne));
+
+        if ($cheminInterne === '' || str_contains($cheminInterne, '..')) {
+            return null;
+        }
+
+        $dossierCours = realpath(self::dossierCours());
+
+        if ($dossierCours === false) {
+            return null;
+        }
+
+        $cheminComplet = $dossierCours.DIRECTORY_SEPARATOR.$cheminInterne;
+
+        if (! is_file($cheminComplet)) {
+            return null;
+        }
+
+        $cheminReel = realpath($cheminComplet);
+
+        if ($cheminReel === false) {
+            return null;
+        }
+
+        $racineNormalisee = strtolower(str_replace('\\', '/', rtrim($dossierCours, DIRECTORY_SEPARATOR)));
+        $cheminNormalise = strtolower(str_replace('\\', '/', $cheminReel));
+
+        if (
+            $cheminNormalise !== $racineNormalisee
+            && ! str_starts_with($cheminNormalise, $racineNormalisee.'/')
+        ) {
+            return null;
+        }
+
+        return $cheminReel;
     }
 
     public static function supprimerCheminMedia(string $nomFichier): void

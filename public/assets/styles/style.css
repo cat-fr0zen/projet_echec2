@@ -5424,6 +5424,45 @@ body.burger-open {
     gap: 0.85rem;
 }
 
+.course-document-group {
+    display: grid;
+    gap: 0.9rem;
+    padding: 0.95rem;
+    border: 1px solid rgba(23, 32, 27, 0.06);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.38);
+}
+
+.course-document-group--root {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.course-document-group-head h4 {
+    margin-top: 0.3rem;
+    margin-bottom: 0;
+}
+
+.course-document-subgroup {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.course-document-subgroup-title {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.course-document-subgroup-list {
+    display: grid;
+    gap: 0.85rem;
+}
+
 .course-document-row {
     display: grid;
     gap: 0.85rem;
@@ -5615,6 +5654,10 @@ body.burger-open {
 @media (max-width: 720px) {
     .course-upload-grid {
         grid-template-columns: 1fr;
+    }
+
+    .course-document-group {
+        padding: 0.8rem;
     }
 
     .course-rubrique,

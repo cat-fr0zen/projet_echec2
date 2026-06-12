@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use App\Repositories\UserRepository;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 final class CoursPageTest extends TestCase
@@ -143,5 +145,85 @@ final class CoursPageTest extends TestCase
             ->assertSeeText('Cours')
             ->assertSeeText('Le fil des seances')
             ->assertSee('id="cours-cours"', false);
+    }
+
+    public function test_les_pages_de_cours_affichent_les_documents_importes_en_groupes(): void
+    {
+        $repository = new UserRepository();
+        $utilisateur = $repository->creer([
+            'nom' => 'Admin',
+            'prenom' => 'Cours',
+            'date_naissance' => '1990-05-06',
+            'courriel' => 'admin-groupe-cours@example.test',
+            'numero_licence' => '',
+            'mot_de_passe' => 'Motdepasse2026!',
+            'description_profil' => '',
+            'pseudo_chess' => '',
+        ]);
+        $administrateur = $repository->mettreAJourAcces(
+            (string) $utilisateur['identifiant'],
+            User::ROLE_ADMIN,
+            User::STATUT_COMPTE_ACTIF,
+            User::STATUT_ADHESION_ACTIVE
+        ) ?? $utilisateur;
+
+        $this->ajouterDocumentCours([
+            'identifiant_document' => 'document_livrets_importe',
+            'code_rubrique' => 'livrets',
+            'titre_document' => 'Livret A',
+            'nom_fichier_stocke' => 'cours_livret_a.pdf',
+            'groupe_document' => 'Nouveaux livrets',
+            'sous_groupe_document' => null,
+        ], (string) $administrateur['identifiant']);
+
+        $this->ajouterDocumentCours([
+            'identifiant_document' => 'document_cours_importe',
+            'code_rubrique' => 'cours',
+            'titre_document' => "L'attaque double 1",
+            'nom_fichier_stocke' => 'cours_attaque_double.pdf',
+            'groupe_document' => 'Cours de tactique',
+            'sous_groupe_document' => "L'attaque double",
+        ], (string) $administrateur['identifiant']);
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+        ])->get('/cours-livrets')
+            ->assertOk()
+            ->assertSeeText('Bibliotheque des livrets')
+            ->assertSeeText('Nouveaux livrets')
+            ->assertSeeText('Livret A')
+            ->assertSee('/fichiers/cours/cours_livret_a.pdf', false);
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+        ])->get('/cours-seances')
+            ->assertOk()
+            ->assertSeeText('Cours de tactique')
+            ->assertSeeText("L'attaque double")
+            ->assertSeeText("L'attaque double 1")
+            ->assertSee('/fichiers/cours/cours_attaque_double.pdf', false);
+    }
+
+    /**
+     * @param  array<string, mixed>  $document
+     */
+    private function ajouterDocumentCours(array $document, string $identifiantAuteur): void
+    {
+        DB::table('document_cours')->insert([
+            'identifiant_document' => (string) ($document['identifiant_document'] ?? 'document_test'),
+            'code_rubrique' => (string) ($document['code_rubrique'] ?? 'cours'),
+            'titre_document' => (string) ($document['titre_document'] ?? 'Document'),
+            'description_document' => 'Document importe pour test',
+            'nom_fichier_original' => (string) ($document['titre_document'] ?? 'document').'.pdf',
+            'nom_fichier_stocke' => (string) ($document['nom_fichier_stocke'] ?? 'cours_test.pdf'),
+            'chemin_fichier' => 'fichiers/cours/'.(string) ($document['nom_fichier_stocke'] ?? 'cours_test.pdf'),
+            'type_mime' => 'application/pdf',
+            'taille_octets' => 128,
+            'groupe_document' => $document['groupe_document'] ?? null,
+            'sous_groupe_document' => $document['sous_groupe_document'] ?? null,
+            'chemin_source_interne' => $document['chemin_source_interne'] ?? null,
+            'identifiant_auteur' => $identifiantAuteur,
+            'cree_le' => now()->format('Y-m-d H:i:s'),
+        ]);
     }
 }
