@@ -3,27 +3,50 @@
  * Vue: hub principal des cours.
  */
 
+$courseDocumentsParRubrique = is_array($siteData['documents_cours_par_rubrique'] ?? null)
+    ? $siteData['documents_cours_par_rubrique']
+    : [];
+$courseDocumentsBibliotheque = is_array($courseDocumentsParRubrique['livrets'] ?? null)
+    ? $courseDocumentsParRubrique['livrets']
+    : [];
+$courseProgressionDisponibles = array_filter([
+    'methodologie' => is_array($courseDocumentsParRubrique['methodologie'] ?? null) ? $courseDocumentsParRubrique['methodologie'] : [],
+    'strategie' => is_array($courseDocumentsParRubrique['strategie'] ?? null) ? $courseDocumentsParRubrique['strategie'] : [],
+], static fn (array $documents): bool => $documents !== []);
+$courseLienProgression = count($courseProgressionDisponibles) === 1
+    ? url_route(array_key_first($courseProgressionDisponibles) === 'methodologie' ? 'cours-methodologie' : 'cours-strategie')
+    : url_route('cours-progression');
+$courseMetaLivrets = count($courseDocumentsBibliotheque) > 0
+    ? count($courseDocumentsBibliotheque).' PDF classes par dossiers'
+    : 'Ouvrir les niveaux';
+$courseMetaCours = is_array($courseDocumentsParRubrique['cours'] ?? null) && $courseDocumentsParRubrique['cours'] !== []
+    ? count($courseDocumentsParRubrique['cours']).' PDF de seance'
+    : 'Voir les supports';
+$courseMetaProgression = count($courseProgressionDisponibles) > 0
+    ? count($courseProgressionDisponibles).' rubrique(s) disponible(s)'
+    : 'Voir les documents';
+
 $blocsNavigation = [
     [
         'tag' => 'Parcours',
         'title' => 'Livrets',
-        'text' => 'Acceder rapidement aux niveaux A a E.',
+        'text' => 'Consulter la bibliotheque des livrets et les niveaux qui ont deja des PDF.',
         'href' => url_route('cours-livrets'),
-        'meta' => 'Ouvrir les niveaux',
+        'meta' => $courseMetaLivrets,
     ],
     [
         'tag' => 'Pedagogie',
         'title' => 'Cours',
         'text' => 'Retrouver les supports de seance du club.',
         'href' => url_route('cours-seances'),
-        'meta' => 'Voir les supports',
+        'meta' => $courseMetaCours,
     ],
     [
         'tag' => 'Progression',
         'title' => 'Methodologie / strategie',
-        'text' => 'Ranger les PDF de methode et de plan de jeu.',
-        'href' => url_route('cours-progression'),
-        'meta' => 'Voir les documents',
+        'text' => 'Retrouver seulement les rubriques qui contiennent deja des PDF utiles.',
+        'href' => $courseLienProgression,
+        'meta' => $courseMetaProgression,
     ],
 ];
 ?>

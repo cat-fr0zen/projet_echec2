@@ -35,6 +35,31 @@ $courseAncresRubriques = [
     'methodologie' => 'cours-methodologie',
     'strategie' => 'cours-strategie',
 ];
+$courseDocumentsBibliotheque = is_array($courseDocumentsParRubrique['livrets'] ?? null)
+    ? array_values($courseDocumentsParRubrique['livrets'])
+    : [];
+$courseObtenirDocumentsLivret = static function (string $rubriqueLivret) use ($courseDocumentsParRubrique, $courseDocumentsBibliotheque): array {
+    $documentsDirects = is_array($courseDocumentsParRubrique[$rubriqueLivret] ?? null)
+        ? array_values($courseDocumentsParRubrique[$rubriqueLivret])
+        : [];
+
+    if ($documentsDirects !== []) {
+        return $documentsDirects;
+    }
+
+    $lettreLivret = strtoupper((string) preg_replace('/^livret_/', '', $rubriqueLivret));
+
+    return array_values(array_filter(
+        $courseDocumentsBibliotheque,
+        static function (array $document) use ($lettreLivret): bool {
+            $titre = (string) ($document['titre_document'] ?? '');
+            $nomOriginal = (string) ($document['nom_fichier_original'] ?? '');
+            $motif = '/\blivret\s+'.preg_quote($lettreLivret, '/').'\b/i';
+
+            return preg_match($motif, $titre) === 1 || preg_match($motif, $nomOriginal) === 1;
+        }
+    ));
+};
 
 $rubriquesLivrets = [
     'livret_a' => 'cours-livret-a',
@@ -48,13 +73,25 @@ $configurationsLivrets = [];
 
 foreach (array_values(array_keys($rubriquesLivrets)) as $index => $rubriqueLivret) {
     $livret = $livretsCours[$index] ?? [];
+    $documentsLivret = $courseObtenirDocumentsLivret($rubriqueLivret);
     $configurationsLivrets[] = [
         'badge' => (string) ($livret['tag'] ?? strtoupper(str_replace('_', ' ', $rubriqueLivret))),
         'titre' => (string) ($livret['title'] ?? 'Livret'),
         'texte' => (string) ($livret['text'] ?? ''),
         'url' => url_route($rubriquesLivrets[$rubriqueLivret]),
+        'documents_count' => count($documentsLivret),
     ];
 }
+
+$configurationsLivrets = array_values(array_filter(
+    $configurationsLivrets,
+    static fn (array $configuration): bool => ((int) ($configuration['documents_count'] ?? 0)) > 0
+));
+
+$courseTitreNiveaux = $configurationsLivrets !== [] ? 'Niveaux disponibles' : 'Bibliotheque des livrets';
+$courseTexteNiveaux = $configurationsLivrets !== []
+    ? 'Seuls les niveaux qui contiennent deja des PDF sont proposes ici.'
+    : 'Les PDF sont ranges directement dans la bibliotheque ci-dessous.';
 
 $courseRubriqueConfig = [
     'rubrique' => 'livrets',
@@ -78,20 +115,22 @@ $courseRubriqueConfig = [
 <section class="section-block course-section reveal reveal-3">
     <div class="section-head course-section-head">
         <p class="eyebrow">Livrets</p>
-        <h2>Choisir un niveau</h2>
-        <p>Chaque carte ouvre la page dediee du niveau correspondant avec ses PDF de travail.</p>
+        <h2><?= e($courseTitreNiveaux) ?></h2>
+        <p><?= e($courseTexteNiveaux) ?></p>
     </div>
 
-    <div class="card-grid card-grid--three course-level-grid">
-        <?php foreach ($configurationsLivrets as $configurationLivret): ?>
-            <a class="info-card info-card--link course-level-card" href="<?= e((string) $configurationLivret['url']) ?>">
-                <p class="card-tag"><?= e((string) $configurationLivret['badge']) ?></p>
-                <h3><?= e((string) $configurationLivret['titre']) ?></h3>
-                <p><?= e((string) $configurationLivret['texte']) ?></p>
-                <p class="card-meta">Ouvrir la page du niveau</p>
-            </a>
-        <?php endforeach; ?>
-    </div>
+    <?php if ($configurationsLivrets !== []): ?>
+        <div class="card-grid card-grid--three course-level-grid">
+            <?php foreach ($configurationsLivrets as $configurationLivret): ?>
+                <a class="info-card info-card--link course-level-card" href="<?= e((string) $configurationLivret['url']) ?>">
+                    <p class="card-tag"><?= e((string) $configurationLivret['badge']) ?></p>
+                    <h3><?= e((string) $configurationLivret['titre']) ?></h3>
+                    <p><?= e((string) $configurationLivret['texte']) ?></p>
+                    <p class="card-meta"><?= e((string) ($configurationLivret['documents_count'] ?? 0)) ?> PDF disponibles</p>
+                </a>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
 </section>
 
 <section class="section-block course-section reveal reveal-4">

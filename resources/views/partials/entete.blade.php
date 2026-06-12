@@ -168,7 +168,7 @@ $slugNavigationActive = str_starts_with((string) $pageCourante, 'cours-') ? 'gui
                     <button type="submit" class="button button-secondary burger-logout-button">Deconnexion</button>
                 </form>
             <?php else: ?>
-                <p class="burger-helper">Connecte-toi pour acceder aux cours, a la boutique et a ton profil membre.</p>
+                <p class="burger-helper">Connecte-toi pour acceder a la boutique, a ton profil membre et aux espaces reserves selon ton role.</p>
                 <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
             <?php endif; ?>
         </section>

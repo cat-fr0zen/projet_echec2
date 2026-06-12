@@ -368,6 +368,12 @@ final class LegacyPageRenderer
             'cours-progression',
             'cours-methodologie',
             'cours-strategie',
+        ], true) && ! $this->peutVoirCours($utilisateur)) {
+            ajouter_message_flash('error', "Acces reserve aux professeurs et a l'administration.");
+            rediriger_vers(url_route('accueil'));
+        }
+
+        if (in_array($segment, [
             'boutique',
             'profil',
             'parametres',
@@ -408,6 +414,7 @@ final class LegacyPageRenderer
         $estAdmin = $this->estAdmin($utilisateur);
         $estAdherent = $this->estAdherent($utilisateur);
         $estProf = $this->estProf($utilisateur);
+        $peutVoirCours = $estAdmin || $estProf;
         $role = (string) ($utilisateur['role'] ?? User::ROLE_CONNECTE);
 
         return [
@@ -421,7 +428,7 @@ final class LegacyPageRenderer
             'est_admin' => $estAdmin,
             'est_adherent' => $estAdherent,
             'est_prof' => $estProf,
-            'peut_voir_guides' => true,
+            'peut_voir_guides' => $peutVoirCours,
             'peut_voir_boutique' => true,
             'peut_publier_articles' => $estAdmin || $estAdherent || $estProf,
             'peut_soumettre_medias' => $estAdmin || $estAdherent || $estProf,
@@ -447,7 +454,11 @@ final class LegacyPageRenderer
             static function (array $item) use ($auth): bool {
                 $slug = (string) ($item['slug'] ?? '');
 
-                if (in_array($slug, ['guide', 'boutique'], true) && ! ($auth['est_connecte'] ?? false)) {
+                if ($slug === 'guide' && ! ($auth['peut_voir_guides'] ?? false)) {
+                    return false;
+                }
+
+                if ($slug === 'boutique' && ! ($auth['est_connecte'] ?? false)) {
                     return false;
                 }
 
@@ -486,6 +497,11 @@ final class LegacyPageRenderer
     {
         return $this->estUtilisateurActif($utilisateur)
             && ($utilisateur['role'] ?? '') === User::ROLE_PROF;
+    }
+
+    private function peutVoirCours(?array $utilisateur): bool
+    {
+        return $this->estAdmin($utilisateur) || $this->estProf($utilisateur);
     }
 
     private function libelleRole(string $role): string

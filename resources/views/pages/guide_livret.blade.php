@@ -12,6 +12,9 @@ $livretsCours = is_array($siteData['livrets_cours'] ?? null)
     ? array_values($siteData['livrets_cours'])
     : [];
 $rubriqueActive = (string) ($donneesPage['rubrique_document_cours'] ?? 'livret_a');
+$courseDocumentsBibliotheque = is_array($courseDocumentsParRubrique['livrets'] ?? null)
+    ? array_values($courseDocumentsParRubrique['livrets'])
+    : [];
 
 $courseRubriqueLabels = [
     'livret_a' => 'Livret A',
@@ -42,12 +45,35 @@ $coursePagesRubriques = [
     'livret_d' => 'cours-livret-d',
     'livret_e' => 'cours-livret-e',
 ];
+$courseObtenirDocumentsLivret = static function (string $rubriqueLivret) use ($courseDocumentsParRubrique, $courseDocumentsBibliotheque): array {
+    $documentsDirects = is_array($courseDocumentsParRubrique[$rubriqueLivret] ?? null)
+        ? array_values($courseDocumentsParRubrique[$rubriqueLivret])
+        : [];
+
+    if ($documentsDirects !== []) {
+        return $documentsDirects;
+    }
+
+    $lettreLivret = strtoupper((string) preg_replace('/^livret_/', '', $rubriqueLivret));
+
+    return array_values(array_filter(
+        $courseDocumentsBibliotheque,
+        static function (array $document) use ($lettreLivret): bool {
+            $titre = (string) ($document['titre_document'] ?? '');
+            $nomOriginal = (string) ($document['nom_fichier_original'] ?? '');
+            $motif = '/\blivret\s+'.preg_quote($lettreLivret, '/').'\b/i';
+
+            return preg_match($motif, $titre) === 1 || preg_match($motif, $nomOriginal) === 1;
+        }
+    ));
+};
 
 $configurationsLivrets = [];
 $livretRubriques = ['livret_a', 'livret_b', 'livret_c', 'livret_d', 'livret_e'];
 
 foreach ($livretRubriques as $index => $rubriqueLivret) {
     $livret = $livretsCours[$index] ?? [];
+    $documentsLivret = $courseObtenirDocumentsLivret($rubriqueLivret);
     $configurationsLivrets[] = [
         'rubrique' => $rubriqueLivret,
         'ancre' => $courseAncresRubriques[$rubriqueLivret],
@@ -56,11 +82,18 @@ foreach ($livretRubriques as $index => $rubriqueLivret) {
         'texte' => (string) ($livret['text'] ?? ''),
         'url' => url_route($coursePagesRubriques[$rubriqueLivret]),
         'active' => $rubriqueActive === $rubriqueLivret,
+        'documents_count' => count($documentsLivret),
     ];
 }
 
-$courseRubriqueConfig = current(array_filter(
+$configurationsLivretsCompletes = $configurationsLivrets;
+$configurationsLivrets = array_values(array_filter(
     $configurationsLivrets,
+    static fn (array $configuration): bool => ((int) ($configuration['documents_count'] ?? 0)) > 0
+));
+
+$courseRubriqueConfig = current(array_filter(
+    $configurationsLivretsCompletes,
     static fn (array $configuration): bool => (string) ($configuration['rubrique'] ?? '') === $rubriqueActive
 ));
 
@@ -73,6 +106,8 @@ if (! is_array($courseRubriqueConfig)) {
         'texte' => '',
     ];
 }
+
+$courseDocumentsParRubrique[$rubriqueActive] = $courseObtenirDocumentsLivret($rubriqueActive);
 ?>
 
 <section class="page-banner reveal reveal-2">
@@ -89,7 +124,7 @@ if (! is_array($courseRubriqueConfig)) {
     <div class="section-head course-section-head">
         <p class="eyebrow">Navigation des niveaux</p>
         <h2>Choisir un autre livret</h2>
-        <p>Chaque carte ouvre une page dediee pour garder les PDF de ce niveau dans un espace clair.</p>
+        <p>Seuls les livrets qui contiennent deja des PDF sont proposes ici.</p>
     </div>
 
     <div class="card-grid card-grid--three course-level-grid">
@@ -102,7 +137,10 @@ if (! is_array($courseRubriqueConfig)) {
                 <p class="card-tag"><?= e((string) ($configurationLivret['badge'] ?? 'Livret')) ?></p>
                 <h3><?= e((string) ($configurationLivret['titre'] ?? 'Livret')) ?></h3>
                 <p><?= e((string) ($configurationLivret['texte'] ?? '')) ?></p>
-                <p class="card-meta"><?= ! empty($configurationLivret['active']) ? 'Page actuelle' : 'Ouvrir ce niveau' ?></p>
+                <p class="card-meta">
+                    <?= ! empty($configurationLivret['active']) ? 'Page actuelle' : 'Ouvrir ce niveau' ?>
+                    · <?= e((string) ($configurationLivret['documents_count'] ?? 0)) ?> PDF
+                </p>
             </a>
         <?php endforeach; ?>
     </div>

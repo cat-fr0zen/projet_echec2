@@ -22,8 +22,10 @@ final class CoursPageTest extends TestCase
         $this->seed(DatabaseSeeder::class);
     }
 
-    public function test_la_page_cours_affiche_un_hub_avec_trois_entrees_principales(): void
+    public function test_un_compte_connecte_simple_ne_voit_pas_longlet_cours_et_ne_peut_pas_y_acceder(): void
     {
+        $this->creerAdministrateur('admin-reference-cours@example.test');
+
         $utilisateur = (new UserRepository())->creer([
             'nom' => 'Cours',
             'prenom' => 'Test',
@@ -37,6 +39,23 @@ final class CoursPageTest extends TestCase
 
         $this->withSession([
             'identifiant_utilisateur' => (string) $utilisateur['identifiant'],
+        ])->get('/')
+            ->assertOk()
+            ->assertDontSee('href="/guide"', false);
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $utilisateur['identifiant'],
+        ])->get('/guide')
+            ->assertRedirect('/')
+            ->assertSessionHas('messages_flash.0.type', 'error');
+    }
+
+    public function test_la_page_cours_affiche_un_hub_avec_trois_entrees_principales_pour_un_admin(): void
+    {
+        $administrateur = $this->creerAdministrateur('cours-page-admin@example.test');
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
         ])->get('/guide')
             ->assertOk()
             ->assertSeeText('Cours')
@@ -53,93 +72,91 @@ final class CoursPageTest extends TestCase
             ->assertDontSee('id="cours-strategie"', false);
     }
 
-    public function test_la_page_livrets_affiche_les_entrees_vers_les_niveaux_a_a_e(): void
+    public function test_la_page_livrets_n_affiche_que_les_niveaux_qui_ont_des_documents(): void
     {
-        $utilisateur = (new UserRepository())->creer([
-            'nom' => 'Livret',
-            'prenom' => 'Test',
-            'date_naissance' => '2001-05-06',
-            'courriel' => 'livret-page@example.test',
-            'numero_licence' => '',
-            'mot_de_passe' => 'Motdepasse2026!',
-            'description_profil' => '',
-            'pseudo_chess' => '',
-        ]);
+        $administrateur = $this->creerAdministrateur('livret-page-admin@example.test');
+
+        $this->ajouterDocumentCours([
+            'identifiant_document' => 'document_livret_importe_a',
+            'code_rubrique' => 'livrets',
+            'titre_document' => 'Livret A',
+            'nom_fichier_stocke' => 'cours_livret_a.pdf',
+            'groupe_document' => 'Nouveaux livrets',
+        ], (string) $administrateur['identifiant']);
+
+        $this->ajouterDocumentCours([
+            'identifiant_document' => 'document_livret_direct_c',
+            'code_rubrique' => 'livret_c',
+            'titre_document' => 'Exercices livret C',
+            'nom_fichier_stocke' => 'cours_livret_c.pdf',
+        ], (string) $administrateur['identifiant']);
 
         $this->withSession([
-            'identifiant_utilisateur' => (string) $utilisateur['identifiant'],
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
         ])->get('/cours-livrets')
             ->assertOk()
             ->assertSeeText('Livrets')
-            ->assertSeeText('Choisir un niveau')
+            ->assertSeeText('Niveaux disponibles')
             ->assertSeeText('Retour a la page Cours')
             ->assertSee('href="/cours-livret-a"', false)
-            ->assertSee('href="/cours-livret-e"', false);
+            ->assertSee('href="/cours-livret-c"', false)
+            ->assertDontSee('href="/cours-livret-b"', false)
+            ->assertDontSee('href="/cours-livret-d"', false)
+            ->assertDontSee('href="/cours-livret-e"', false);
     }
 
-    public function test_un_livret_a_sa_propre_page_dediee(): void
+    public function test_un_livret_peut_afficher_les_pdf_importes_depuis_la_bibliotheque(): void
     {
-        $utilisateur = (new UserRepository())->creer([
-            'nom' => 'Livret',
-            'prenom' => 'Test',
-            'date_naissance' => '2001-05-06',
-            'courriel' => 'livret-detail-page@example.test',
-            'numero_licence' => '',
-            'mot_de_passe' => 'Motdepasse2026!',
-            'description_profil' => '',
-            'pseudo_chess' => '',
-        ]);
+        $administrateur = $this->creerAdministrateur('livret-detail-admin@example.test');
+
+        $this->ajouterDocumentCours([
+            'identifiant_document' => 'document_livret_a_importe',
+            'code_rubrique' => 'livrets',
+            'titre_document' => 'Livret A',
+            'nom_fichier_stocke' => 'cours_livret_a_importe.pdf',
+            'groupe_document' => 'Anciens livrets',
+        ], (string) $administrateur['identifiant']);
 
         $this->withSession([
-            'identifiant_utilisateur' => (string) $utilisateur['identifiant'],
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
         ])->get('/cours-livret-a')
             ->assertOk()
             ->assertSeeText('Livret A')
             ->assertSeeText('Retour a la page Livrets')
-            ->assertSeeText('Choisir un autre livret')
-            ->assertSee('href="/cours-livret-b"', false)
-            ->assertSee('aria-current="page"', false)
-            ->assertSee('id="cours-livret-a"', false);
+            ->assertSeeText('Livret A')
+            ->assertSeeText('Anciens livrets')
+            ->assertSeeText('Livret A')
+            ->assertSee('/fichiers/cours/cours_livret_a_importe.pdf', false);
     }
 
-    public function test_la_page_progression_affiche_les_liens_vers_methodologie_et_strategie(): void
+    public function test_la_page_progression_n_affiche_que_les_rubriques_remplies(): void
     {
-        $utilisateur = (new UserRepository())->creer([
-            'nom' => 'Progression',
-            'prenom' => 'Test',
-            'date_naissance' => '2001-05-06',
-            'courriel' => 'progression-page@example.test',
-            'numero_licence' => '',
-            'mot_de_passe' => 'Motdepasse2026!',
-            'description_profil' => '',
-            'pseudo_chess' => '',
-        ]);
+        $administrateur = $this->creerAdministrateur('progression-admin@example.test');
+
+        $this->ajouterDocumentCours([
+            'identifiant_document' => 'document_strategie_remplie',
+            'code_rubrique' => 'strategie',
+            'titre_document' => 'Plans de jeu',
+            'nom_fichier_stocke' => 'cours_strategie.pdf',
+            'groupe_document' => 'Structures',
+        ], (string) $administrateur['identifiant']);
 
         $this->withSession([
-            'identifiant_utilisateur' => (string) $utilisateur['identifiant'],
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
         ])->get('/cours-progression')
             ->assertOk()
             ->assertSeeText('Methodologie / strategie')
-            ->assertSeeText('Deux pages dediees')
-            ->assertSee('href="/cours-methodologie"', false)
-            ->assertSee('href="/cours-strategie"', false);
+            ->assertSeeText('Rubriques disponibles')
+            ->assertDontSee('/cours-methodologie', false)
+            ->assertSee('/cours-strategie', false);
     }
 
     public function test_la_page_cours_dediee_affiche_sa_rubrique_documentaire(): void
     {
-        $utilisateur = (new UserRepository())->creer([
-            'nom' => 'Seance',
-            'prenom' => 'Test',
-            'date_naissance' => '2001-05-06',
-            'courriel' => 'seance-page@example.test',
-            'numero_licence' => '',
-            'mot_de_passe' => 'Motdepasse2026!',
-            'description_profil' => '',
-            'pseudo_chess' => '',
-        ]);
+        $administrateur = $this->creerAdministrateur('seance-admin@example.test');
 
         $this->withSession([
-            'identifiant_utilisateur' => (string) $utilisateur['identifiant'],
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
         ])->get('/cours-seances')
             ->assertOk()
             ->assertSeeText('Cours')
@@ -149,23 +166,7 @@ final class CoursPageTest extends TestCase
 
     public function test_les_pages_de_cours_affichent_les_documents_importes_en_groupes(): void
     {
-        $repository = new UserRepository();
-        $utilisateur = $repository->creer([
-            'nom' => 'Admin',
-            'prenom' => 'Cours',
-            'date_naissance' => '1990-05-06',
-            'courriel' => 'admin-groupe-cours@example.test',
-            'numero_licence' => '',
-            'mot_de_passe' => 'Motdepasse2026!',
-            'description_profil' => '',
-            'pseudo_chess' => '',
-        ]);
-        $administrateur = $repository->mettreAJourAcces(
-            (string) $utilisateur['identifiant'],
-            User::ROLE_ADMIN,
-            User::STATUT_COMPTE_ACTIF,
-            User::STATUT_ADHESION_ACTIVE
-        ) ?? $utilisateur;
+        $administrateur = $this->creerAdministrateur('admin-groupe-cours@example.test');
 
         $this->ajouterDocumentCours([
             'identifiant_document' => 'document_livrets_importe',
@@ -225,5 +226,30 @@ final class CoursPageTest extends TestCase
             'identifiant_auteur' => $identifiantAuteur,
             'cree_le' => now()->format('Y-m-d H:i:s'),
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function creerAdministrateur(string $courriel): array
+    {
+        $repository = new UserRepository();
+        $utilisateur = $repository->creer([
+            'nom' => 'Admin',
+            'prenom' => 'Cours',
+            'date_naissance' => '1990-05-06',
+            'courriel' => $courriel,
+            'numero_licence' => '',
+            'mot_de_passe' => 'Motdepasse2026!',
+            'description_profil' => '',
+            'pseudo_chess' => '',
+        ]);
+
+        return $repository->mettreAJourAcces(
+            (string) $utilisateur['identifiant'],
+            User::ROLE_ADMIN,
+            User::STATUT_COMPTE_ACTIF,
+            User::STATUT_ADHESION_ACTIVE
+        ) ?? $utilisateur;
     }
 }
