@@ -5341,6 +5341,77 @@ body[data-theme="dark"] .burger-link:focus-visible {
     text-align: right;
 }
 
+.confirm-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(17, 12, 10, 0.48);
+    backdrop-filter: blur(10px);
+}
+
+.confirm-modal[hidden] {
+    display: none !important;
+}
+
+.confirm-modal-panel {
+    position: relative;
+    width: min(100%, 34rem);
+    padding: 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 1.4rem;
+    background: linear-gradient(180deg, rgba(255, 251, 244, 0.98), rgba(247, 239, 226, 0.96));
+    box-shadow: 0 24px 64px rgba(17, 12, 10, 0.24);
+}
+
+.confirm-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid rgba(196, 154, 67, 0.4);
+    border-radius: 999px;
+    background: rgba(255, 252, 246, 0.92);
+    color: var(--text);
+    font-size: 1.5rem;
+    cursor: pointer;
+}
+
+.confirm-modal-panel h2 {
+    margin-top: 0.45rem;
+    font-size: clamp(2rem, 4vw, 2.7rem);
+    line-height: 0.96;
+}
+
+.confirm-modal-description,
+.confirm-modal-warning {
+    color: var(--muted);
+}
+
+.confirm-modal-description {
+    margin-top: 0.85rem;
+}
+
+.confirm-modal-warning {
+    margin-top: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(167, 64, 52, 0.16);
+    border-radius: 1rem;
+    background: rgba(167, 64, 52, 0.08);
+    font-weight: 600;
+}
+
+.confirm-modal-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1.2rem;
+}
+
 .admin-inline-form[data-confirm-delete] {
     grid-template-columns: 1fr;
 }
@@ -5354,6 +5425,23 @@ body[data-theme="dark"] .article-preview {
     box-shadow:
         inset 0 1px 0 rgba(255, 255, 255, 0.04),
         0 22px 52px rgba(0, 0, 0, 0.22);
+}
+
+body[data-theme="dark"] .confirm-modal-panel {
+    border-color: rgba(212, 166, 80, 0.16);
+    background: linear-gradient(180deg, rgba(30, 23, 20, 0.98), rgba(20, 16, 14, 0.96));
+    box-shadow: 0 26px 72px rgba(0, 0, 0, 0.34);
+}
+
+body[data-theme="dark"] .confirm-modal-close {
+    border-color: rgba(212, 166, 80, 0.28);
+    background: rgba(255, 255, 255, 0.06);
+    color: #f6efe2;
+}
+
+body[data-theme="dark"] .confirm-modal-warning {
+    border-color: rgba(200, 90, 78, 0.26);
+    background: rgba(200, 90, 78, 0.12);
 }
 
 body[data-theme="dark"] .article-editor-date,

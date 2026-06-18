@@ -1361,16 +1361,107 @@ function initArticleEditor() {
 }
 
 function initDeleteConfirmations() {
+    const modalRoot = document.querySelector("[data-confirm-modal]");
+    const submitButton = modalRoot?.querySelector("[data-confirm-modal-submit]");
+    const cancelButtons = Array.from(modalRoot?.querySelectorAll("[data-confirm-modal-cancel]") || []);
+    const descriptionNode = modalRoot?.querySelector("#confirm-modal-description");
+    let pendingForm = null;
+    let previousFocusedElement = null;
+
+    if (!(modalRoot instanceof HTMLElement) || !(submitButton instanceof HTMLButtonElement)) {
+        return;
+    }
+
+    function buildMessage(form) {
+        const customMessage = form.getAttribute("data-confirm-message");
+
+        if (customMessage) {
+            return customMessage;
+        }
+
+        const titleNode = form.closest(".info-card, .course-document-row, .course-rubrique, .panel")?.querySelector("h3, h4, .course-document-title");
+        const title = titleNode instanceof HTMLElement ? titleNode.textContent.trim() : "";
+
+        if (title) {
+            return `Tu es sur le point de supprimer « ${title} ». Cette action est definitive et l'element ne pourra pas etre restaure depuis l'interface.`;
+        }
+
+        return "Tu es sur le point de supprimer cet element. Cette action est definitive et ne pourra pas etre annulee depuis l'interface.";
+    }
+
+    function closeModal(restoreFocus = true) {
+        modalRoot.hidden = true;
+        modalRoot.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+
+        if (restoreFocus && previousFocusedElement instanceof HTMLElement) {
+            focusElementWithoutScroll(previousFocusedElement);
+        }
+
+        previousFocusedElement = null;
+        pendingForm = null;
+    }
+
+    function openModal(form) {
+        pendingForm = form;
+        previousFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+        if (descriptionNode instanceof HTMLElement) {
+            descriptionNode.textContent = buildMessage(form);
+        }
+
+        modalRoot.hidden = false;
+        modalRoot.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+        focusElementWithoutScroll(submitButton);
+    }
+
     document.querySelectorAll("[data-confirm-delete]").forEach((form) => {
         form.addEventListener("submit", (event) => {
-            const message =
-                form.getAttribute("data-confirm-message") ||
-                "Supprimer definitivement cet element ?";
-
-            if (!window.confirm(message)) {
-                event.preventDefault();
+            if (form.dataset.confirmAccepted === "true") {
+                delete form.dataset.confirmAccepted;
+                return;
             }
+
+            event.preventDefault();
+            openModal(form);
         });
+    });
+
+    submitButton.addEventListener("click", () => {
+        if (!(pendingForm instanceof HTMLFormElement)) {
+            closeModal();
+            return;
+        }
+
+        pendingForm.dataset.confirmAccepted = "true";
+        const formToSubmit = pendingForm;
+        closeModal(false);
+        formToSubmit.requestSubmit();
+    });
+
+    cancelButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            closeModal();
+        });
+    });
+
+    modalRoot.addEventListener("click", (event) => {
+        if (event.target === modalRoot) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (modalRoot.hidden) {
+            return;
+        }
+
+        trapFocus(event, modalRoot);
+
+        if (event.key === "Escape") {
+            closeModal();
+        }
     });
 }
 

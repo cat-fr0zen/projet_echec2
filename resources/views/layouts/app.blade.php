@@ -77,6 +77,32 @@ $logoClubUrl = url_ressource('assets/media/divers/Logo_LCH2025.png') . '?v=' . (
     <?php require dirname(__DIR__) . '/partials/pied-de-page.blade.php'; ?>
     <?php require dirname(__DIR__) . '/partials/modale-authentification.blade.php'; ?>
     <?php require dirname(__DIR__) . '/partials/consentement.blade.php'; ?>
+    <div
+        class="confirm-modal"
+        data-confirm-modal
+        hidden
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        aria-describedby="confirm-modal-description"
+    >
+        <div class="confirm-modal-panel" tabindex="-1">
+            <button type="button" class="confirm-modal-close" data-confirm-modal-cancel aria-label="Fermer la fenêtre">&times;</button>
+            <p class="eyebrow">Confirmation</p>
+            <h2 id="confirm-modal-title">Confirmer la suppression</h2>
+            <p id="confirm-modal-description" class="confirm-modal-description">
+                Cette action supprimera définitivement l'élément sélectionné.
+            </p>
+            <p class="confirm-modal-warning">
+                Vérifie bien avant de continuer : cette suppression ne pourra pas être annulée depuis l'interface.
+            </p>
+            <div class="confirm-modal-actions">
+                <button type="button" class="button button-secondary" data-confirm-modal-cancel>Annuler</button>
+                <button type="button" class="button button-danger" data-confirm-modal-submit>Oui, supprimer définitivement</button>
+            </div>
+        </div>
+    </div>
     <script src="<?= e($siteScriptUrl) ?>" defer></script>
     <script src="<?= e($dammierScriptUrl) ?>" defer></script>
 </body>
