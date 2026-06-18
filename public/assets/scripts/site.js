@@ -35,7 +35,7 @@ function getCookieValue(name) {
 function setCookieValue(name, value, days = 365) {
     const expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
     const secureFlag = window.location.protocol === "https:" ? "; Secure" : "";
-    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expiresAt}; path=/; SameSite=Lax${secureFlag}`;
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expiresAt}; path=/; SameSite=Strict${secureFlag}`;
 }
 
 /**

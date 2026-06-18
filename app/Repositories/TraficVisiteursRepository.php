@@ -6,6 +6,7 @@ namespace App\Repositories;
 
 use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 final class TraficVisiteursRepository
@@ -15,6 +16,10 @@ final class TraficVisiteursRepository
         $pageNormalisee = trim($page);
 
         if ($pageNormalisee === '') {
+            return;
+        }
+
+        if (! Schema::hasTable('journal_visite_visiteur')) {
             return;
         }
 
@@ -44,6 +49,10 @@ final class TraficVisiteursRepository
     public function obtenirResumeAdmin(?DateTimeImmutable $reference = null): array
     {
         try {
+            if (! Schema::hasTable('journal_visite_visiteur')) {
+                return $this->resumeVide();
+            }
+
             $maintenant = $reference ?? new DateTimeImmutable('now');
             $debutJour = $maintenant->setTime(0, 0, 0)->format('Y-m-d H:i:s');
             $debutSemaineGlissante = $maintenant->modify('-6 days')->setTime(0, 0, 0)->format('Y-m-d H:i:s');

@@ -10,17 +10,26 @@ use App\Support\UploadStorage;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 final class MediaRepository
 {
     public function listerTous(): array
     {
+        if (! $this->tablesDisponibles()) {
+            return [];
+        }
+
         return $this->chargerMedias($this->requeteMedias()->orderByDesc('media_publication.cree_le')->get()->all());
     }
 
     public function trouverPublies(): array
     {
+        if (! $this->tablesDisponibles()) {
+            return [];
+        }
+
         return $this->chargerMedias(
             $this->requeteMedias()
                 ->where('media_publication.code_statut', MediaPublication::STATUT_PUBLIE)
@@ -32,6 +41,10 @@ final class MediaRepository
 
     public function trouverParIdentifiantAuteur(string $identifiantAuteur): array
     {
+        if (! $this->tablesDisponibles()) {
+            return [];
+        }
+
         return $this->chargerMedias(
             $this->requeteMedias()
                 ->where('media_publication.identifiant_auteur', $identifiantAuteur)
@@ -43,6 +56,10 @@ final class MediaRepository
 
     public function creer(array $donnees): array
     {
+        if (! Schema::hasTable('media_publication')) {
+            return [];
+        }
+
         $identifiant = 'media_' . bin2hex(random_bytes(8));
 
         DB::table('media_publication')->insert([
@@ -65,6 +82,10 @@ final class MediaRepository
 
     public function changerStatut(string $identifiant, string $statut): ?array
     {
+        if (! Schema::hasTable('media_publication')) {
+            return null;
+        }
+
         if (!in_array($statut, [
             MediaPublication::STATUT_EN_ATTENTE,
             MediaPublication::STATUT_PUBLIE,
@@ -85,6 +106,10 @@ final class MediaRepository
 
     public function trouverParIdentifiant(string $identifiant): ?array
     {
+        if (! $this->tablesDisponibles()) {
+            return null;
+        }
+
         $row = $this->requeteMedias()->where('media_publication.identifiant', $identifiant)->first();
 
         return $row !== null ? $this->normaliserMedia((array) $row) : null;
@@ -92,6 +117,10 @@ final class MediaRepository
 
     public function trouverParNomFichierStocke(string $nomFichierStocke): ?array
     {
+        if (! $this->tablesDisponibles()) {
+            return null;
+        }
+
         $row = $this->requeteMedias()->where('media_publication.nom_fichier_stocke', $nomFichierStocke)->first();
 
         return $row !== null ? $this->normaliserMedia((array) $row) : null;
@@ -174,5 +203,10 @@ final class MediaRepository
         }
 
         return $cheminPublic;
+    }
+
+    private function tablesDisponibles(): bool
+    {
+        return Schema::hasTable('media_publication') && Schema::hasTable('compte_membre');
     }
 }

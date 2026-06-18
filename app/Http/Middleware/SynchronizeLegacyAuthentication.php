@@ -24,8 +24,7 @@ final class SynchronizeLegacyAuthentication
             $utilisateur = Auth::guard('web')->loginUsingId($identifiantLegacy);
 
             if ($utilisateur === false) {
-                $session->forget('identifiant_utilisateur');
-                unset($_SESSION['identifiant_utilisateur']);
+                $this->purgerSessionLegacy($session);
             }
         }
 
@@ -38,10 +37,16 @@ final class SynchronizeLegacyAuthentication
 
             $_SESSION['identifiant_utilisateur'] = (string) $identifiantAuthentifie;
         } elseif ($identifiantLegacy !== '') {
-            $session->forget('identifiant_utilisateur');
-            unset($_SESSION['identifiant_utilisateur']);
+            $this->purgerSessionLegacy($session);
         }
 
         return $next($request);
+    }
+
+    private function purgerSessionLegacy(\Illuminate\Contracts\Session\Session $session): void
+    {
+        $session->forget('identifiant_utilisateur');
+        $session->migrate(true);
+        unset($_SESSION['identifiant_utilisateur']);
     }
 }

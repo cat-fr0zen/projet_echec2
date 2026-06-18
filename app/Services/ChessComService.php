@@ -7,6 +7,9 @@ namespace App\Services;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * ServiceChessCom
@@ -221,54 +224,41 @@ final class ChessComService
      */
     private function effectuerRequeteJson(string $url): array
     {
-        $enTetes = [
-            'Accept: application/json',
-            'User-Agent: ' . $this->agentUtilisateur,
-        ];
+        try {
+            $reponse = Http::acceptJson()
+                ->withUserAgent($this->agentUtilisateur)
+                ->timeout(6)
+                ->connectTimeout(3)
+                ->retry(2, 200, throw: false)
+                ->withOptions([
+                    'verify' => true,
+                ])
+                ->get($url);
 
-        $contexte = stream_context_create([
-            'http' => [
-                'method' => 'GET',
-                'timeout' => 6,
-                'ignore_errors' => true,
-                'header' => implode("\r\n", $enTetes),
-            ],
-            'ssl' => [
-                'verify_peer' => true,
-                'verify_peer_name' => true,
-            ],
-        ]);
+            $donnees = $reponse->json();
 
-        $contenu = @file_get_contents($url, false, $contexte);
-        $enTetesReponse = $http_response_header ?? [];
-        $codeStatut = $this->extraireCodeStatut($enTetesReponse);
-        $donnees = null;
+            if (! $reponse->successful()) {
+                Log::warning('chesscom.http_status', [
+                    'url' => $url,
+                    'status' => $reponse->status(),
+                ]);
+            }
 
-        if (is_string($contenu) && trim($contenu) !== '') {
-            $donneesDecodees = json_decode($contenu, true);
-            $donnees = is_array($donneesDecodees) ? $donneesDecodees : null;
+            return [
+                'code_statut' => $reponse->status(),
+                'donnees' => is_array($donnees) ? $donnees : null,
+            ];
+        } catch (Throwable $exception) {
+            Log::warning('chesscom.http_failure', [
+                'url' => $url,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return [
+                'code_statut' => 0,
+                'donnees' => null,
+            ];
         }
-
-        return [
-            'code_statut' => $codeStatut,
-            'donnees' => $donnees,
-        ];
-    }
-
-    /** Parse le code HTTP a partir des entetes de reponse. */
-    private function extraireCodeStatut(array $enTetesReponse): int
-    {
-        if ($enTetesReponse === []) {
-            return 0;
-        }
-
-        $ligneStatut = (string) ($enTetesReponse[0] ?? '');
-
-        if (preg_match('/\s(\d{3})\s/', $ligneStatut, $correspondances) === 1) {
-            return (int) $correspondances[1];
-        }
-
-        return 0;
     }
 
     /** Extrait un code pays (ex: FR) depuis l'URL `.../country/FR`. */

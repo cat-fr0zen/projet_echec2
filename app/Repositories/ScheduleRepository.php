@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 final class ScheduleRepository
 {
@@ -13,6 +14,10 @@ final class ScheduleRepository
 
     public function obtenir(): array
     {
+        if (! $this->tablesDisponibles()) {
+            return $this->normaliserHoraire($this->horairesParDefaut());
+        }
+
         $schedule = DB::table('horaire_club')
             ->where('schedule_id', self::IDENTIFIANT)
             ->first();
@@ -48,10 +53,14 @@ final class ScheduleRepository
 
     public function mettreAJour(string $libelleSaison, string $messageJourFerie, array $creneaux): bool
     {
+        if (! $this->tablesDisponibles()) {
+            return false;
+        }
+
         $items = [];
 
         foreach (array_slice($creneaux, 0, self::MAX_ITEMS) as $creneau) {
-            if (!is_array($creneau)) {
+            if (! is_array($creneau)) {
                 continue;
             }
 
@@ -133,7 +142,7 @@ final class ScheduleRepository
                 continue;
             }
 
-            if (!isset($resume[$day])) {
+            if (! isset($resume[$day])) {
                 $resume[$day] = [
                     'day' => $day,
                     'times' => [],
@@ -141,7 +150,7 @@ final class ScheduleRepository
                 ];
             }
 
-            if (!in_array($time, $resume[$day]['times'], true)) {
+            if (! in_array($time, $resume[$day]['times'], true)) {
                 $resume[$day]['times'][] = $time;
             }
 
@@ -176,7 +185,7 @@ final class ScheduleRepository
         $items = [];
 
         foreach (array_slice((array) ($horaire['items'] ?? []), 0, self::MAX_ITEMS) as $item) {
-            if (!is_array($item)) {
+            if (! is_array($item)) {
                 continue;
             }
 
@@ -307,5 +316,10 @@ final class ScheduleRepository
             array_map('trim', preg_split('/\n+/', $details) ?: []),
             static fn (string $line): bool => $line !== ''
         ));
+    }
+
+    private function tablesDisponibles(): bool
+    {
+        return Schema::hasTable('horaire_club') && Schema::hasTable('horaire_creneau');
     }
 }

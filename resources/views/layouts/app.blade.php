@@ -29,6 +29,7 @@ $styleUrl = url_ressource('assets/styles/style.css') . '?v=' . (string) @filemti
 $siteScriptUrl = url_ressource('assets/scripts/site.js') . '?v=' . (string) @filemtime($siteScriptPath);
 $dammierScriptUrl = url_ressource('assets/scripts/dammier.js') . '?v=' . (string) @filemtime($dammierScriptPath);
 $logoClubUrl = url_ressource('assets/media/divers/Logo_LCH2025.png') . '?v=' . (string) @filemtime($logoClubPath);
+$cspNonce = (string) request()->attributes->get('csp_nonce', '');
 ?>
 <!DOCTYPE html>
 <html lang="fr">
@@ -103,9 +104,7 @@ $logoClubUrl = url_ressource('assets/media/divers/Logo_LCH2025.png') . '?v=' . (
             </div>
         </div>
     </div>
-    <script src="<?= e($siteScriptUrl) ?>" defer></script>
-    <script src="<?= e($dammierScriptUrl) ?>" defer></script>
+    <script src="<?= e($siteScriptUrl) ?>" defer nonce="<?= e($cspNonce) ?>"></script>
+    <script src="<?= e($dammierScriptUrl) ?>" defer nonce="<?= e($cspNonce) ?>"></script>
 </body>
 </html>
-
-

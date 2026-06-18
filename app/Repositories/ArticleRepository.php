@@ -10,12 +10,17 @@ use App\Support\UploadStorage;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 final class ArticleRepository
 {
     public function trouverPublies(): array
     {
+        if (! $this->tablesListeDisponibles()) {
+            return [];
+        }
+
         return $this->chargerArticles(
             $this->requeteArticles()
                 ->where('article.code_statut', Article::STATUT_PUBLIE)
@@ -27,6 +32,10 @@ final class ArticleRepository
 
     public function trouverParIdentifiantAuteur(string $identifiantAuteur): array
     {
+        if (! $this->tablesListeDisponibles()) {
+            return [];
+        }
+
         return $this->chargerArticles(
             $this->requeteArticles()
                 ->where('article.identifiant_auteur', $identifiantAuteur)
@@ -38,11 +47,19 @@ final class ArticleRepository
 
     public function listerTous(): array
     {
+        if (! $this->tablesListeDisponibles()) {
+            return [];
+        }
+
         return $this->chargerArticles($this->requeteArticles()->orderByDesc('article.cree_le')->get()->all());
     }
 
     public function trouverParIdentifiant(string $identifiant): ?array
     {
+        if (! $this->tablesListeDisponibles()) {
+            return null;
+        }
+
         $row = $this->requeteArticles()->where('article.identifiant', $identifiant)->first();
 
         return $row !== null ? $this->normaliserArticle((array) $row) : null;
@@ -50,6 +67,10 @@ final class ArticleRepository
 
     public function creer(array $donnees): array
     {
+        if (! $this->tablesEcritureDisponibles()) {
+            return [];
+        }
+
         $identifiant = 'article_' . bin2hex(random_bytes(8));
 
         DB::transaction(function () use ($identifiant, $donnees): void {
@@ -71,6 +92,10 @@ final class ArticleRepository
 
     public function changerStatut(string $identifiant, string $statut): ?array
     {
+        if (! $this->tablesListeDisponibles()) {
+            return null;
+        }
+
         if (!in_array($statut, [Article::STATUT_EN_ATTENTE, Article::STATUT_PUBLIE, Article::STATUT_REFUSE], true)) {
             return null;
         }
@@ -87,6 +112,10 @@ final class ArticleRepository
 
     public function supprimer(string $identifiant): bool
     {
+        if (! Schema::hasTable('article')) {
+            return false;
+        }
+
         return DB::table('article')->where('identifiant', $identifiant)->delete() > 0;
     }
 
@@ -95,6 +124,10 @@ final class ArticleRepository
      */
     public function trouverBlocMediaParNomFichierStocke(string $nomFichierStocke): ?array
     {
+        if (! Schema::hasTable('article') || ! Schema::hasTable('article_bloc')) {
+            return null;
+        }
+
         $row = DB::table('article_bloc')
             ->join('article', 'article.identifiant', '=', 'article_bloc.identifiant_article')
             ->select([
@@ -173,7 +206,7 @@ final class ArticleRepository
 
     private function chargerBlocs(string $identifiantArticle): array
     {
-        if ($identifiantArticle === '') {
+        if ($identifiantArticle === '' || ! Schema::hasTable('article_bloc')) {
             return [];
         }
 
@@ -280,5 +313,17 @@ final class ArticleRepository
         }
 
         return UploadStorage::cheminArticle($nomFichier);
+    }
+
+    private function tablesListeDisponibles(): bool
+    {
+        return Schema::hasTable('article')
+            && Schema::hasTable('article_bloc')
+            && Schema::hasTable('compte_membre');
+    }
+
+    private function tablesEcritureDisponibles(): bool
+    {
+        return Schema::hasTable('article') && Schema::hasTable('article_bloc');
     }
 }

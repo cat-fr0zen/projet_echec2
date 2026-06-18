@@ -2,9 +2,11 @@
 
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SynchronizeLegacyAuthentication;
+use App\Http\Middleware\TrustProxies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Middleware\TrustProxies as LaravelTrustProxies;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up'
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->replace(LaravelTrustProxies::class, TrustProxies::class);
         $middleware->web(append: [
             SynchronizeLegacyAuthentication::class,
         ]);

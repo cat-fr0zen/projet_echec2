@@ -44,6 +44,7 @@ $blocsAccueilGroupes = array_values(
     )
 );
 $grilleAccueilGroupesAffichee = false;
+$cspNonce = (string) request()->attributes->get('csp_nonce', '');
 ?>
 
 <section class="hero-grid">
@@ -178,7 +179,7 @@ $grilleAccueilGroupesAffichee = false;
                 </div>
             </div>
 
-            <script type="application/json" data-dammier-payload><?= json_encode($dammierPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
+            <script type="application/json" data-dammier-payload nonce="<?= e($cspNonce) ?>"><?= json_encode($dammierPayload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?></script>
         </div>
     </aside>
 </section>

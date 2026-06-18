@@ -8,6 +8,7 @@ use App\Support\NomAffichageUtilisateur;
 use DateTimeImmutable;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 final class DammierRepository
 {
@@ -40,6 +41,10 @@ final class DammierRepository
 
     public function listerClassementHebdomadaire(string $weekKey, string $puzzleId): array
     {
+        if (! $this->tablesScoresDisponibles()) {
+            return [];
+        }
+
         $rows = $this->requeteScores()
             ->where('dammier_week_key', $weekKey)
             ->where('dammier_puzzle_id', $puzzleId)
@@ -58,6 +63,22 @@ final class DammierRepository
         $nomAffichage = trim((string) ($utilisateur['prenom'] ?? '') . ' ' . (string) ($utilisateur['nom'] ?? ''));
         $weekKey = (string) ($puzzle['dammier_week_key'] ?? '');
         $puzzleId = (string) ($puzzle['dammier_id'] ?? '');
+
+        if (! Schema::hasTable('dammier_score')) {
+            $displayName = $nomAffichage !== '' ? $nomAffichage : (string) ($utilisateur['courriel'] ?? 'Membre');
+
+            return [
+                'dammier_score_id' => '',
+                'dammier_week_key' => $weekKey,
+                'dammier_puzzle_id' => $puzzleId,
+                'dammier_user_id' => $identifiantUtilisateur,
+                'dammier_display_name' => $displayName,
+                'dammier_moves_count' => max(1, $movesCount),
+                'dammier_elapsed_seconds' => max(1, $elapsedSeconds),
+                'dammier_solved_at' => gmdate('c'),
+                'dammier_record_status' => 'storage_unavailable',
+            ];
+        }
 
         $existing = DB::table('dammier_score')
             ->where('dammier_week_key', $weekKey)
@@ -129,16 +150,25 @@ final class DammierRepository
 
     private function listerPuzzlesActifs(): array
     {
-        $rows = DB::table('dammier_puzzle')
-            ->leftJoin('ref_difficulte_dammier as difficulte', 'difficulte.code_difficulte', '=', 'dammier_puzzle.code_difficulte')
+        if (! Schema::hasTable('dammier_puzzle')) {
+            return [];
+        }
+
+        $requete = DB::table('dammier_puzzle')
             ->where('actif', 1)
-            ->orderBy('dammier_puzzle.dammier_id')
-            ->select(
-                'dammier_puzzle.*',
-                'difficulte.libelle_difficulte as libelle_difficulte_dammier'
-            )
-            ->get()
-            ->all();
+            ->orderBy('dammier_puzzle.dammier_id');
+
+        if (Schema::hasTable('ref_difficulte_dammier')) {
+            $requete->leftJoin('ref_difficulte_dammier as difficulte', 'difficulte.code_difficulte', '=', 'dammier_puzzle.code_difficulte')
+                ->select(
+                    'dammier_puzzle.*',
+                    'difficulte.libelle_difficulte as libelle_difficulte_dammier'
+                );
+        } else {
+            $requete->select('dammier_puzzle.*');
+        }
+
+        $rows = $requete->get()->all();
 
         return array_map(fn (object $row): array => $this->normaliserPuzzle((array) $row), $rows);
     }
@@ -224,7 +254,7 @@ final class DammierRepository
         string $puzzleId,
         string $fallbackLegacy = ''
     ): array {
-        if ($puzzleId === '') {
+        if ($puzzleId === '' || ! Schema::hasTable($table)) {
             return $this->texteVersListe($fallbackLegacy);
         }
 
@@ -321,5 +351,10 @@ final class DammierRepository
         } catch (\Throwable) {
             return (string) $value;
         }
+    }
+
+    private function tablesScoresDisponibles(): bool
+    {
+        return Schema::hasTable('dammier_score') && Schema::hasTable('compte_membre');
     }
 }

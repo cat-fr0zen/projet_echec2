@@ -39,7 +39,12 @@ final class MediaAssetController extends Controller
         $cheminFichier = UploadStorage::resoudreCheminMedia($nomSecurise);
         abort_if($cheminFichier === null, 404);
 
-        return $this->repondreFichier($responseFactory, $cheminFichier, (string) ($media['type_mime'] ?? 'application/octet-stream'));
+        return $this->repondreFichier(
+            $responseFactory,
+            $cheminFichier,
+            (string) ($media['type_mime'] ?? 'application/octet-stream'),
+            $estPublie
+        );
     }
 
     public function showArticle(
@@ -65,7 +70,12 @@ final class MediaAssetController extends Controller
         $cheminFichier = UploadStorage::resoudreCheminArticle($nomSecurise);
         abort_if($cheminFichier === null, 404);
 
-        return $this->repondreFichier($responseFactory, $cheminFichier, (string) ($bloc['type_mime'] ?? 'application/octet-stream'));
+        return $this->repondreFichier(
+            $responseFactory,
+            $cheminFichier,
+            (string) ($bloc['type_mime'] ?? 'application/octet-stream'),
+            $estPublie
+        );
     }
 
     /**
@@ -76,14 +86,29 @@ final class MediaAssetController extends Controller
         return $userRepository->trouverParIdentifiant(identifiant_utilisateur_courant());
     }
 
-    private function repondreFichier(ResponseFactory $responseFactory, string $cheminFichier, string $typeMime): BinaryFileResponse
+    private function repondreFichier(
+        ResponseFactory $responseFactory,
+        string $cheminFichier,
+        string $typeMime,
+        bool $estPublie
+    ): BinaryFileResponse
     {
         $reponse = $responseFactory->file($cheminFichier, [
             'Content-Type' => $typeMime,
             'Content-Disposition' => 'inline; filename="'.basename($cheminFichier).'"',
             'X-Content-Type-Options' => 'nosniff',
-            'Cache-Control' => 'public, max-age=3600',
+            'Cache-Control' => $estPublie ? 'public, max-age=300, stale-while-revalidate=60' : 'private, no-store',
         ]);
+
+        if ($estPublie) {
+            $reponse->setPublic();
+            $reponse->setMaxAge(300);
+            $reponse->headers->addCacheControlDirective('stale-while-revalidate', '60');
+        } else {
+            $reponse->setPrivate();
+            $reponse->headers->addCacheControlDirective('no-store');
+            $reponse->headers->removeCacheControlDirective('public');
+        }
 
         return $reponse;
     }

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Throwable;
+
 /**
  * ServiceGoogleAvis
  *
@@ -203,71 +207,73 @@ final class GoogleReviewsService
         ?array $chargeUtile = null,
         array $enTetesSupplementaires = []
     ): array {
-        $enTetes = array_merge(
-            [
-                'Accept: application/json',
-                'User-Agent: ' . $this->agentUtilisateur,
-            ],
-            $enTetesSupplementaires
-        );
+        try {
+            $requete = Http::acceptJson()
+                ->withUserAgent($this->agentUtilisateur)
+                ->withHeaders($this->normaliserEnTetes($enTetesSupplementaires))
+                ->timeout(8)
+                ->connectTimeout(3)
+                ->retry(2, 250, throw: false)
+                ->withOptions([
+                    'verify' => true,
+                ]);
 
-        $optionsHttp = [
-            'method' => strtoupper($methode),
-            'timeout' => 8,
-            'ignore_errors' => true,
-            'header' => implode("\r\n", $enTetes),
-        ];
+            $reponse = strtoupper($methode) === 'POST'
+                ? $requete->asJson()->post($url, $chargeUtile ?? [])
+                : $requete->get($url);
 
-        if ($chargeUtile !== null) {
-            $contenuJson = json_encode($chargeUtile, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $donnees = $reponse->json();
 
-            if ($contenuJson === false) {
-                return [
-                    'code_statut' => 0,
-                    'donnees' => null,
-                ];
+            if (! $reponse->successful()) {
+                Log::warning('google_reviews.http_status', [
+                    'url' => $url,
+                    'status' => $reponse->status(),
+                ]);
             }
 
-            $optionsHttp['content'] = $contenuJson;
+            return [
+                'code_statut' => $reponse->status(),
+                'donnees' => is_array($donnees) ? $donnees : null,
+            ];
+        } catch (Throwable $exception) {
+            Log::warning('google_reviews.http_failure', [
+                'url' => $url,
+                'message' => $exception->getMessage(),
+            ]);
+
+            return [
+                'code_statut' => 0,
+                'donnees' => null,
+            ];
         }
-
-        $contexte = stream_context_create([
-            'http' => $optionsHttp,
-            'ssl' => [
-                'verify_peer' => true,
-                'verify_peer_name' => true,
-            ],
-        ]);
-
-        $contenu = @file_get_contents($url, false, $contexte);
-        $enTetesReponse = $http_response_header ?? [];
-        $codeStatut = $this->extraireCodeStatut($enTetesReponse);
-        $donnees = null;
-
-        if (is_string($contenu) && trim($contenu) !== '') {
-            $donneesDecodees = json_decode($contenu, true);
-            $donnees = is_array($donneesDecodees) ? $donneesDecodees : null;
-        }
-
-        return [
-            'code_statut' => $codeStatut,
-            'donnees' => $donnees,
-        ];
     }
 
-    private function extraireCodeStatut(array $enTetesReponse): int
+    /**
+     * @param  array<int, string>  $enTetes
+     * @return array<string, string>
+     */
+    private function normaliserEnTetes(array $enTetes): array
     {
-        if ($enTetesReponse === []) {
-            return 0;
+        $normalises = [];
+
+        foreach ($enTetes as $entete) {
+            $positionSeparateur = strpos($entete, ':');
+
+            if ($positionSeparateur === false) {
+                continue;
+            }
+
+            $nom = trim(substr($entete, 0, $positionSeparateur));
+            $valeur = trim(substr($entete, $positionSeparateur + 1));
+
+            if ($nom === '' || $valeur === '') {
+                continue;
+            }
+
+            $normalises[$nom] = $valeur;
         }
 
-        $ligneStatut = (string) ($enTetesReponse[0] ?? '');
-
-        if (preg_match('/\s(\d{3})\s/', $ligneStatut, $correspondances) === 1) {
-            return (int) $correspondances[1];
-        }
-
-        return 0;
+        return $normalises;
     }
 
     private function extraireTexteAvis(array $avis): string
