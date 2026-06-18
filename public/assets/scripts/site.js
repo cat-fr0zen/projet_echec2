@@ -1374,6 +1374,73 @@ function initDeleteConfirmations() {
     });
 }
 
+function initAdminTabs() {
+    const tabRoot = document.querySelector("[data-admin-tabs]");
+    const tabButtons = Array.from(document.querySelectorAll("[data-admin-tab-trigger]"));
+    const tabPanels = Array.from(document.querySelectorAll("[data-admin-tab-panel]"));
+
+    if (!(tabRoot instanceof HTMLElement) || tabButtons.length === 0 || tabPanels.length === 0) {
+        return;
+    }
+
+    const knownTabs = new Set(
+        tabButtons
+            .map((button) => button.getAttribute("data-admin-tab-trigger") || "")
+            .filter(Boolean)
+    );
+
+    function resolveTabFromHash() {
+        const hash = window.location.hash.replace(/^#/, "");
+
+        if (!hash) {
+            return "";
+        }
+
+        if (knownTabs.has(hash)) {
+            return hash;
+        }
+
+        const targetElement = document.getElementById(hash);
+
+        if (!(targetElement instanceof HTMLElement)) {
+            return "";
+        }
+
+        return targetElement.getAttribute("data-admin-tab-panel") || "";
+    }
+
+    function activateTab(tabName, updateHash = false) {
+        const nextTab = knownTabs.has(tabName) ? tabName : tabButtons[0].getAttribute("data-admin-tab-trigger") || "";
+
+        tabButtons.forEach((button) => {
+            const isActive = (button.getAttribute("data-admin-tab-trigger") || "") === nextTab;
+            button.classList.toggle("is-active", isActive);
+            button.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+
+        tabPanels.forEach((panel) => {
+            const shouldShow = (panel.getAttribute("data-admin-tab-panel") || "") === nextTab;
+            panel.hidden = !shouldShow;
+        });
+
+        if (updateHash && nextTab) {
+            window.history.replaceState(null, "", `#${nextTab}`);
+        }
+    }
+
+    tabButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+            activateTab(button.getAttribute("data-admin-tab-trigger") || "", true);
+        });
+    });
+
+    window.addEventListener("hashchange", () => {
+        activateTab(resolveTabFromHash(), false);
+    });
+
+    activateTab(resolveTabFromHash(), false);
+}
+
 /**
  * Gere les pop-ups legaux du footer (documents obligatoires et registre cookies).
  */
@@ -1473,6 +1540,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initPieceCarousel();
     initDammierPuzzle();
     initArticleEditor();
+    initAdminTabs();
     initDeleteConfirmations();
     initLegalModals();
     initSettingsActions();

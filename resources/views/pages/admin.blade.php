@@ -31,6 +31,14 @@ $horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horair
 $itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
 $blocsConstructeurAccueil = is_array($siteData['constructeur_accueil_blocs'] ?? null) ? $siteData['constructeur_accueil_blocs'] : [];
 $lignesHorairesAdmin = $itemsHorairesClub;
+$adminTabs = [
+    'newsletter' => 'Newsletter',
+    'pilotage' => 'Pilotage',
+    'trafic' => 'Trafic',
+    'horaires' => 'Horaires',
+    'comptes' => 'Comptes',
+    'contenus' => 'Contenus',
+];
 
 while (count($lignesHorairesAdmin) < 10) {
     $lignesHorairesAdmin[] = [
@@ -49,7 +57,20 @@ while (count($lignesHorairesAdmin) < 10) {
     <p><?= e($pageData['intro']) ?></p>
 </section>
 
-<section id="admin-newsletter" class="section-block reveal reveal-2">
+<nav class="admin-tab-nav reveal reveal-2" aria-label="Rubriques du tableau de bord admin" data-admin-tabs>
+    <?php foreach ($adminTabs as $adminTabKey => $adminTabLabel): ?>
+        <button
+            type="button"
+            class="admin-tab-button<?= $adminTabKey === 'newsletter' ? ' is-active' : '' ?>"
+            data-admin-tab-trigger="<?= e($adminTabKey) ?>"
+            aria-selected="<?= $adminTabKey === 'newsletter' ? 'true' : 'false' ?>"
+        >
+            <?= e($adminTabLabel) ?>
+        </button>
+    <?php endforeach; ?>
+</nav>
+
+<section id="admin-newsletter" class="section-block reveal reveal-2 admin-tab-panel" data-admin-tab-panel="newsletter">
     <div class="section-head">
         <p class="eyebrow">Newsletter</p>
         <h2>Suivre les abonnés et les envois.</h2>
@@ -135,7 +156,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </div>
 </section>
 
-<section id="admin-newsletter-boutique" class="section-block reveal reveal-6">
+<section id="admin-newsletter-boutique" class="section-block reveal reveal-6 admin-tab-panel" data-admin-tab-panel="newsletter">
     <div class="section-head">
         <p class="eyebrow">Newsletter</p>
         <h2>Informer les abonnés d'une nouveauté boutique.</h2>
@@ -160,7 +181,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </form>
 </section>
 
-<section class="section-block reveal reveal-3">
+<section class="section-block reveal reveal-3 admin-tab-panel" data-admin-tab-panel="pilotage">
     <div class="section-head">
         <p class="eyebrow">Tableau de bord</p>
         <h2>Piloter les comptes, les articles et les médias.</h2>
@@ -201,7 +222,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </div>
 </section>
 
-<section id="admin-constructeur" class="section-block reveal reveal-3">
+<section id="admin-constructeur" class="section-block reveal reveal-3 admin-tab-panel" data-admin-tab-panel="pilotage">
     <div class="section-head">
         <p class="eyebrow">Constructeur</p>
         <h2>Organiser l'accueil avec des blocs interchangeables.</h2>
@@ -264,7 +285,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </form>
 </section>
 
-<section class="section-block reveal reveal-3">
+<section class="section-block reveal reveal-3 admin-tab-panel" data-admin-tab-panel="trafic">
     <div class="section-head">
         <p class="eyebrow">Trafic visiteurs</p>
         <h2>Surveiller le trafic des visiteurs non connectés.</h2>
@@ -340,7 +361,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </div>
 </section>
 
-<section id="admin-horaires-club" class="section-block reveal reveal-4">
+<section id="admin-horaires-club" class="section-block reveal reveal-4 admin-tab-panel" data-admin-tab-panel="horaires">
     <div class="section-head">
         <p class="eyebrow">Horaires</p>
         <h2>Modifier l'emploi du temps public.</h2>
@@ -436,7 +457,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </form>
 </section>
 
-<section class="section-block reveal reveal-4">
+<section class="section-block reveal reveal-4 admin-tab-panel" data-admin-tab-panel="comptes">
     <div class="section-head">
         <p class="eyebrow">Comptes</p>
         <h2>Gérer les rôles et les statuts.</h2>
@@ -512,7 +533,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </div>
 </section>
 
-<section class="split-grid reveal reveal-5">
+<section class="split-grid reveal reveal-5 admin-tab-panel" data-admin-tab-panel="contenus">
     <article class="panel">
         <div class="section-head section-head--compact">
             <p class="eyebrow">Modération articles</p>
@@ -610,7 +631,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </article>
 </section>
 
-<section class="section-block reveal reveal-6">
+<section class="section-block reveal reveal-6 admin-tab-panel" data-admin-tab-panel="contenus">
     <div class="section-head">
         <p class="eyebrow">Commandes</p>
         <h2>Suivre le merchandising.</h2>
