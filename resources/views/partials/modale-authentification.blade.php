@@ -66,6 +66,11 @@ foreach ($erreursFormulaire as $erreurBrute) {
 
     if (str_contains($erreurMinuscule, 'chess.com')) {
         $erreursParChamp['pseudo_chess'][] = $erreur;
+        continue;
+    }
+
+    if (str_contains($erreurMinuscule, 'lichess')) {
+        $erreursParChamp['pseudo_lichess'][] = $erreur;
     }
 }
 
@@ -108,6 +113,7 @@ $champInscriptionCourriel = $construireMetaChamp('auth-register-email', 'courrie
 $champInscriptionNumeroLicence = $construireMetaChamp('auth-register-license-number', 'numero_licence');
 $champInscriptionMotDePasse = $construireMetaChamp('auth-register-password', 'mot_de_passe');
 $champInscriptionPseudoChess = $construireMetaChamp('auth-register-chess-username', 'pseudo_chess');
+$champInscriptionPseudoLichess = $construireMetaChamp('auth-register-lichess-username', 'pseudo_lichess');
 $champInscriptionDescription = $construireMetaChamp('auth-register-description', 'description_profil');
 ?>
 
@@ -391,6 +397,26 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
                         <?php if ($champInscriptionPseudoChess['error_message'] !== ''): ?>
                             <span id="<?= e($champInscriptionPseudoChess['error_id']) ?>" class="form-error">
                                 <?= e($champInscriptionPseudoChess['error_message']) ?>
+                            </span>
+                        <?php endif; ?>
+                    </label>
+
+                    <label class="form-group">
+                        <span id="<?= e($champInscriptionPseudoLichess['label_id']) ?>">Pseudo Lichess facultatif</span>
+                        <input
+                            id="<?= e($champInscriptionPseudoLichess['id']) ?>"
+                            type="text"
+                            name="pseudo_lichess"
+                            maxlength="50"
+                            autocomplete="off"
+                            value="<?= e((string) ($anciennesValeurs['pseudo_lichess'] ?? '')) ?>"
+                            aria-labelledby="<?= e($champInscriptionPseudoLichess['label_id']) ?>"
+                            <?= $champInscriptionPseudoLichess['describedby'] !== '' ? 'aria-describedby="' . e($champInscriptionPseudoLichess['describedby']) . '"' : '' ?>
+                            <?= $champInscriptionPseudoLichess['invalid'] ? 'aria-invalid="true"' : '' ?>
+                        >
+                        <?php if ($champInscriptionPseudoLichess['error_message'] !== ''): ?>
+                            <span id="<?= e($champInscriptionPseudoLichess['error_id']) ?>" class="form-error">
+                                <?= e($champInscriptionPseudoLichess['error_message']) ?>
                             </span>
                         <?php endif; ?>
                     </label>

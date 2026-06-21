@@ -42,6 +42,7 @@ final class SchemaNormalisationTest extends TestCase
         self::assertFalse(Schema::hasColumn('article', 'contenu'));
 
         self::assertTrue(Schema::hasColumn('compte_membre', 'date_naissance'));
+        self::assertTrue(Schema::hasColumn('compte_membre', 'pseudo_lichess'));
         self::assertFalse($this->colonneEstTexteLegacyPourDateNaissance());
 
         self::assertFalse(Schema::hasColumn('media_publication', 'nom_auteur'));
@@ -91,6 +92,7 @@ final class SchemaNormalisationTest extends TestCase
             'mot_de_passe_hache' => password_hash('secret', PASSWORD_DEFAULT),
             'description_profil' => 'Membre test',
             'pseudo_chess' => 'jeannechess',
+            'pseudo_lichess' => 'jeannelichess',
             'code_role' => 'admin',
             'code_statut_compte' => 'actif',
             'code_statut_adhesion' => 'active',

@@ -101,6 +101,7 @@ final class SensitiveActionRateLimiter
                     'numero_licence' => trim((string) ($donnees['numero_licence'] ?? '')),
                     'description_profil' => trim((string) ($donnees['description_profil'] ?? '')),
                     'pseudo_chess' => trim((string) ($donnees['pseudo_chess'] ?? '')),
+                    'pseudo_lichess' => trim((string) ($donnees['pseudo_lichess'] ?? '')),
                 ],
             ]);
             rediriger_vers(url_route($pageRedirection));

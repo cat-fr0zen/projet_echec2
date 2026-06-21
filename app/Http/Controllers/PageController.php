@@ -10,6 +10,7 @@ namespace App\Http\Controllers;
 use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\NewsletterRepository;
 use App\Services\ChessComService;
+use App\Services\LichessService;
 use App\Support\BoutiqueCartService;
 use App\Support\SitePageRenderer;
 use App\Support\SiteContent;
@@ -43,6 +44,7 @@ final class PageController extends Controller
             new NewsletterRepository(),
             new \App\Repositories\TraficVisiteursRepository(),
             new ChessComService(storage_path('app/cache/chesscom')),
+            new LichessService(storage_path('app/cache/lichess')),
             new \App\Services\GoogleReviewsService(
                 storage_path('app/cache/google-avis'),
                 (string) env('GOOGLE_PLACES_API_KEY', '')

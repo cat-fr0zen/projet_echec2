@@ -243,6 +243,7 @@ final class SiteActionHandler
             'mot_de_passe' => (string) ($_POST['mot_de_passe'] ?? $_POST['password'] ?? ''),
             'description_profil' => trim((string) ($_POST['description_profil'] ?? $_POST['profile_description'] ?? '')),
             'pseudo_chess' => trim((string) ($_POST['pseudo_chess'] ?? '')),
+            'pseudo_lichess' => trim((string) ($_POST['pseudo_lichess'] ?? '')),
         ];
 
         $erreurs = $this->validerDonneesProfil($donnees, true);
@@ -304,6 +305,7 @@ final class SiteActionHandler
                     'numero_licence' => $this->depotUtilisateurs->normaliserNumeroLicenceFederale($_POST['numero_licence'] ?? $_POST['federal_license_number'] ?? ''),
                     'description_profil' => trim((string) ($_POST['description_profil'] ?? $_POST['profile_description'] ?? '')),
                     'pseudo_chess' => trim((string) ($_POST['pseudo_chess'] ?? '')),
+                    'pseudo_lichess' => trim((string) ($_POST['pseudo_lichess'] ?? '')),
                 ],
             ]);
             rediriger_vers(url_route($pageRedirection));
@@ -491,7 +493,7 @@ final class SiteActionHandler
         }
     }
 
-    /** Met a jour le profil (nom/prenom/date/description/pseudo chess). */
+    /** Met a jour le profil (nom/prenom/date/description/pseudos publics). */
     private function traiterMiseAJourProfil(): void
     {
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
@@ -507,6 +509,7 @@ final class SiteActionHandler
             'date_naissance' => trim((string) ($_POST['date_naissance'] ?? $_POST['birth_date'] ?? '')),
             'description_profil' => trim((string) ($_POST['description_profil'] ?? $_POST['profile_description'] ?? '')),
             'pseudo_chess' => trim((string) ($_POST['pseudo_chess'] ?? $_POST['chess_username'] ?? '')),
+            'pseudo_lichess' => trim((string) ($_POST['pseudo_lichess'] ?? $_POST['lichess_username'] ?? '')),
             'numero_licence' => $this->depotUtilisateurs->normaliserNumeroLicenceFederale($_POST['numero_licence'] ?? $_POST['federal_license_number'] ?? ''),
             'courriel' => (string) ($utilisateurCourant['courriel'] ?? ''),
             'mot_de_passe' => 'ignore',
@@ -1494,7 +1497,7 @@ final class SiteActionHandler
     }
 
     /**
-     * Valide les donnees de profil (nom/prenom/email/naissance/description/pseudo chess).
+     * Valide les donnees de profil (nom/prenom/email/naissance/description/pseudos publics).
      *
      * @param  array  $donnees  Donnees a verifier.
      * @param  bool  $verifierMotDePasse  True pour l'inscription.
@@ -1534,6 +1537,10 @@ final class SiteActionHandler
 
         if (! $this->estPseudoChessValide($donnees['pseudo_chess'])) {
             $erreurs[] = 'Le pseudo Chess.com doit contenir seulement des lettres, chiffres, tirets ou underscores.';
+        }
+
+        if (! $this->estPseudoChessValide((string) ($donnees['pseudo_lichess'] ?? ''))) {
+            $erreurs[] = 'Le pseudo Lichess doit contenir seulement des lettres, chiffres, tirets ou underscores.';
         }
 
         return $erreurs;

@@ -4,14 +4,16 @@
  *
  * Page du compte:
  * - infos de profil (consultation)
- * - statistiques Chess.com (si pseudo renseigne) via ServiceChessCom
+ * - statistiques Chess.com et Lichess (si pseudo renseigne)
  *
  * Variables attendues:
  * - $siteData['authentification']
  * - $siteData['chess_com']
+ * - $siteData['lichess']
  */
 $authData = $siteData['authentification'];
 $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
+$lichessData = $siteData['lichess'] ?? ['status' => 'missing'];
 ?>
 
 <section class="page-banner reveal reveal-2">
@@ -42,7 +44,7 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
             <div class="section-head section-head--compact">
                 <p class="eyebrow">Identité membre</p>
                 <h2>Modifier les informations du profil.</h2>
-                <p>La description de profil et la liaison Chess.com restent éditables à tout moment depuis cette page.</p>
+                <p>La description de profil et les liaisons Chess.com et Lichess restent éditables à tout moment depuis cette page.</p>
             </div>
 
             <form method="post" action="<?= e(url_route('profil')) ?>" class="article-form">
@@ -98,6 +100,19 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
                 <p class="form-helper">Renseigne un pseudo Chess.com pour afficher uniquement les statistiques publiques du compte dans ton profil.</p>
 
                 <label class="form-group">
+                    <span>Pseudo Lichess facultatif</span>
+                    <input
+                        type="text"
+                        name="lichess_username"
+                        maxlength="50"
+                        value="<?= e((string) ($user['lichess_username'] ?? '')) ?>"
+                        placeholder="ex. thibault"
+                        autocomplete="off"
+                    >
+                </label>
+                <p class="form-helper">Renseigne un pseudo Lichess pour afficher les statistiques publiques du compte dans ton profil.</p>
+
+                <label class="form-group">
                     <span>Description du profil</span>
                     <textarea name="profile_description" rows="7" maxlength="1200"><?= e((string) ($user['profile_description'] ?? '')) ?></textarea>
                 </label>
@@ -110,23 +125,23 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
             <div class="section-head section-head--compact">
                 <p class="eyebrow">Compte</p>
                 <h2>Informations utiles sur la session.</h2>
-                <p>Le compte repose sur une session PHP, un mot de passe hashé et une lecture purement publique des statistiques Chess.com.</p>
+                <p>Le compte repose sur une session PHP, un mot de passe hashé et une lecture purement publique des statistiques Chess.com et Lichess.</p>
             </div>
 
             <p class="status-pill chess-link-status">
-                <?php if (($chessData['status'] ?? 'missing') === 'linked'): ?>
-                    Liaison Chess.com active
-                <?php elseif (($chessData['status'] ?? 'missing') === 'error'): ?>
-                    Liaison Chess.com à vérifier
+                <?php if (($chessData['status'] ?? 'missing') === 'linked' || ($lichessData['status'] ?? 'missing') === 'linked'): ?>
+                    Au moins une liaison echecs en ligne est active
+                <?php elseif (($chessData['status'] ?? 'missing') === 'error' || ($lichessData['status'] ?? 'missing') === 'error'): ?>
+                    Une liaison echecs en ligne est a verifier
                 <?php else: ?>
-                    Liaison Chess.com non renseignée
+                    Aucune liaison echecs en ligne renseignee
                 <?php endif; ?>
             </p>
 
             <ul class="bullet-list">
                 <li>La connexion du site se fait avec votre email ou, pour les adherents, votre numero de licence et votre mot de passe.</li>
                 <li>La date de naissance reste facultative.</li>
-                <li>Le pseudo Chess.com, s'il est ajouté, sert seulement à lire des données publiques.</li>
+                <li>Les pseudos Chess.com et Lichess, s'ils sont ajoutes, servent seulement a lire des donnees publiques.</li>
                 <li>Le thème clair ou sombre reste mémorisé via un cookie de préférence.</li>
             </ul>
         </article>
@@ -255,6 +270,136 @@ $chessData = $siteData['chess_com'] ?? ['status' => 'missing'];
                                     <?php endif; ?>
                                     <?php if (($rating['best_date_label'] ?? '') !== ''): ?>
                                         <li><strong>Date :</strong> <?= e((string) $rating['best_date_label']) ?></li>
+                                    <?php endif; ?>
+                                </ul>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
+    </section>
+
+    <section class="section-block reveal reveal-4">
+        <div class="section-head">
+            <p class="eyebrow">Lichess</p>
+            <h2>Statistiques publiques liees au profil.</h2>
+            <p>La page peut afficher les donnees publiques d'un compte Lichess en lecture seule, sans mot de passe, sans OAuth et sans acces prive.</p>
+        </div>
+
+        <?php
+        $lichessPlayerData = is_array($lichessData['player'] ?? null) ? $lichessData['player'] : [];
+        $lichessPlayerUsername = (string) ($lichessPlayerData['username'] ?? '');
+        $lichessPlayerInitials = $lichessPlayerUsername !== '' ? mb_strtoupper(mb_substr($lichessPlayerUsername, 0, 2)) : 'LI';
+        ?>
+
+        <?php if (($lichessData['status'] ?? 'missing') === 'missing'): ?>
+            <div class="empty-state">
+                <p class="card-tag">Liaison optionnelle</p>
+                <h3>Ajoute un pseudo Lichess pour voir les stats publiques.</h3>
+                <p>Une fois le pseudo enregistre dans ton profil, le site pourra afficher les notes Bullet, Blitz, Rapide, Classique et Puzzle du compte public.</p>
+            </div>
+        <?php elseif (($lichessData['status'] ?? '') === 'error'): ?>
+            <div class="empty-state">
+                <p class="card-tag">Synchronisation indisponible</p>
+                <h3>Les donnees publiques Lichess ne sont pas disponibles pour le moment.</h3>
+                <p><?= e((string) ($lichessData['message'] ?? "Une erreur temporaire s'est produite.")) ?></p>
+
+                <?php if (($lichessData['profile_url'] ?? '') !== ''): ?>
+                    <a
+                        class="button button-secondary chess-external-link"
+                        href="<?= e((string) $lichessData['profile_url']) ?>"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                    >
+                        Ouvrir le profil Lichess
+                    </a>
+                <?php endif; ?>
+            </div>
+        <?php else: ?>
+            <div class="chess-shell">
+                <article class="chess-player-card">
+                    <div class="chess-player-media">
+                        <?php if (($lichessPlayerData['avatar'] ?? '') !== ''): ?>
+                            <img
+                                class="chess-player-avatar"
+                                src="<?= e((string) $lichessPlayerData['avatar']) ?>"
+                                alt="Avatar Lichess de <?= e($lichessPlayerData['display_name'] ?? $lichessPlayerUsername) ?>"
+                                loading="lazy"
+                            >
+                        <?php else: ?>
+                            <div class="chess-player-fallback" aria-hidden="true"><?= e($lichessPlayerInitials) ?></div>
+                        <?php endif; ?>
+
+                        <div class="chess-player-meta">
+                            <p class="card-tag">Profil public</p>
+                            <h3>
+                                <?php if (($lichessPlayerData['title'] ?? '') !== ''): ?>
+                                    <span class="chess-player-title"><?= e((string) $lichessPlayerData['title']) ?></span>
+                                <?php endif; ?>
+                                <?= e((string) ($lichessPlayerData['display_name'] ?? $lichessPlayerUsername)) ?>
+                            </h3>
+                            <p class="card-subtitle">@<?= e($lichessPlayerUsername) ?></p>
+                        </div>
+                    </div>
+
+                    <ul class="chess-player-facts">
+                        <?php if (($lichessPlayerData['country'] ?? '') !== ''): ?>
+                            <li><strong>Pays :</strong> <?= e((string) $lichessPlayerData['country']) ?></li>
+                        <?php endif; ?>
+                        <?php if (($lichessPlayerData['followers'] ?? null) !== null): ?>
+                            <li><strong>Followers :</strong> <?= e(number_format((int) $lichessPlayerData['followers'], 0, ',', ' ')) ?></li>
+                        <?php endif; ?>
+                        <?php if (($lichessPlayerData['fide'] ?? null) !== null): ?>
+                            <li><strong>Classement FIDE :</strong> <?= e((string) $lichessPlayerData['fide']) ?></li>
+                        <?php endif; ?>
+                        <?php if (($lichessPlayerData['patron'] ?? false) === true): ?>
+                            <li><strong>Statut :</strong> Patron Lichess</li>
+                        <?php endif; ?>
+                        <?php if (($lichessPlayerData['last_online_label'] ?? '') !== ''): ?>
+                            <li><?= e((string) $lichessPlayerData['last_online_label']) ?></li>
+                        <?php endif; ?>
+                    </ul>
+
+                    <p class="quick-note chess-sync-note">
+                        <?= e((string) ($lichessData['stats_note'] ?? '')) ?>
+                        <?php if (($lichessData['fetched_at_label'] ?? '') !== ''): ?>
+                            <br><?= e((string) $lichessData['fetched_at_label']) ?>
+                        <?php endif; ?>
+                    </p>
+
+                    <a
+                        class="button button-secondary chess-external-link"
+                        href="<?= e((string) ($lichessData['profile_url'] ?? 'https://lichess.org/')) ?>"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                    >
+                        Voir le profil public Lichess
+                    </a>
+                </article>
+
+                <?php if (($lichessData['ratings'] ?? []) === []): ?>
+                    <div class="empty-state">
+                        <p class="card-tag">Donnees partielles</p>
+                        <h3>Le profil public a bien ete trouve.</h3>
+                        <p>Lichess ne renvoie simplement pas encore de statistiques detaillees exploitables pour les formats suivis ici.</p>
+                    </div>
+                <?php else: ?>
+                    <div class="card-grid chess-rating-grid">
+                        <?php foreach (($lichessData['ratings'] ?? []) as $rating): ?>
+                            <article class="info-card chess-rating-card">
+                                <p class="card-tag"><?= e((string) ($rating['label'] ?? 'Stat')) ?></p>
+                                <span class="metric-value chess-rating-value">
+                                    <?= e((string) (($rating['rating'] ?? null) !== null ? $rating['rating'] : '—')) ?>
+                                </span>
+                                <h3><?= e((string) ($rating['label'] ?? 'Statistique')) ?></h3>
+
+                                <ul class="chess-rating-list">
+                                    <?php if (($rating['games'] ?? null) !== null): ?>
+                                        <li><strong>Parties :</strong> <?= e(number_format((int) $rating['games'], 0, ',', ' ')) ?></li>
+                                    <?php endif; ?>
+                                    <?php if (($rating['progression'] ?? null) !== null): ?>
+                                        <li><strong>Progression :</strong> <?= e((string) (($rating['progression'] >= 0 ? '+' : '') . (string) $rating['progression'])) ?></li>
                                     <?php endif; ?>
                                 </ul>
                             </article>

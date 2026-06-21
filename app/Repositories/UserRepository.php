@@ -203,6 +203,7 @@ final class UserRepository
             'mot_de_passe_hache' => Hash::make((string) ($donnees['mot_de_passe'] ?? '')),
             'description_profil' => (string) ($donnees['description_profil'] ?? ''),
             'pseudo_chess' => $this->normaliserPseudoChess($donnees['pseudo_chess'] ?? ''),
+            'pseudo_lichess' => $this->normaliserPseudoChess($donnees['pseudo_lichess'] ?? ''),
             'code_role' => $isFirstAccount ? User::ROLE_ADMIN : User::ROLE_CONNECTE,
             'code_statut_compte' => User::STATUT_COMPTE_ACTIF,
             'code_statut_adhesion' => $isFirstAccount ? User::STATUT_ADHESION_ACTIVE : User::STATUT_ADHESION_AUCUNE,
@@ -225,6 +226,7 @@ final class UserRepository
                 'numero_licence_federale' => $license !== '' ? $license : null,
                 'description_profil' => (string) ($donnees['description_profil'] ?? ''),
                 'pseudo_chess' => $this->normaliserPseudoChess($donnees['pseudo_chess'] ?? ''),
+                'pseudo_lichess' => $this->normaliserPseudoChess($donnees['pseudo_lichess'] ?? ''),
                 'mis_a_jour_le' => date('Y-m-d H:i:s'),
             ]);
 
@@ -366,6 +368,7 @@ final class UserRepository
             'mot_de_passe_hache' => (string) ($row['mot_de_passe_hache'] ?? ''),
             'description_profil' => (string) ($row['description_profil'] ?? ''),
             'pseudo_chess' => $this->normaliserPseudoChess($row['pseudo_chess'] ?? ''),
+            'pseudo_lichess' => $this->normaliserPseudoChess($row['pseudo_lichess'] ?? ''),
             'role' => (string) ($row['code_role'] ?? User::ROLE_CONNECTE),
             'statut_compte' => (string) ($row['code_statut_compte'] ?? User::STATUT_COMPTE_ACTIF),
             'statut_adhesion' => (string) ($row['code_statut_adhesion'] ?? User::STATUT_ADHESION_AUCUNE),

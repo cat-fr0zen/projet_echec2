@@ -21,6 +21,7 @@ use App\Repositories\TraficVisiteursRepository;
 use App\Repositories\UserRepository;
 use App\Services\ChessComService;
 use App\Services\GoogleReviewsService;
+use App\Services\LichessService;
 use Throwable;
 
 /**
@@ -41,6 +42,7 @@ final class SitePageRenderer
         private ?NewsletterRepository $newsletterRepository,
         private ?TraficVisiteursRepository $trafficRepository,
         private ChessComService $chessComService,
+        private LichessService $lichessService,
         private GoogleReviewsService $googleReviewsService,
         private array $messagesFlash,
         private array $formState,
@@ -117,10 +119,29 @@ final class SitePageRenderer
             'stats_note' => '',
             'fetched_at_label' => '',
         ];
+        $siteData['lichess'] = [
+            'statut' => 'absent',
+            'pseudo' => '',
+            'message' => '',
+            'classements' => [],
+            'joueur' => null,
+            'note_statistiques' => '',
+            'date_recuperation_libelle' => '',
+            'source_cache' => '',
+            'status' => 'missing',
+            'profile_url' => '',
+            'player' => null,
+            'ratings' => [],
+            'stats_note' => '',
+            'fetched_at_label' => '',
+        ];
 
         if ($segment === 'profil' && $currentUser !== null) {
             $siteData['chess_com'] = $this->chessComService->recupererInstantaneJoueur(
                 (string) ($currentUser['pseudo_chess'] ?? '')
+            );
+            $siteData['lichess'] = $this->lichessService->recupererInstantaneJoueur(
+                (string) ($currentUser['pseudo_lichess'] ?? '')
             );
         }
 
@@ -454,6 +475,7 @@ final class SitePageRenderer
                 'birth_date' => $utilisateur['date_naissance'] ?? '',
                 'profile_description' => $utilisateur['description_profil'] ?? '',
                 'chess_username' => $utilisateur['pseudo_chess'] ?? '',
+                'lichess_username' => $utilisateur['pseudo_lichess'] ?? '',
                 'role_label' => $this->libelleRole($role),
                 'membership_label' => $this->libelleAdhesion((string) ($utilisateur['statut_adhesion'] ?? '')),
             ],
