@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : session.
+ */
 
 return [
     'driver' => env('SESSION_DRIVER', 'file'),

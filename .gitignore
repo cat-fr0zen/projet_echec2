@@ -70,9 +70,9 @@
 /runtime/*.db
 
 # Scripts locaux machine-specifiques
-/lancement/*.bat
+/lancement/*
 /lancement/*.ps1
-!/lancement/README.md
+!/lancement/demarrer_tout_le_site.bat
 
 # Dumps et exports locaux
 /*.sql
@@ -83,3 +83,7 @@
 /*.7z
 /*.tar
 /*.tar.gz
+
+# Artefacts front locaux
+/public/build/
+/public/hot

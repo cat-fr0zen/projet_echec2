@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : mail.
+ */
 
 use App\Support\MailProviderConfig;
 

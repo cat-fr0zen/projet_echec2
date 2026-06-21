@@ -1,4 +1,8 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : chiffres du club.blade.
+ */
+
 $membresBureau = is_array($siteData['membres_bureau'] ?? null) ? $siteData['membres_bureau'] : [];
 ?>
 <section class="section-block reveal reveal-6" data-accueil-slot="chiffres_du_club">

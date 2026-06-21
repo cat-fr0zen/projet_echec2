@@ -1,10 +1,14 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : ActionController.
+ */
 
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
 use App\Repositories\ArticleRepository;
+use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
@@ -15,8 +19,8 @@ use App\Repositories\ScheduleRepository;
 use App\Repositories\UserRepository;
 use App\Services\NewsletterMailerService;
 use App\Support\BoutiqueCartService;
-use App\Support\LegacyActionHandler;
 use App\Support\SensitiveActionRateLimiter;
+use App\Support\SiteActionHandler;
 use App\Support\UploadStorage;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -24,12 +28,15 @@ use Symfony\Component\HttpFoundation\Response;
 
 final class ActionController extends Controller
 {
+    /**
+     * Point d'entree unique des formulaires du site.
+     */
     public function handle(Request $request, ?string $page = null): Response
     {
         $this->hydraterSuperglobalesLegacy($request);
 
         $newsletterRepository = new NewsletterRepository;
-        $handler = new LegacyActionHandler(
+        $handler = new SiteActionHandler(
             new UserRepository,
             new ArticleRepository,
             new CoursDocumentRepository,
@@ -42,7 +49,8 @@ final class ActionController extends Controller
             $newsletterRepository,
             NewsletterMailerService::depuisEnvironnement($newsletterRepository),
             new SensitiveActionRateLimiter,
-            new BoutiqueCartService
+            new BoutiqueCartService,
+            new BoutiqueProduitRepository
         );
 
         $handler->traiter();
@@ -50,6 +58,9 @@ final class ActionController extends Controller
         return redirect(url_route($page ?? 'accueil'));
     }
 
+    /**
+     * Recompose le format attendu par la logique historique du projet.
+     */
     private function hydraterSuperglobalesLegacy(Request $request): void
     {
         $_SERVER['REQUEST_METHOD'] = $request->getMethod();

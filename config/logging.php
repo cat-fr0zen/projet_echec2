@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : logging.
+ */
 
 return [
     'default' => env('LOG_CHANNEL', 'single'),

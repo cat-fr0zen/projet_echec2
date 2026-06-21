@@ -1,6 +1,6 @@
 <?php
 /**
- * Vue: hub des livrets.
+ * Vue d'entree des livrets A a E.
  */
 
 $livretsCours = is_array($siteData['livrets_cours'] ?? null)

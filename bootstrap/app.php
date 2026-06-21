@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : app.
+ */
 
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SynchronizeLegacyAuthentication;

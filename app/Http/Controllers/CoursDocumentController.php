@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : CoursDocumentController.
+ */
 
 declare(strict_types=1);
 
@@ -13,6 +16,9 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 final class CoursDocumentController extends Controller
 {
+    /**
+     * Telecharge un PDF de cours seulement si la personne a le bon role.
+     */
     public function show(
         string $nomFichier,
         CoursDocumentRepository $coursDocumentRepository,

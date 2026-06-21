@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : SiteActionHandler.
+ */
 
 declare(strict_types=1);
 
@@ -6,6 +9,7 @@ namespace App\Support;
 
 use App\Models\CommandeLocale;
 use App\Repositories\ArticleRepository;
+use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
@@ -20,22 +24,12 @@ use Illuminate\Support\Facades\Hash;
 use Throwable;
 
 /**
- * Controleur d'actions (POST).
+ * Centralise toutes les actions envoyees en POST par les formulaires du site.
  *
- * Role:
- * - traiter les formulaires du site (inscription, login, profil, depot article/media, etc.)
- * - appliquer les regles de securite (CSRF) et d'autorisation (roles/statuts)
- * - ecrire dans les depots de donnees MySQL du port Laravel
- * - rediriger vers la page cible avec message flash
- *
- * Dependances:
- * - DepotUtilisateurs: authentification + roles/statuts
- * - DepotArticles: soumission + moderation
- * - DepotMedias: upload + moderation (metadonnees)
- * - DepotCommandes: commandes "merch" (prototype)
- * - DepotHoraires: horaires publics editables par l'admin
+ * Cette classe garde une logique historique assez large, mais elle a un avantage :
+ * tout le traitement des formulaires se trouve au meme endroit.
  */
-final class LegacyActionHandler
+final class SiteActionHandler
 {
     private const MODE_DOSSIER_UPLOAD = 0755;
 
@@ -78,10 +72,12 @@ final class LegacyActionHandler
         private ?NewsletterRepository $depotNewsletter = null,
         private ?NewsletterMailerService $newsletterMailer = null,
         private ?SensitiveActionRateLimiter $rateLimiter = null,
-        private ?BoutiqueCartService $boutiqueCartService = null
+        private ?BoutiqueCartService $boutiqueCartService = null,
+        private ?BoutiqueProduitRepository $depotProduitsBoutique = null
     ) {
         $this->rateLimiter ??= new SensitiveActionRateLimiter;
         $this->boutiqueCartService ??= new BoutiqueCartService;
+        $this->depotProduitsBoutique ??= new BoutiqueProduitRepository;
     }
 
     /**
@@ -171,6 +167,18 @@ final class LegacyActionHandler
             case 'valider_panier':
             case 'checkout_cart':
                 $this->traiterValidationPanierBoutique();
+                break;
+            case 'ajouter_produit_boutique':
+            case 'create_shop_product':
+                $this->traiterAjoutProduitBoutique();
+                break;
+            case 'modifier_produit_boutique':
+            case 'update_shop_product':
+                $this->traiterMiseAJourProduitBoutique();
+                break;
+            case 'supprimer_produit_boutique':
+            case 'delete_shop_product':
+                $this->traiterSuppressionProduitBoutique();
                 break;
             case 'moderer_article':
             case 'review_article':
@@ -537,7 +545,7 @@ final class LegacyActionHandler
             rediriger_vers($pageRedirection);
         }
 
-        $pageRedirection = $this->urlPageCoursRubrique($rubrique);
+        $pageRedirection = $this->urlRedirectionGestionCours($rubrique, $pageOrigine);
 
         if ($titre === '' || mb_strlen($titre) > 160) {
             ajouter_message_flash('error', 'Le titre du document est obligatoire et doit rester inférieur à 160 caractères.');
@@ -612,16 +620,14 @@ final class LegacyActionHandler
         $fichierRemplacement = $_FILES['fichier_document_cours_remplacement'] ?? null;
         $rubriqueOrigine = (string) ($documentExistant['code_rubrique'] ?? 'cours');
         $pageOrigine = $this->resoudrePageRedirection($this->pageCoursDepuisRubrique($rubriqueOrigine));
-        $pageRedirection = url_route($pageOrigine).'#'.$this->ancreDocumentCours($rubriqueOrigine);
+        $pageRedirection = $this->urlRedirectionGestionCours($rubriqueOrigine, $pageOrigine);
 
         if (! $this->depotDocumentsCours->rubriqueEstValide($rubrique)) {
             ajouter_message_flash('error', 'La rubrique de cours demandée est invalide.');
             rediriger_vers($pageRedirection);
         }
 
-        if ($pageOrigine === 'guide') {
-            $pageRedirection = url_route('guide').'#'.$this->ancreDocumentCours($rubrique);
-        }
+        $pageRedirection = $this->urlRedirectionGestionCours($rubrique, $pageOrigine);
 
         if ($titre === '' || mb_strlen($titre) > 160) {
             ajouter_message_flash('error', 'Le titre du document est obligatoire et doit rester inférieur à 160 caractères.');
@@ -702,7 +708,7 @@ final class LegacyActionHandler
         }
 
         ajouter_message_flash('success', 'Le document de cours a été modifié.');
-        rediriger_vers($this->urlPageCoursRubrique((string) ($documentMisAJour['code_rubrique'] ?? $rubrique)));
+        rediriger_vers($this->urlRedirectionGestionCours((string) ($documentMisAJour['code_rubrique'] ?? $rubrique), $pageOrigine));
     }
 
     /** Supprime un document PDF de cours avec nettoyage du fichier protege. */
@@ -711,17 +717,19 @@ final class LegacyActionHandler
         $this->exigerProfOuAdmin();
         $identifiantDocument = trim((string) ($_POST['identifiant_document_cours'] ?? ''));
         $document = $this->depotDocumentsCours->trouverParIdentifiant($identifiantDocument);
+        $rubrique = (string) ($document['code_rubrique'] ?? 'cours');
+        $pageOrigine = $this->resoudrePageRedirection($this->pageCoursDepuisRubrique($rubrique));
 
         if ($document === null) {
             ajouter_message_flash('error', 'Le document demande est introuvable.');
-            rediriger_vers(url_route('guide').'#cours-livrets');
+            rediriger_vers($this->urlRedirectionGestionCours('livrets', $pageOrigine));
         }
 
         $this->depotDocumentsCours->supprimer($identifiantDocument);
         UploadStorage::supprimerCheminCours((string) ($document['nom_fichier_stocke'] ?? ''));
 
         ajouter_message_flash('success', 'Le document de cours a été supprimé.');
-        rediriger_vers($this->urlPageCoursRubrique((string) ($document['code_rubrique'] ?? '')));
+        rediriger_vers($this->urlRedirectionGestionCours((string) ($document['code_rubrique'] ?? 'cours'), $pageOrigine));
     }
 
     /** Soumission d'article (reserve adherent/admin). */
@@ -1100,6 +1108,107 @@ final class LegacyActionHandler
 
         ajouter_message_flash('success', $messageSucces);
         rediriger_vers(url_route('boutique').'#boutique-commandes');
+    }
+
+    /** Cree un produit boutique depuis le tableau de bord admin. */
+    private function traiterAjoutProduitBoutique(): void
+    {
+        $administrateur = $this->exigerAdmin();
+        $pageRedirection = $this->urlAdminBoutique();
+        $donneesProduit = $this->validerProduitBoutiqueDepuisFormulaire();
+
+        if ($donneesProduit['erreurs'] !== []) {
+            ajouter_message_flash('error', implode(' ', $donneesProduit['erreurs']));
+            rediriger_vers($pageRedirection);
+        }
+
+        $referenceExistante = $this->depotProduitsBoutique?->trouverParReference((string) $donneesProduit['donnees']['reference_produit']);
+
+        if ($referenceExistante !== null) {
+            ajouter_message_flash('error', 'Cette reference produit existe deja dans la boutique.');
+            rediriger_vers($pageRedirection);
+        }
+
+        $produit = $this->depotProduitsBoutique?->creer([
+            ...$donneesProduit['donnees'],
+            'identifiant_auteur' => (string) ($administrateur['identifiant'] ?? ''),
+        ]) ?? [];
+
+        if ($produit === []) {
+            ajouter_message_flash('error', "La creation du produit boutique a echoue.");
+            rediriger_vers($pageRedirection);
+        }
+
+        ajouter_message_flash('success', 'Le produit boutique a ete ajoute.');
+        rediriger_vers($pageRedirection);
+    }
+
+    /** Met a jour un produit boutique depuis le tableau de bord admin. */
+    private function traiterMiseAJourProduitBoutique(): void
+    {
+        $this->exigerAdmin();
+        $pageRedirection = $this->urlAdminBoutique();
+        $identifiantProduit = trim((string) ($_POST['identifiant_produit_boutique'] ?? ''));
+
+        if ($identifiantProduit === '') {
+            ajouter_message_flash('error', 'Le produit boutique demande est invalide.');
+            rediriger_vers($pageRedirection);
+        }
+
+        $produitExistant = $this->depotProduitsBoutique?->trouverParIdentifiant($identifiantProduit);
+
+        if ($produitExistant === null) {
+            ajouter_message_flash('error', 'Le produit boutique demande est introuvable.');
+            rediriger_vers($pageRedirection);
+        }
+
+        $donneesProduit = $this->validerProduitBoutiqueDepuisFormulaire();
+
+        if ($donneesProduit['erreurs'] !== []) {
+            ajouter_message_flash('error', implode(' ', $donneesProduit['erreurs']));
+            rediriger_vers($pageRedirection);
+        }
+
+        $referenceExistante = $this->depotProduitsBoutique?->trouverParReference((string) $donneesProduit['donnees']['reference_produit']);
+
+        if (
+            $referenceExistante !== null
+            && (string) ($referenceExistante['identifiant_produit'] ?? '') !== $identifiantProduit
+        ) {
+            ajouter_message_flash('error', 'Cette reference produit existe deja dans la boutique.');
+            rediriger_vers($pageRedirection);
+        }
+
+        $produitMisAJour = $this->depotProduitsBoutique?->mettreAJour($identifiantProduit, $donneesProduit['donnees']);
+
+        if ($produitMisAJour === null) {
+            ajouter_message_flash('error', "La mise a jour du produit boutique a echoue.");
+            rediriger_vers($pageRedirection);
+        }
+
+        ajouter_message_flash('success', 'Le produit boutique a ete mis a jour.');
+        rediriger_vers($pageRedirection);
+    }
+
+    /** Supprime un produit boutique depuis le tableau de bord admin. */
+    private function traiterSuppressionProduitBoutique(): void
+    {
+        $this->exigerAdmin();
+        $pageRedirection = $this->urlAdminBoutique();
+        $identifiantProduit = trim((string) ($_POST['identifiant_produit_boutique'] ?? ''));
+
+        if ($identifiantProduit === '') {
+            ajouter_message_flash('error', 'Le produit boutique demande est invalide.');
+            rediriger_vers($pageRedirection);
+        }
+
+        if (! ($this->depotProduitsBoutique?->supprimer($identifiantProduit) ?? false)) {
+            ajouter_message_flash('error', "La suppression du produit boutique a echoue.");
+            rediriger_vers($pageRedirection);
+        }
+
+        ajouter_message_flash('success', 'Le produit boutique a ete supprime.');
+        rediriger_vers($pageRedirection);
     }
 
     /** Met a jour le statut d'une commande (admin). */
@@ -1821,8 +1930,10 @@ final class LegacyActionHandler
 
     /**
      * Force l'acces admin (sinon redirection accueil).
+     *
+     * @return array<string, mixed>
      */
-    private function exigerAdmin(): void
+    private function exigerAdmin(): array
     {
         $utilisateurCourant = $this->obtenirUtilisateurCourant();
 
@@ -1834,6 +1945,8 @@ final class LegacyActionHandler
             ajouter_message_flash('error', "Accès réservé à l'administrateur du site.");
             rediriger_vers(url_route('accueil'));
         }
+
+        return $utilisateurCourant;
     }
 
     /**
@@ -1872,6 +1985,29 @@ final class LegacyActionHandler
         };
     }
 
+    private function urlAdminCours(): string
+    {
+        return url_route('admin').'#admin-cours';
+    }
+
+    private function urlAdminBoutique(): string
+    {
+        return url_route('admin').'#admin-boutique';
+    }
+
+    private function urlRedirectionGestionCours(string $rubrique, string $pageOrigine): string
+    {
+        if ($pageOrigine === 'admin') {
+            return $this->urlAdminCours();
+        }
+
+        if ($pageOrigine === 'guide') {
+            return url_route('guide').'#'.$this->ancreDocumentCours($rubrique);
+        }
+
+        return $this->urlPageCoursRubrique($rubrique);
+    }
+
     private function pageCoursDepuisRubrique(string $rubrique): string
     {
         return match ($rubrique) {
@@ -1900,7 +2036,98 @@ final class LegacyActionHandler
      */
     private function obtenirCatalogueBoutique(): array
     {
-        return (new SiteContent())->obtenirCartesBoutique();
+        return $this->depotProduitsBoutique?->listerCatalogue() ?? [];
+    }
+
+    /**
+     * @return array{donnees: array<string, mixed>, erreurs: array<int, string>}
+     */
+    private function validerProduitBoutiqueDepuisFormulaire(): array
+    {
+        $referenceProduit = mb_strtoupper(trim((string) ($_POST['reference_produit_boutique'] ?? '')));
+        $titreProduit = trim((string) ($_POST['titre_produit_boutique'] ?? ''));
+        $categorieProduit = trim((string) ($_POST['categorie_produit_boutique'] ?? ''));
+        $publicCible = trim((string) ($_POST['public_produit_boutique'] ?? 'tous'));
+        $modeVente = trim((string) ($_POST['mode_vente_produit_boutique'] ?? 'reservation'));
+        $badge = trim((string) ($_POST['badge_produit_boutique'] ?? ''));
+        $descriptionProduit = trim((string) ($_POST['description_produit_boutique'] ?? ''));
+        $resumeProduit = trim((string) ($_POST['resume_produit_boutique'] ?? ''));
+        $ordreAffichage = (int) ($_POST['ordre_affichage_produit_boutique'] ?? 1);
+        $prixProduit = filter_var($_POST['prix_produit_boutique'] ?? null, FILTER_VALIDATE_INT, [
+            'options' => [
+                'min_range' => 0,
+                'max_range' => 10000,
+            ],
+        ]);
+        $avantages = preg_split('/\r\n|\r|\n/', (string) ($_POST['avantages_produit_boutique'] ?? '')) ?: [];
+        $avantages = array_values(array_filter(array_map(
+            static fn (string $avantage): string => trim($avantage),
+            $avantages
+        )));
+        $erreurs = [];
+
+        if ($referenceProduit === '' || mb_strlen($referenceProduit) > 80 || preg_match('/^[A-Z0-9-]+$/', $referenceProduit) !== 1) {
+            $erreurs[] = 'La reference produit est obligatoire et doit contenir uniquement lettres, chiffres ou tirets.';
+        }
+
+        if ($titreProduit === '' || mb_strlen($titreProduit) > 160) {
+            $erreurs[] = 'Le nom du produit est obligatoire et doit rester inferieur a 160 caracteres.';
+        }
+
+        if (! ($this->depotProduitsBoutique?->categorieEstValide($categorieProduit) ?? false)) {
+            $erreurs[] = 'La categorie boutique choisie est invalide.';
+        }
+
+        if (! ($this->depotProduitsBoutique?->publicEstValide($publicCible) ?? false)) {
+            $erreurs[] = 'Le public cible choisi est invalide.';
+        }
+
+        if (! ($this->depotProduitsBoutique?->modeVenteEstValide($modeVente) ?? false)) {
+            $erreurs[] = 'Le mode de vente choisi est invalide.';
+        }
+
+        if ($prixProduit === false) {
+            $erreurs[] = 'Le prix doit etre un nombre entier compris entre 0 et 10000 euros.';
+        }
+
+        if (mb_strlen($badge) > 80) {
+            $erreurs[] = 'Le badge produit doit rester inferieur a 80 caracteres.';
+        }
+
+        if ($descriptionProduit === '' || mb_strlen($descriptionProduit) > 2000) {
+            $erreurs[] = 'La description du produit est obligatoire et doit rester inferieure a 2000 caracteres.';
+        }
+
+        if ($resumeProduit !== '' && mb_strlen($resumeProduit) > 280) {
+            $erreurs[] = 'Le resume du produit doit rester inferieur a 280 caracteres.';
+        }
+
+        if ($ordreAffichage < 1 || $ordreAffichage > 999) {
+            $erreurs[] = "L'ordre d'affichage doit rester compris entre 1 et 999.";
+        }
+
+        if (count($avantages) > 12) {
+            $erreurs[] = 'Merci de limiter la liste des avantages a 12 lignes maximum.';
+        }
+
+        return [
+            'donnees' => [
+                'reference_produit' => $referenceProduit,
+                'titre_produit' => $titreProduit,
+                'categorie_produit' => $categorieProduit,
+                'public_cible' => $publicCible,
+                'prix_euros' => (int) ($prixProduit === false ? 0 : $prixProduit),
+                'badge' => $badge,
+                'mode_vente' => $modeVente,
+                'texte_produit' => $descriptionProduit,
+                'resume_produit' => $resumeProduit,
+                'avantages' => array_slice($avantages, 0, 12),
+                'ordre_affichage' => $ordreAffichage,
+                'est_en_stock' => (string) ($_POST['stock_produit_boutique'] ?? '') === '1',
+                'est_actif' => (string) ($_POST['visible_produit_boutique'] ?? '') === '1',
+            ],
+            'erreurs' => $erreurs,
+        ];
     }
 
     /**

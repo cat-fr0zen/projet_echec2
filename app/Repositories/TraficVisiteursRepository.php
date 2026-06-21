@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : TraficVisiteursRepository.
+ */
 
 declare(strict_types=1);
 
@@ -19,7 +22,7 @@ final class TraficVisiteursRepository
             return;
         }
 
-        if (! Schema::hasTable('journal_visite_visiteur')) {
+        if (! $this->tableDisponible()) {
             return;
         }
 
@@ -49,7 +52,7 @@ final class TraficVisiteursRepository
     public function obtenirResumeAdmin(?DateTimeImmutable $reference = null): array
     {
         try {
-            if (! Schema::hasTable('journal_visite_visiteur')) {
+            if (! $this->tableDisponible()) {
                 return $this->resumeVide();
             }
 
@@ -160,5 +163,14 @@ final class TraficVisiteursRepository
         return function_exists('mb_substr')
             ? mb_substr($agentNettoye, 0, 255)
             : substr($agentNettoye, 0, 255);
+    }
+
+    private function tableDisponible(): bool
+    {
+        try {
+            return Schema::hasTable('journal_visite_visiteur');
+        } catch (Throwable) {
+            return false;
+        }
     }
 }

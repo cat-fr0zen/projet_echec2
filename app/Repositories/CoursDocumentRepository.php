@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : CoursDocumentRepository.
+ */
 
 declare(strict_types=1);
 
@@ -8,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 
 final class CoursDocumentRepository
 {
+    /**
+     * Gere les PDF de cours ranges par rubrique pedagogique.
+     */
     /**
      * @var array<string, string>
      */

@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : 2026 06 03 000002 transferer les donnees legacy vers le schema normalise.
+ */
 
 declare(strict_types=1);
 

@@ -3845,6 +3845,44 @@ body[data-theme="dark"] .legal-card {
     gap: 1rem;
 }
 
+.admin-course-sections {
+    display: grid;
+    gap: 1rem;
+}
+
+.admin-shop-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.admin-shop-toggle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+}
+
+.admin-shop-card {
+    gap: 1rem;
+}
+
+.admin-shop-edit {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.admin-shop-edit > summary {
+    list-style: none;
+}
+
+.admin-shop-edit > summary::-webkit-details-marker {
+    display: none;
+}
+
+.admin-shop-edit-form {
+    margin-top: 0.25rem;
+}
+
 .admin-schedule-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3887,6 +3925,8 @@ body[data-theme="dark"] .legal-card {
     }
 
     .admin-summary-grid,
+    .admin-shop-form-grid,
+    .admin-shop-toggle-grid,
     .admin-schedule-settings,
     .admin-schedule-grid,
     .admin-inline-form {

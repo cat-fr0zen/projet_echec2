@@ -30,6 +30,35 @@ $newsletterSends = is_array($siteData['newsletter_envois_admin'] ?? null) ? $sit
 $horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horaires_club'] : [];
 $itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
 $blocsConstructeurAccueil = is_array($siteData['constructeur_accueil_blocs'] ?? null) ? $siteData['constructeur_accueil_blocs'] : [];
+$courseDocumentsParRubrique = is_array($siteData['documents_cours_par_rubrique'] ?? null) ? $siteData['documents_cours_par_rubrique'] : [];
+$coursePeutGererDocuments = (bool) ($siteData['peut_gerer_documents_cours'] ?? false);
+$shopProducts = is_array($siteData['all_shop_products'] ?? null) ? $siteData['all_shop_products'] : [];
+$shopCategories = \App\Repositories\BoutiqueProduitRepository::CATEGORIES;
+$shopPublics = \App\Repositories\BoutiqueProduitRepository::PUBLICS;
+$shopModesVente = \App\Repositories\BoutiqueProduitRepository::MODES_VENTE;
+$courseRubriqueLabels = \App\Repositories\CoursDocumentRepository::RUBRIQUES;
+$courseAncresRubriques = [
+    'livrets' => 'cours-bibliotheque-livrets',
+    'livret_a' => 'cours-livret-a',
+    'livret_b' => 'cours-livret-b',
+    'livret_c' => 'cours-livret-c',
+    'livret_d' => 'cours-livret-d',
+    'livret_e' => 'cours-livret-e',
+    'cours' => 'cours-cours',
+    'methodologie' => 'cours-methodologie',
+    'strategie' => 'cours-strategie',
+];
+$courseRubriqueConfigs = [
+    ['rubrique' => 'livrets', 'ancre' => 'cours-bibliotheque-livrets', 'badge' => 'Livrets', 'titre' => 'Bibliotheque des livrets', 'texte' => 'Documents communs relies aux livrets et ressources partagees.'],
+    ['rubrique' => 'livret_a', 'ancre' => 'cours-livret-a', 'badge' => 'Livret A', 'titre' => 'Livret A', 'texte' => 'Bases du jeu et premiers reperes pour debuter.'],
+    ['rubrique' => 'livret_b', 'ancre' => 'cours-livret-b', 'badge' => 'Livret B', 'titre' => 'Livret B', 'texte' => 'Premiers automatismes et securite des pieces.'],
+    ['rubrique' => 'livret_c', 'ancre' => 'cours-livret-c', 'badge' => 'Livret C', 'titre' => 'Livret C', 'texte' => 'Milieu de jeu, plans simples et coordination.'],
+    ['rubrique' => 'livret_d', 'ancre' => 'cours-livret-d', 'badge' => 'Livret D', 'titre' => 'Livret D', 'texte' => 'Approfondissement et evaluation de positions.'],
+    ['rubrique' => 'livret_e', 'ancre' => 'cours-livret-e', 'badge' => 'Livret E', 'titre' => 'Livret E', 'texte' => 'Consolidation, finales et preparation competition.'],
+    ['rubrique' => 'cours', 'ancre' => 'cours-cours', 'badge' => 'Cours', 'titre' => 'Cours et seances', 'texte' => 'Supports de seance, rappels et documents remis pendant les cours.'],
+    ['rubrique' => 'methodologie', 'ancre' => 'cours-methodologie', 'badge' => 'Methodologie', 'titre' => 'Methodologie', 'texte' => 'Documents de methode, structure de travail et routines.'],
+    ['rubrique' => 'strategie', 'ancre' => 'cours-strategie', 'badge' => 'Strategie', 'titre' => 'Strategie', 'texte' => 'Plans de jeu, themes strategiques et progression avancee.'],
+];
 $lignesHorairesAdmin = $itemsHorairesClub;
 $adminTabs = [
     'newsletter' => 'Newsletter',
@@ -37,6 +66,8 @@ $adminTabs = [
     'trafic' => 'Trafic',
     'horaires' => 'Horaires',
     'comptes' => 'Comptes',
+    'cours' => 'Cours',
+    'boutique' => 'Boutique',
     'contenus' => 'Contenus',
 ];
 
@@ -533,6 +564,294 @@ while (count($lignesHorairesAdmin) < 10) {
     </div>
 </section>
 
+<section id="admin-cours" class="section-block reveal reveal-5 admin-tab-panel" data-admin-tab-panel="cours">
+    <div class="section-head">
+        <p class="eyebrow">Cours</p>
+        <h2>Gerer les PDF de cours.</h2>
+        <p>Tout le classement pedagogique peut etre pilote depuis ici : ajout, modification, suppression et reorganisation par rubrique.</p>
+    </div>
+
+    <div class="admin-course-sections">
+        <?php
+        $courseJetonCsrf = (string) ($siteData['jeton_csrf'] ?? '');
+        $pageCourante = 'admin';
+        ?>
+        <?php foreach ($courseRubriqueConfigs as $courseRubriqueConfig): ?>
+            <?php require resource_path('views/pages/partials/cours-rubrique.blade.php'); ?>
+        <?php endforeach; ?>
+    </div>
+</section>
+
+<section id="admin-boutique" class="section-block reveal reveal-5 admin-tab-panel" data-admin-tab-panel="boutique">
+    <div class="section-head">
+        <p class="eyebrow">Boutique</p>
+        <h2>Gerer le catalogue de la boutique.</h2>
+        <p>Ajoute, modifie ou supprime les produits et formules d'adhesion visibles dans la boutique publique.</p>
+    </div>
+
+    <div class="split-grid">
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Nouveau produit</p>
+                <h2>Ajouter un produit</h2>
+            </div>
+
+            <form method="post" action="<?= e(url_route('admin')) ?>#admin-boutique" class="admin-form">
+                <input type="hidden" name="action" value="ajouter_produit_boutique">
+                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+                <div class="admin-shop-form-grid">
+                    <label class="form-group">
+                        <span>Reference</span>
+                        <input type="text" name="reference_produit_boutique" maxlength="80" placeholder="TEXT-001" required>
+                    </label>
+
+                    <label class="form-group">
+                        <span>Nom du produit</span>
+                        <input type="text" name="titre_produit_boutique" maxlength="160" required>
+                    </label>
+
+                    <label class="form-group">
+                        <span>Categorie</span>
+                        <select name="categorie_produit_boutique" required>
+                            <?php foreach ($shopCategories as $shopCategoryCode => $shopCategoryLabel): ?>
+                                <option value="<?= e($shopCategoryCode) ?>"><?= e($shopCategoryLabel) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+
+                    <label class="form-group">
+                        <span>Public cible</span>
+                        <select name="public_produit_boutique" required>
+                            <?php foreach ($shopPublics as $shopPublicCode => $shopPublicLabel): ?>
+                                <option value="<?= e($shopPublicCode) ?>"><?= e($shopPublicLabel) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+
+                    <label class="form-group">
+                        <span>Prix en euros</span>
+                        <input type="number" name="prix_produit_boutique" min="0" max="10000" step="1" value="0" required>
+                    </label>
+
+                    <label class="form-group">
+                        <span>Mode de vente</span>
+                        <select name="mode_vente_produit_boutique" required>
+                            <?php foreach ($shopModesVente as $shopModeCode => $shopModeLabel): ?>
+                                <option value="<?= e($shopModeCode) ?>"><?= e($shopModeLabel) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </label>
+
+                    <label class="form-group">
+                        <span>Badge</span>
+                        <input type="text" name="badge_produit_boutique" maxlength="80" placeholder="Nouveau">
+                    </label>
+
+                    <label class="form-group">
+                        <span>Ordre d'affichage</span>
+                        <input type="number" name="ordre_affichage_produit_boutique" min="1" max="999" value="1" required>
+                    </label>
+                </div>
+
+                <label class="form-group">
+                    <span>Description principale</span>
+                    <textarea name="description_produit_boutique" rows="4" maxlength="2000" required></textarea>
+                </label>
+
+                <label class="form-group">
+                    <span>Resume court</span>
+                    <textarea name="resume_produit_boutique" rows="3" maxlength="280"></textarea>
+                </label>
+
+                <label class="form-group">
+                    <span>Avantages (une ligne par avantage)</span>
+                    <textarea name="avantages_produit_boutique" rows="4" maxlength="800"></textarea>
+                </label>
+
+                <div class="admin-shop-toggle-grid">
+                    <label class="checkbox-inline">
+                        <input type="checkbox" name="stock_produit_boutique" value="1" checked>
+                        <span>Produit disponible ou reservable</span>
+                    </label>
+
+                    <label class="checkbox-inline">
+                        <input type="checkbox" name="visible_produit_boutique" value="1" checked>
+                        <span>Visible dans la boutique publique</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="button button-primary">Ajouter un produit</button>
+            </form>
+        </article>
+
+        <article class="panel panel-contrast">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Catalogue actuel</p>
+                <h2>Produits deja en ligne</h2>
+            </div>
+
+            <div class="admin-list">
+                <?php if ($shopProducts === []): ?>
+                    <div class="empty-state empty-state--contrast">
+                        <p class="card-tag">Aucun produit</p>
+                        <h3>La boutique est vide pour le moment.</h3>
+                        <p>Ajoute ici le premier article ou la premiere formule d'adhesion.</p>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($shopProducts as $shopProduct): ?>
+                        <?php $shopAdvantages = is_array($shopProduct['avantages'] ?? null) ? $shopProduct['avantages'] : []; ?>
+                        <article class="info-card admin-card admin-card--contrast admin-shop-card">
+                            <div class="shop-order-head">
+                                <div>
+                                    <p class="card-tag"><?= e((string) ($shopProduct['categorie_label'] ?? 'Produit')) ?></p>
+                                    <p class="shop-card-reference"><?= e((string) ($shopProduct['reference'] ?? '')) ?></p>
+                                </div>
+                                <span class="shop-card-badge"><?= e((string) ($shopProduct['badge'] ?? 'Club')) ?></span>
+                            </div>
+
+                            <h3><?= e((string) ($shopProduct['titre'] ?? 'Produit')) ?></h3>
+                            <p><?= e((string) ($shopProduct['texte'] ?? '')) ?></p>
+                            <p class="card-subtitle">
+                                <?= e((string) ($shopProduct['public_label'] ?? 'Tous publics')) ?>
+                                - <?= e((string) ($shopProduct['prix_euros'] ?? 0)) ?> EUR
+                                - <?= e((string) ($shopProduct['stock_label'] ?? 'Disponible')) ?>
+                            </p>
+
+                            <?php if (trim((string) ($shopProduct['resume'] ?? '')) !== ''): ?>
+                                <p class="shop-card-summary"><?= e((string) ($shopProduct['resume'] ?? '')) ?></p>
+                            <?php endif; ?>
+
+                            <?php if ($shopAdvantages !== []): ?>
+                                <ul class="shop-feature-list">
+                                    <?php foreach ($shopAdvantages as $shopAdvantage): ?>
+                                        <li><?= e((string) $shopAdvantage) ?></li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php endif; ?>
+
+                            <details class="admin-shop-edit">
+                                <summary class="button button-secondary">Modifier</summary>
+
+                                <form method="post" action="<?= e(url_route('admin')) ?>#admin-boutique" class="admin-form admin-shop-edit-form">
+                                    <input type="hidden" name="action" value="modifier_produit_boutique">
+                                    <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                                    <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                                    <input type="hidden" name="identifiant_produit_boutique" value="<?= e((string) ($shopProduct['identifiant_produit'] ?? '')) ?>">
+
+                                    <div class="admin-shop-form-grid">
+                                        <label class="form-group">
+                                            <span>Reference</span>
+                                            <input type="text" name="reference_produit_boutique" maxlength="80" value="<?= e((string) ($shopProduct['reference'] ?? '')) ?>" required>
+                                        </label>
+
+                                        <label class="form-group">
+                                            <span>Nom du produit</span>
+                                            <input type="text" name="titre_produit_boutique" maxlength="160" value="<?= e((string) ($shopProduct['titre'] ?? '')) ?>" required>
+                                        </label>
+
+                                        <label class="form-group">
+                                            <span>Categorie</span>
+                                            <select name="categorie_produit_boutique" required>
+                                                <?php foreach ($shopCategories as $shopCategoryCode => $shopCategoryLabel): ?>
+                                                    <option value="<?= e($shopCategoryCode) ?>"<?= $shopCategoryCode === (string) ($shopProduct['categorie'] ?? '') ? ' selected' : '' ?>>
+                                                        <?= e($shopCategoryLabel) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </label>
+
+                                        <label class="form-group">
+                                            <span>Public cible</span>
+                                            <select name="public_produit_boutique" required>
+                                                <?php foreach ($shopPublics as $shopPublicCode => $shopPublicLabel): ?>
+                                                    <option value="<?= e($shopPublicCode) ?>"<?= $shopPublicCode === (string) ($shopProduct['public_cible'] ?? '') ? ' selected' : '' ?>>
+                                                        <?= e($shopPublicLabel) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </label>
+
+                                        <label class="form-group">
+                                            <span>Prix en euros</span>
+                                            <input type="number" name="prix_produit_boutique" min="0" max="10000" step="1" value="<?= e((string) ($shopProduct['prix_euros'] ?? 0)) ?>" required>
+                                        </label>
+
+                                        <label class="form-group">
+                                            <span>Mode de vente</span>
+                                            <select name="mode_vente_produit_boutique" required>
+                                                <?php foreach ($shopModesVente as $shopModeCode => $shopModeLabel): ?>
+                                                    <option value="<?= e($shopModeCode) ?>"<?= $shopModeCode === (string) ($shopProduct['mode_vente'] ?? '') ? ' selected' : '' ?>>
+                                                        <?= e($shopModeLabel) ?>
+                                                    </option>
+                                                <?php endforeach; ?>
+                                            </select>
+                                        </label>
+
+                                        <label class="form-group">
+                                            <span>Badge</span>
+                                            <input type="text" name="badge_produit_boutique" maxlength="80" value="<?= e((string) ($shopProduct['badge'] ?? '')) ?>">
+                                        </label>
+
+                                        <label class="form-group">
+                                            <span>Ordre d'affichage</span>
+                                            <input type="number" name="ordre_affichage_produit_boutique" min="1" max="999" value="<?= e((string) ($shopProduct['ordre_affichage'] ?? 1)) ?>" required>
+                                        </label>
+                                    </div>
+
+                                    <label class="form-group">
+                                        <span>Description principale</span>
+                                        <textarea name="description_produit_boutique" rows="4" maxlength="2000" required><?= e((string) ($shopProduct['texte'] ?? '')) ?></textarea>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Resume court</span>
+                                        <textarea name="resume_produit_boutique" rows="3" maxlength="280"><?= e((string) ($shopProduct['resume'] ?? '')) ?></textarea>
+                                    </label>
+
+                                    <label class="form-group">
+                                        <span>Avantages (une ligne par avantage)</span>
+                                        <textarea name="avantages_produit_boutique" rows="4" maxlength="800"><?= e(implode("\n", $shopAdvantages)) ?></textarea>
+                                    </label>
+
+                                    <div class="admin-shop-toggle-grid">
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="stock_produit_boutique" value="1"<?= (bool) ($shopProduct['est_en_stock'] ?? false) ? ' checked' : '' ?>>
+                                            <span>Produit disponible ou reservable</span>
+                                        </label>
+
+                                        <label class="checkbox-inline">
+                                            <input type="checkbox" name="visible_produit_boutique" value="1"<?= (bool) ($shopProduct['est_actif'] ?? false) ? ' checked' : '' ?>>
+                                            <span>Visible dans la boutique publique</span>
+                                        </label>
+                                    </div>
+
+                                    <button type="submit" class="button button-primary">Enregistrer les changements</button>
+                                </form>
+                            </details>
+
+                            <form
+                                method="post"
+                                action="<?= e(url_route('admin')) ?>#admin-boutique"
+                                class="admin-form admin-inline-form"
+                                data-confirm-delete
+                                data-confirm-message="Supprimer definitivement ce produit de la boutique ?"
+                            >
+                                <input type="hidden" name="action" value="supprimer_produit_boutique">
+                                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="identifiant_produit_boutique" value="<?= e((string) ($shopProduct['identifiant_produit'] ?? '')) ?>">
+                                <button type="submit" class="button button-secondary button-danger">Supprimer</button>
+                            </form>
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </article>
+    </div>
+</section>
+
 <section class="split-grid reveal reveal-5 admin-tab-panel" data-admin-tab-panel="contenus">
     <article class="panel">
         <div class="section-head section-head--compact">
@@ -631,7 +950,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </article>
 </section>
 
-<section class="section-block reveal reveal-6 admin-tab-panel" data-admin-tab-panel="contenus">
+<section id="admin-boutique-commandes" class="section-block reveal reveal-6 admin-tab-panel" data-admin-tab-panel="boutique">
     <div class="section-head">
         <p class="eyebrow">Commandes</p>
         <h2>Suivre le merchandising.</h2>

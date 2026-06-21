@@ -1,6 +1,6 @@
 <?php
 /**
- * Vue: page dediee a une rubrique de cours simple.
+ * Vue generique pour une rubrique de cours simple.
  */
 
 $courseJetonCsrf = (string) ($siteData['jeton_csrf'] ?? csrf_token());

@@ -1,3 +1,5 @@
+-- Fichier du projet. Role : participer au fonctionnement du site. Theme principal : create database mysql mariadb production.
+
 CREATE DATABASE IF NOT EXISTS projet_echec2
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;

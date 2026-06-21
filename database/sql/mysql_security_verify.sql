@@ -1,3 +1,5 @@
+-- Fichier du projet. Role : participer au fonctionnement du site. Theme principal : mysql security verify.
+
 /*
     Verification lecture seule pour la base MySQL ou MariaDB du projet.
     A lancer apres les migrations et seeders si besoin.

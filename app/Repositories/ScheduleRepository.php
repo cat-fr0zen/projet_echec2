@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : ScheduleRepository.
+ */
 
 declare(strict_types=1);
 
@@ -6,6 +9,7 @@ namespace App\Repositories;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Throwable;
 
 final class ScheduleRepository
 {
@@ -320,6 +324,10 @@ final class ScheduleRepository
 
     private function tablesDisponibles(): bool
     {
-        return Schema::hasTable('horaire_club') && Schema::hasTable('horaire_creneau');
+        try {
+            return Schema::hasTable('horaire_club') && Schema::hasTable('horaire_creneau');
+        } catch (Throwable) {
+            return false;
+        }
     }
 }

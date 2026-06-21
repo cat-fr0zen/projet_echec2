@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : 2026 06 03 000005 ajouter role prof et journal visiteur.
+ */
 
 declare(strict_types=1);
 

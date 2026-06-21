@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : UserRepository.
+ */
 
 declare(strict_types=1);
 
@@ -11,6 +14,9 @@ use Illuminate\Support\Facades\Hash;
 
 final class UserRepository
 {
+    /**
+     * Point d'entree unique pour lire et modifier les comptes membres.
+     */
     /**
      * @return array<string, int>
      */

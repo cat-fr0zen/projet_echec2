@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : SitePageRenderer.
+ */
 
 declare(strict_types=1);
 
@@ -6,6 +9,7 @@ namespace App\Support;
 
 use App\Models\User;
 use App\Repositories\ArticleRepository;
+use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
@@ -19,7 +23,10 @@ use App\Services\ChessComService;
 use App\Services\GoogleReviewsService;
 use Throwable;
 
-final class LegacyPageRenderer
+/**
+ * Assemble toutes les donnees necessaires puis charge la bonne vue Blade.
+ */
+final class SitePageRenderer
 {
     public function __construct(
         private SiteContent $siteContent,
@@ -37,7 +44,8 @@ final class LegacyPageRenderer
         private GoogleReviewsService $googleReviewsService,
         private array $messagesFlash,
         private array $formState,
-        private ?BoutiqueCartService $boutiqueCartService = null
+        private ?BoutiqueCartService $boutiqueCartService = null,
+        private ?BoutiqueProduitRepository $boutiqueProduitRepository = null
     ) {}
 
     public function afficher(string $segment): string
@@ -76,7 +84,8 @@ final class LegacyPageRenderer
         $siteData['livrets_cours'] = $this->siteContent->obtenirLivretsCours();
         $siteData['cartes_cours_strategie'] = $this->siteContent->obtenirCartesCoursStrategie();
         $siteData['cartes_mediatheque'] = $this->siteContent->obtenirCartesMediatheque();
-        $siteData['cartes_boutique'] = $this->siteContent->obtenirCartesBoutique();
+        $this->boutiqueProduitRepository ??= new BoutiqueProduitRepository;
+        $siteData['cartes_boutique'] = $this->boutiqueProduitRepository->listerCatalogue();
         $this->boutiqueCartService ??= new BoutiqueCartService;
         $siteData['panier_boutique'] = $this->boutiqueCartService->obtenirPanier($siteData['cartes_boutique']);
         $siteData['paiement_boutique'] = $this->boutiqueCartService->configurationPaiementCarte();
@@ -211,6 +220,10 @@ final class LegacyPageRenderer
             $siteData['documents_cours_par_rubrique'] = $siteData['peut_gerer_documents_cours']
                 ? $this->coursDocumentRepository->listerParRubrique()
                 : [];
+            $siteData['tous_produits_boutique'] = $authData['est_admin']
+                ? $this->boutiqueProduitRepository->listerTousPourAdmin()
+                : [];
+            $siteData['all_shop_products'] = $siteData['tous_produits_boutique'];
             $siteData['tous_utilisateurs'] = $authData['est_admin'] ? $this->userRepository->listerTous() : [];
             $siteData['all_users'] = $siteData['tous_utilisateurs'];
             $siteData['resume_roles_compte'] = $authData['est_admin'] ? $this->userRepository->resumerRoles() : [];

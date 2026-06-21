@@ -1,6 +1,6 @@
 <?php
 /**
- * Vue: hub methodologie / strategie.
+ * Vue d'entree pour Methodologie et Strategie.
  */
 
 $courseDocumentsParRubrique = is_array($siteData['documents_cours_par_rubrique'] ?? null)

@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : ArticleRepositoryTest.
+ */
 
 declare(strict_types=1);
 

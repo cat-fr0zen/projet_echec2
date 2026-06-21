@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : database.
+ */
 
 return [
     'default' => env('DB_CONNECTION', 'mysql'),

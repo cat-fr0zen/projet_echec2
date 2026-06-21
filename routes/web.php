@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Routes principales du site.
+ *
+ * Le slug historique `guide` est conserve pour compatibilite,
+ * mais il correspond bien a la rubrique "Cours".
+ */
+
 use App\Http\Controllers\ActionController;
 use App\Http\Controllers\CoursDocumentController;
 use App\Http\Controllers\ForgotPasswordController;

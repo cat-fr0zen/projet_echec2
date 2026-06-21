@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : console.
+ */
 
 use App\Mail\SmtpTestMail;
 use App\Services\CoursPdfImportService;

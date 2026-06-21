@@ -1,3 +1,5 @@
+# Fichier du projet. Role : participer au fonctionnement du site. Theme principal : .
+
 Options -Indexes -ExecCGI
 
 <FilesMatch "\.(?:php|phtml|phar|cgi|pl|py|rb|asp|aspx|jsp|sh|bat|cmd)$">

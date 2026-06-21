@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : SessionAuthentificationTest.
+ */
 
 declare(strict_types=1);
 
@@ -12,7 +15,7 @@ use App\Repositories\MediaRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\UserRepository;
-use App\Support\LegacyActionHandler;
+use App\Support\SiteActionHandler;
 use ReflectionMethod;
 use Tests\TestCase;
 
@@ -50,9 +53,9 @@ final class SessionAuthentificationTest extends TestCase
         self::assertNull(session('identifiant_utilisateur'));
     }
 
-    private function creerHandler(): LegacyActionHandler
+    private function creerHandler(): SiteActionHandler
     {
-        return new LegacyActionHandler(
+        return new SiteActionHandler(
             new UserRepository,
             new ArticleRepository,
             new CoursDocumentRepository,

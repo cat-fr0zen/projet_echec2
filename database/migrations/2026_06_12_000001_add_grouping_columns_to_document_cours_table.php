@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : 2026 06 12 000001 add grouping columns to document cours table.
+ */
 
 declare(strict_types=1);
 

@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : 2026 06 11 000001 allow shared emails for licensed accounts.
+ */
 
 declare(strict_types=1);
 

@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : DepotMedias.
+ */
 
 declare(strict_types=1);
 

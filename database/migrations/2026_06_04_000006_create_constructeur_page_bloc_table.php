@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : 2026 06 04 000006 create constructeur page bloc table.
+ */
 
 declare(strict_types=1);
 

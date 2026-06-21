@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : 2026 06 05 000009 create document cours table.
+ */
 
 declare(strict_types=1);
 

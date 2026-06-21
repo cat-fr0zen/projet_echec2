@@ -1,4 +1,7 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : 2026 05 28 000003 create order dammier and schedule tables.
+ */
 
 declare(strict_types=1);
 

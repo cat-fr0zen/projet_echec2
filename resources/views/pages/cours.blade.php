@@ -1,6 +1,6 @@
 <?php
 /**
- * Vue: hub principal des cours.
+ * Vue principale de la rubrique Cours.
  */
 
 $courseDocumentsParRubrique = is_array($siteData['documents_cours_par_rubrique'] ?? null)

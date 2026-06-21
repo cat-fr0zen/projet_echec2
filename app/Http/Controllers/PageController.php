@@ -1,13 +1,17 @@
 <?php
+/**
+ * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : PageController.
+ */
 
 declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\NewsletterRepository;
 use App\Services\ChessComService;
 use App\Support\BoutiqueCartService;
-use App\Support\LegacyPageRenderer;
+use App\Support\SitePageRenderer;
 use App\Support\SiteContent;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,6 +19,9 @@ use Illuminate\Http\Response;
 
 final class PageController extends Controller
 {
+    /**
+     * Ouvre une page du site puis delegue la preparation des donnees.
+     */
     public function show(Request $request, ?string $page = 'accueil'): Response|RedirectResponse
     {
         $jetonLegacyDesabonnement = trim((string) $request->query('newsletter_unsubscribe', ''));
@@ -23,7 +30,7 @@ final class PageController extends Controller
             return redirect()->route('newsletter.unsubscribe', ['jeton' => $jetonLegacyDesabonnement]);
         }
 
-        $renderer = new LegacyPageRenderer(
+        $renderer = new SitePageRenderer(
             new SiteContent(),
             new \App\Repositories\UserRepository(),
             new \App\Repositories\ArticleRepository(),
@@ -42,7 +49,8 @@ final class PageController extends Controller
             ),
             recuperer_messages_flash(),
             recuperer_etat_formulaire(),
-            new BoutiqueCartService
+            new BoutiqueCartService,
+            new BoutiqueProduitRepository
         );
 
         return response($renderer->afficher($page ?? 'accueil'));
