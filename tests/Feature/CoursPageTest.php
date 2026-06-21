@@ -63,8 +63,8 @@ final class CoursPageTest extends TestCase
             ->assertOk()
             ->assertSeeText('Cours')
             ->assertSeeText('Livrets')
-            ->assertSeeText('Methodologie / strategie')
-            ->assertSeeText('Pedagogie')
+            ->assertSeeText('Voir les documents')
+            ->assertSeeText('Voir les supports')
             ->assertSeeText('Progression')
             ->assertSee('href="/cours-livrets"', false)
             ->assertSee('href="/cours-seances"', false)
@@ -148,7 +148,7 @@ final class CoursPageTest extends TestCase
             'identifiant_utilisateur' => (string) $administrateur['identifiant'],
         ])->get('/cours-progression')
             ->assertOk()
-            ->assertSeeText('Methodologie / strategie')
+            ->assertSeeText('Choisis un angle de travail')
             ->assertSeeText('Rubriques disponibles')
             ->assertDontSee('/cours-methodologie', false)
             ->assertSee('/cours-strategie', false);

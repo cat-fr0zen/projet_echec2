@@ -37,22 +37,22 @@ final class SiteContent
             $this->membreBureau(
                 'Jean-Patrick',
                 'JORON',
-                'President',
-                "Pilote la vie du club, coordonne les decisions associatives et represente officiellement les Cavaliers d'Herouville.",
+                'Président',
+                "Pilote la vie du club, coordonne les décisions associatives et représente officiellement les Cavaliers d'Hérouville.",
                 ''
             ),
             $this->membreBureau(
                 'Francois',
                 '',
-                'Vice-president',
-                "Accompagne l'organisation des activites, le suivi des groupes et la continuitÃ© des actions du club.",
+                'Vice-président',
+                "Accompagne l'organisation des activités, le suivi des groupes et la continuité des actions du club.",
                 ''
             ),
             $this->membreBureau(
                 'Ashot',
                 '',
                 'Professeur / encadrant',
-                "Intervient sur l'accompagnement pedagogique, l'initiation et la progression des jeunes joueurs du club.",
+                "Intervient sur l'accompagnement pédagogique, l'initiation et la progression des jeunes joueurs du club.",
                 ''
             ),
         ];
@@ -213,46 +213,46 @@ final class SiteContent
                     $this->sectionLegale('Edition et publication', [
                         "Conception et developpement du site : Mattheo Mullois.",
                         "Publication associative et validation editoriale : Jean Patrick JORON.",
-                        "Le site presente les informations publiques, les contenus pedagogiques, la mediatheque, la newsletter et la boutique du club.",
+                        "Le site présente les informations publiques, les contenus pédagogiques, la médiathèque, la newsletter et la boutique du club.",
                     ]),
                     $this->sectionLegale('Comptes et moderation', [
-                        "Les utilisateurs peuvent creer un compte membre avec un email, un numero de licence facultatif et un mot de passe securise.",
-                        "Les roles internes peuvent inclure notamment administrateur, professeur, adherent ou compte connecte selon les besoins du club.",
-                        "Les articles, medias, documents de cours et autres contenus soumis via le site peuvent etre moderes, corriges, acceptes ou refuses avant diffusion.",
+                        "Les utilisateurs peuvent créer un compte membre avec un email, un numéro de licence facultatif et un mot de passe sécurisé.",
+                        "Les rôles internes peuvent inclure notamment administrateur, professeur, adhérent ou compte connecté selon les besoins du club.",
+                        "Les articles, médias, documents de cours et autres contenus soumis via le site peuvent être modérés, corrigés, acceptés ou refusés avant diffusion.",
                     ]),
                     $this->sectionLegale('Boutique et reservations', [
-                        "La boutique peut presenter des adhesions, textiles, accessoires, materiel et packs du club.",
-                        "Les commandes, demandes d'adhesion ou reservations effectuees sur le site restent soumises a validation locale tant qu'aucun paiement final n'est confirme.",
+                        "La boutique peut présenter des adhésions, textiles, accessoires, matériel et packs du club.",
+                        "Les commandes, demandes d'adhésion ou réservations effectuées sur le site restent soumises à validation locale tant qu'aucun paiement final n'est confirmé.",
                     ]),
                     $this->sectionLegale('Propriete intellectuelle', [
-                        "La structure, le design, les textes, scripts, logos, medias, PDF de cours, livrets et supports pedagogiques sont proteges par le droit applicable.",
-                        "Toute reproduction, republication, extraction ou diffusion sans autorisation prealable est interdite, hors exceptions legales.",
+                        "La structure, le design, les textes, scripts, logos, médias, PDF de cours, livrets et supports pédagogiques sont protégés par le droit applicable.",
+                        "Toute reproduction, republication, extraction ou diffusion sans autorisation préalable est interdite, hors exceptions légales.",
                     ]),
                     $this->sectionLegale('Responsabilite', [
-                        "Malgre le soin apporte a la publication, l'association et l'auteur du site ne garantissent pas l'absence totale d'erreur, d'omission ou d'interruption.",
-                        "Le site peut renvoyer vers des services tiers comme Google ou Chess.com, qui restent sous la responsabilite de leurs propres editeurs.",
+                        "Malgré le soin apporté à la publication, l'association et l'auteur du site ne garantissent pas l'absence totale d'erreur, d'omission ou d'interruption.",
+                        "Le site peut renvoyer vers des services tiers comme Google ou Chess.com, qui restent sous la responsabilité de leurs propres éditeurs.",
                     ]),
                 ]
             ),
             $this->documentLegal(
                 'privacy-policy',
                 'Politique de confidentialite',
-                "Donnees traitees pour les comptes, la newsletter, les visites, la moderation et les usages du site.",
+                "Données traitées pour les comptes, la newsletter, les visites, la modération et les usages du site.",
                 [
                     $this->sectionLegale('Donnees traitees', [
                         "Le site peut traiter le nom, le prenom, la date de naissance facultative, l'email, le numero de licence facultatif, le mot de passe hache, la description de profil et le pseudo Chess.com facultatif.",
-                        "La newsletter traite l'adresse email, la date d'inscription, le statut d'abonnement, la version du consentement, un jeton de desabonnement et des traces techniques minimales.",
-                        "Les visites publiques non connectees peuvent generer des donnees techniques internes : page consultee, horodatage, empreinte de session, empreinte IP hachee, referent et agent utilisateur.",
+                        "La newsletter traite l'adresse email, la date d'inscription, le statut d'abonnement, la version du consentement, un jeton de désabonnement et des traces techniques minimales.",
+                        "Les visites publiques non connectées peuvent générer des données techniques internes : page consultée, horodatage, empreinte de session, empreinte IP hachée, référent et agent utilisateur.",
                     ]),
                     $this->sectionLegale('Finalites', [
-                        "Creer et maintenir les comptes membres, permettre la connexion, l'edition du profil, la moderation et la gestion des roles.",
-                        "Organiser les contenus du site : cours PDF, livrets, mediatheque, articles, boutique, suivi administratif et statistiques internes de frequentation.",
+                        "Créer et maintenir les comptes membres, permettre la connexion, l'édition du profil, la modération et la gestion des rôles.",
+                        "Organiser les contenus du site : cours PDF, livrets, médiathèque, articles, boutique, suivi administratif et statistiques internes de fréquentation.",
                         "Envoyer les emails de newsletter aux personnes inscrites et conserver la preuve minimale du consentement et du retrait.",
                     ]),
                     $this->sectionLegale('Cookies, stockage et conservation', [
                         "Un consentement obligatoire est demande avant l'acces complet au site.",
-                        "Le site utilise des cookies ou mecanismes similaires limites a la session, au consentement et aux preferences d'affichage.",
-                        "Les donnees sont conservees pendant la duree utile au fonctionnement du service, a la gestion associative, a la securite ou au respect des obligations legales.",
+                        "Le site utilise des cookies ou mécanismes similaires limités à la session, au consentement et aux préférences d'affichage.",
+                        "Les données sont conservées pendant la durée utile au fonctionnement du service, à la gestion associative, à la sécurité ou au respect des obligations légales.",
                     ]),
                     $this->sectionLegale('Droits des personnes', [
                         "Chaque personne dispose des droits d'acces, de rectification, d'effacement, de limitation, d'opposition et, selon les cas, de portabilite.",
@@ -263,44 +263,44 @@ final class SiteContent
             $this->documentLegal(
                 'newsletter-privacy',
                 'Newsletter',
-                "Inscription, consentement, confirmation, envois d'emails et desabonnement.",
+                "Inscription, consentement, confirmation, envois d'emails et désabonnement.",
                 [
                     $this->sectionLegale('Donnees newsletter', [
-                        "La newsletter traite uniquement l'adresse email, la date d'inscription, la version du consentement, un jeton de desabonnement et une preuve technique minimisee.",
-                        "L'adresse IP peut etre hachee avec un sel serveur afin de prouver le consentement sans conserver l'adresse en clair.",
+                        "La newsletter traite uniquement l'adresse email, la date d'inscription, la version du consentement, un jeton de désabonnement et une preuve technique minimisée.",
+                        "L'adresse IP peut être hachée avec un sel serveur afin de prouver le consentement sans conserver l'adresse en clair.",
                     ]),
                     $this->sectionLegale('Envois et retrait', [
-                        "Les emails servent a annoncer les nouveaux articles, les mises a jour de cours ou d'horaires, et les informations boutique publiees par le club.",
-                        "Un email de confirmation ou de bienvenue peut etre envoye lors de l'inscription lorsque la configuration mail du site est active.",
-                        "Chaque email contient un lien de desabonnement automatique ; la demande peut aussi etre faite au contact officiel du club.",
+                        "Les emails servent à annoncer les nouveaux articles, les mises à jour de cours ou d'horaires, et les informations boutique publiées par le club.",
+                        "Un email de confirmation ou de bienvenue peut être envoyé lors de l'inscription lorsque la configuration mail du site est active.",
+                        "Chaque email contient un lien de désabonnement automatique ; la demande peut aussi être faite au contact officiel du club.",
                     ]),
                     $this->sectionLegale('Gestion interne', [
-                        "Les abonnes et l'historique des envois peuvent etre consultes depuis l'espace d'administration par les personnes habilitees.",
-                        "Le club s'engage a ne pas utiliser cette liste pour des envois sans lien avec sa vie associative, ses contenus ou ses activites.",
+                        "Les abonnés et l'historique des envois peuvent être consultés depuis l'espace d'administration par les personnes habilitées.",
+                        "Le club s'engage à ne pas utiliser cette liste pour des envois sans lien avec sa vie associative, ses contenus ou ses activités.",
                     ]),
                 ]
             ),
             $this->documentLegal(
                 'terms-of-use',
                 "Conditions d'utilisation",
-                "Regles d'usage du site, des comptes, des contenus, des documents PDF et de la boutique.",
+                "Règles d'usage du site, des comptes, des contenus, des documents PDF et de la boutique.",
                 [
                     $this->sectionLegale('Usage general', [
-                        "L'utilisateur s'engage a consulter le site dans le respect de la loi, de l'ordre public et de l'objet associatif du club.",
-                        "Toute tentative de detournement, extraction massive, nuisance technique, usurpation de compte ou publication malveillante est interdite.",
+                        "L'utilisateur s'engage à consulter le site dans le respect de la loi, de l'ordre public et de l'objet associatif du club.",
+                        "Toute tentative de détournement, extraction massive, nuisance technique, usurpation de compte ou publication malveillante est interdite.",
                     ]),
                     $this->sectionLegale('Comptes membres', [
-                        "Chaque compte doit etre cree avec un email valable et un mot de passe confidentiel choisi par l'utilisateur.",
-                        "Un meme email peut etre reutilise dans les conditions prevues par le site, notamment lorsque plusieurs comptes sont distingues par un numero de licence.",
+                        "Chaque compte doit être créé avec un email valable et un mot de passe confidentiel choisi par l'utilisateur.",
+                        "Un même email peut être réutilisé dans les conditions prévues par le site, notamment lorsque plusieurs comptes sont distingués par un numéro de licence.",
                         "L'utilisateur reste responsable des informations qu'il saisit dans son profil et dans les contenus qu'il soumet.",
                     ]),
                     $this->sectionLegale('Cours, PDF et contenus', [
-                        "Les espaces Cours, Livrets, Methodologie et Strategie peuvent contenir des PDF reserves a certains profils autorises par le club.",
-                        "Les administrateurs et professeurs peuvent ajouter, modifier, supprimer ou reorganiser ces documents dans le cadre pedagogique du site.",
+                        "Les espaces Cours, Livrets, Méthodologie et Stratégie peuvent contenir des PDF réservés à certains profils autorisés par le club.",
+                        "Les administrateurs et professeurs peuvent ajouter, modifier, supprimer ou réorganiser ces documents dans le cadre pédagogique du site.",
                     ]),
                     $this->sectionLegale('Articles, medias et boutique', [
-                        "Les articles, medias, contenus de boutique et autres publications peuvent etre affiches, modifies, refuses ou retires selon les besoins de moderation, de conformite ou de publication.",
-                        "Aucune offre, commande, reservation ou diffusion de media ne vaut engagement definitif tant qu'elle n'a pas ete publiee ou validee officiellement par l'association.",
+                        "Les articles, médias, contenus de boutique et autres publications peuvent être affichés, modifiés, refusés ou retirés selon les besoins de modération, de conformité ou de publication.",
+                        "Aucune offre, commande, réservation ou diffusion de média ne vaut engagement définitif tant qu'elle n'a pas été publiée ou validée officiellement par l'association.",
                     ]),
                 ]
             ),
@@ -429,8 +429,8 @@ final class SiteContent
             'cours-livrets' => $this->page(
                 'Livrets',
                 'cours_livrets.php',
-                'Page d entree des livrets A a E du parcours pedagogique.',
-                intro: "Choisis un niveau pour ouvrir la page dediee au livret et retrouver les PDF du club."
+                "Page d'entrée des livrets A à E du parcours pédagogique.",
+                intro: "Choisis un niveau pour ouvrir la page dédiée au livret et retrouver les PDF du club."
             ),
             'cours-livret-a' => [
                 ...$this->page(
@@ -481,25 +481,25 @@ final class SiteContent
                 ...$this->page(
                     'Cours',
                     'cours_rubrique.php',
-                    'Supports de seance du club et continuité pédagogique.',
-                    intro: "Retrouver les supports de seance du club dans une page dediee, claire et facile a maintenir."
+                    'Supports de séance du club et continuité pédagogique.',
+                    intro: "Retrouver les supports de séance du club dans une page dédiée, claire et facile à maintenir."
                 ),
                 'rubrique_document_cours' => 'cours',
                 'section_groupe_cours' => 'pedagogie',
                 'retour_page_cours' => 'guide',
             ],
             'cours-progression' => $this->page(
-                'Methodologie / strategie',
+                'Méthodologie / stratégie',
                 'cours_progression.php',
-                'Espace d entree vers les pages methodologie et strategie.',
-                intro: "Choisis un angle de travail : methode de reflexion ou plans de jeu."
+                "Espace d'entrée vers les pages méthodologie et stratégie.",
+                intro: "Choisis un angle de travail : méthode de réflexion ou plans de jeu."
             ),
             'cours-methodologie' => [
                 ...$this->page(
-                    'Methodologie',
+                    'Méthodologie',
                     'cours_rubrique.php',
-                    'Methodologie de reflexion devant l echiquier.',
-                    intro: "Une page dediee aux routines de reflexion, a la verification et a la prise de decision."
+                    "Méthodologie de réflexion devant l'échiquier.",
+                    intro: "Une page dédiée aux routines de réflexion, à la vérification et à la prise de décision."
                 ),
                 'rubrique_document_cours' => 'methodologie',
                 'section_groupe_cours' => 'progression',
@@ -507,10 +507,10 @@ final class SiteContent
             ],
             'cours-strategie' => [
                 ...$this->page(
-                    'Strategie',
+                    'Stratégie',
                     'cours_rubrique.php',
-                    'Strategie, plans et lecture positionnelle.',
-                    intro: "Une page dediee aux plans de jeu, aux faiblesses, aux bonnes cases et aux priorites de la position."
+                    'Stratégie, plans et lecture positionnelle.',
+                    intro: "Une page dédiée aux plans de jeu, aux faiblesses, aux bonnes cases et aux priorités de la position."
                 ),
                 'rubrique_document_cours' => 'strategie',
                 'section_groupe_cours' => 'progression',
@@ -531,14 +531,14 @@ final class SiteContent
             'boutique' => $this->page(
                 'Boutique',
                 'boutique.php',
-                'Mini-boutique du club, adhesion et reservations locales.',
-                intro: "Retrouve les demandes d'adhesion, les textiles du club et une petite selection de materiel avec filtres, tri et suivi de reservation."
+                'Mini-boutique du club, adhésion et réservations locales.',
+                intro: "Retrouve les demandes d'adhésion, les textiles du club et une petite sélection de matériel avec filtres, tri et suivi de réservation."
             ),
             'merch' => $this->page(
                 'Boutique',
                 'boutique.php',
-                'Mini-boutique du club, adhesion et reservations locales.',
-                intro: "Retrouve les demandes d'adhesion, les textiles du club et une petite selection de materiel avec filtres, tri et suivi de reservation."
+                'Mini-boutique du club, adhésion et réservations locales.',
+                intro: "Retrouve les demandes d'adhésion, les textiles du club et une petite sélection de matériel avec filtres, tri et suivi de réservation."
             ),
             'club' => $this->page(
                 'Le club',
@@ -784,3 +784,5 @@ final class SiteContent
         ];
     }
 }
+
+

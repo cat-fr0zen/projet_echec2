@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Fichier du projet. Role : participer au fonctionnement du site. Theme principal : chiffres du club.blade.
  */
@@ -8,8 +8,8 @@ $membresBureau = is_array($siteData['membres_bureau'] ?? null) ? $siteData['memb
 <section class="section-block reveal reveal-6" data-accueil-slot="chiffres_du_club">
     <div class="section-head">
         <p class="eyebrow">Bureau du club</p>
-        <h2>Les membres du bureau des echecs.</h2>
-        <p>Retrouve les responsables du club avec leur role, leur presentation et une photo quand elle est disponible.</p>
+        <h2>Les membres du bureau des échecs.</h2>
+        <p>Retrouve les responsables du club avec leur rôle, leur présentation et une photo quand elle est disponible.</p>
     </div>
 
     <div class="card-grid card-grid--three bureau-grid">
@@ -53,7 +53,7 @@ $membresBureau = is_array($siteData['membres_bureau'] ?? null) ? $siteData['memb
                     <p class="eyebrow">Emploi du temps</p>
                     <h3><?= e($libelleSaisonHoraires) ?></h3>
                     <?php if ($messageJourFerie !== ''): ?>
-                        <p><strong>Jour ferie :</strong> <?= e($messageJourFerie) ?></p>
+                        <p><strong>Jour férié :</strong> <?= e($messageJourFerie) ?></p>
                     <?php endif; ?>
                 </div>
 
@@ -63,7 +63,7 @@ $membresBureau = is_array($siteData['membres_bureau'] ?? null) ? $siteData['memb
                             <p class="card-tag">
                                 <?= e((string) ($horaire['day'] ?? '')) ?>
                                 <?php if (!empty($horaire['is_holiday'])): ?>
-                                    · Jour ferie
+                                    · Jour férié
                                 <?php endif; ?>
                             </p>
                             <h4><?= e((string) ($horaire['time'] ?? '')) ?></h4>
@@ -82,3 +82,4 @@ $membresBureau = is_array($siteData['membres_bureau'] ?? null) ? $siteData['memb
         </details>
     <?php endif; ?>
 </section>
+
