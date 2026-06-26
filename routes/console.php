@@ -4,10 +4,13 @@
  */
 
 use App\Mail\SmtpTestMail;
+use App\Services\AdhesionRenewalService;
 use App\Services\CoursPdfImportService;
 use App\Support\MailProviderConfig;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schedule;
+use Illuminate\Support\Facades\Schema;
 
 Artisan::command('app:about-local', function (): void {
     $this->info('Port Laravel local du site Cavaliers d\'Herouville.');
@@ -85,3 +88,44 @@ Artisan::command('cours:importer-pdf {--source=} {--auteur=}', function (): int 
 
     return $resultat['erreurs'] === [] ? 0 : 1;
 })->purpose('Importe les PDF de cours ranges dans des dossiers vers la base locale');
+
+Artisan::command('adhesions:renouvellement-annuel {--date=} {--forcer}', function (): int {
+    if (! Schema::hasColumns('compte_membre', [
+        'saison_adhesion_active',
+        'saison_relance_adhesion',
+        'adhesion_renouvelee_le',
+    ])) {
+        $this->error("La base locale n'est pas a jour pour le renouvellement des adhesions.");
+        $this->line('Lance d abord : php artisan migrate');
+
+        return 1;
+    }
+
+    $dateBrute = trim((string) $this->option('date'));
+    $forcer = (bool) $this->option('forcer');
+
+    if ($dateBrute !== '' && preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateBrute) !== 1) {
+        $this->error('Le format de date attendu est YYYY-MM-DD.');
+
+        return 1;
+    }
+
+    $dateReference = $dateBrute !== ''
+        ? new DateTimeImmutable($dateBrute . ' 06:00:00')
+        : new DateTimeImmutable('now');
+    $resultat = app(AdhesionRenewalService::class)->executerRemiseAJourAnnuelle($dateReference, $forcer);
+
+    $this->info('Date reference : ' . $resultat['date_reference']);
+    $this->info('Saison cible : ' . $resultat['saison_cible']);
+    $this->line('Comptes evalues : ' . $resultat['comptes_evalues']);
+    $this->line('Comptes retrogrades : ' . $resultat['comptes_retrogrades']);
+    $this->line('Rappels envoyes : ' . $resultat['rappels_envoyes']);
+
+    if (! $resultat['execute']) {
+        $this->warn("Aucune action: le reset annuel ne s'exécute automatiquement que le 1er septembre.");
+    }
+
+    return 0;
+})->purpose("Remet a zero les adhesions a la nouvelle saison et envoie les rappels du 1er septembre");
+
+Schedule::command('adhesions:renouvellement-annuel')->dailyAt('06:00');

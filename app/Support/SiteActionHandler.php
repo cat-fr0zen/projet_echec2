@@ -18,6 +18,7 @@ use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\UserRepository;
+use App\Services\AdhesionRenewalService;
 use App\Services\NewsletterMailerService;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Hash;
@@ -71,10 +72,12 @@ final class SiteActionHandler
         private string $dossierUploadMedias,
         private ?NewsletterRepository $depotNewsletter = null,
         private ?NewsletterMailerService $newsletterMailer = null,
+        private ?AdhesionRenewalService $adhesionRenewalService = null,
         private ?SensitiveActionRateLimiter $rateLimiter = null,
         private ?BoutiqueCartService $boutiqueCartService = null,
         private ?BoutiqueProduitRepository $depotProduitsBoutique = null
     ) {
+        $this->adhesionRenewalService ??= new AdhesionRenewalService($this->depotUtilisateurs);
         $this->rateLimiter ??= new SensitiveActionRateLimiter;
         $this->boutiqueCartService ??= new BoutiqueCartService;
         $this->depotProduitsBoutique ??= new BoutiqueProduitRepository;
@@ -404,10 +407,17 @@ final class SiteActionHandler
 
         $ordres = is_array($_POST['ordre_bloc'] ?? null) ? $_POST['ordre_bloc'] : [];
         $actifs = is_array($_POST['bloc_actif'] ?? null) ? $_POST['bloc_actif'] : [];
+        $titres = is_array($_POST['titre_bloc'] ?? null) ? $_POST['titre_bloc'] : [];
+        $contenus = is_array($_POST['contenu_bloc'] ?? null) ? $_POST['contenu_bloc'] : [];
         $donnees = [];
+        $codesBlocs = array_unique(array_merge(
+            array_map(static fn (mixed $cle): string => trim((string) $cle), array_keys($ordres)),
+            array_map(static fn (mixed $cle): string => trim((string) $cle), array_keys($titres)),
+            array_map(static fn (mixed $cle): string => trim((string) $cle), array_keys($contenus))
+        ));
 
-        foreach ($ordres as $codeBloc => $ordreBloc) {
-            $codeBlocNormalise = trim((string) $codeBloc);
+        foreach ($codesBlocs as $codeBlocNormalise) {
+            $ordreBloc = $ordres[$codeBlocNormalise] ?? 1;
 
             if ($codeBlocNormalise === '') {
                 continue;
@@ -416,6 +426,8 @@ final class SiteActionHandler
             $donnees[$codeBlocNormalise] = [
                 'ordre_affichage' => max(1, (int) $ordreBloc),
                 'est_actif' => isset($actifs[$codeBlocNormalise]) && (string) $actifs[$codeBlocNormalise] === '1',
+                'titre_personnalise' => trim((string) ($titres[$codeBlocNormalise] ?? '')),
+                'contenu_personnalise' => trim((string) ($contenus[$codeBlocNormalise] ?? '')),
             ];
         }
 
@@ -1222,8 +1234,17 @@ final class SiteActionHandler
         $identifiantCommande = trim((string) ($_POST['identifiant_commande'] ?? ''));
         $statut = trim((string) ($_POST['statut_commande'] ?? ''));
 
-        if ($identifiantCommande === '' || $this->depotCommandes->changerStatut($identifiantCommande, $statut) === null) {
+        $commande = $identifiantCommande !== '' ? $this->depotCommandes->changerStatut($identifiantCommande, $statut) : null;
+
+        if ($commande === null) {
             ajouter_message_flash('error', 'Impossible de mettre à jour la commande.');
+            rediriger_vers(url_route('admin'));
+        }
+
+        $adhesionReactivee = $this->adhesionRenewalService?->activerDepuisCommandeValidee($commande) !== null;
+
+        if ($adhesionReactivee) {
+            ajouter_message_flash('success', "La commande a ete validee et l'adhesion du membre a ete reactivee.");
             rediriger_vers(url_route('admin'));
         }
 
@@ -1396,6 +1417,7 @@ final class SiteActionHandler
         $classement = $this->depotDammier->listerClassementHebdomadaire($weekKey, $puzzleId);
         $statutScore = (string) ($score['dammier_record_status'] ?? '');
         $message = match ($statutScore) {
+            'already_played' => 'Tu as deja valide ce casse-tete cette semaine. Une seule participation est conservee.',
             'improved' => 'Ton score a ete ameliore dans le classement.',
             'unchanged' => 'Ton meilleur score etait deja meilleur. Le classement reste inchange.',
             default => 'Score dammier enregistr?.',

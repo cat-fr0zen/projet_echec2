@@ -207,6 +207,9 @@ final class UserRepository
             'code_role' => $isFirstAccount ? User::ROLE_ADMIN : User::ROLE_CONNECTE,
             'code_statut_compte' => User::STATUT_COMPTE_ACTIF,
             'code_statut_adhesion' => $isFirstAccount ? User::STATUT_ADHESION_ACTIVE : User::STATUT_ADHESION_AUCUNE,
+            'saison_adhesion_active' => $isFirstAccount ? $this->calculerSaisonPourDate(new DateTimeImmutable('now')) : null,
+            'saison_relance_adhesion' => null,
+            'adhesion_renouvelee_le' => $isFirstAccount ? date('Y-m-d H:i:s') : null,
             'cree_le' => date('Y-m-d H:i:s'),
         ]);
 
@@ -278,12 +281,79 @@ final class UserRepository
             return null;
         }
 
+        $miseAJour = [
+            'code_role' => $role,
+            'code_statut_compte' => $statutCompte,
+            'code_statut_adhesion' => $statutAdhesion,
+            'mis_a_jour_le' => date('Y-m-d H:i:s'),
+        ];
+
+        if ($statutAdhesion === User::STATUT_ADHESION_ACTIVE) {
+            $miseAJour['saison_adhesion_active'] = $user['saison_adhesion'] !== ''
+                ? $user['saison_adhesion']
+                : $this->calculerSaisonPourDate(new DateTimeImmutable('now'));
+            $miseAJour['adhesion_renouvelee_le'] = date('Y-m-d H:i:s');
+            $miseAJour['saison_relance_adhesion'] = null;
+        } else {
+            $miseAJour['saison_adhesion_active'] = null;
+        }
+
+        DB::table('compte_membre')
+            ->where('identifiant', $identifiant)
+            ->update($miseAJour);
+
+        return $this->trouverParIdentifiant($identifiant);
+    }
+
+    public function activerAdhesionPourSaison(
+        string $identifiant,
+        string $saisonAdhesion,
+        ?DateTimeImmutable $dateRenouvellement = null
+    ): ?array {
+        $utilisateur = $this->trouverParIdentifiant($identifiant);
+
+        if ($utilisateur === null || trim($saisonAdhesion) === '') {
+            return null;
+        }
+
+        $roleMisAJour = $utilisateur['role'] === User::ROLE_CONNECTE
+            ? User::ROLE_ADHERENT
+            : (string) $utilisateur['role'];
+        $dateRenouvellement ??= new DateTimeImmutable('now');
+
         DB::table('compte_membre')
             ->where('identifiant', $identifiant)
             ->update([
-                'code_role' => $role,
-                'code_statut_compte' => $statutCompte,
-                'code_statut_adhesion' => $statutAdhesion,
+                'code_role' => $roleMisAJour,
+                'code_statut_adhesion' => User::STATUT_ADHESION_ACTIVE,
+                'saison_adhesion_active' => trim($saisonAdhesion),
+                'saison_relance_adhesion' => null,
+                'adhesion_renouvelee_le' => $dateRenouvellement->format('Y-m-d H:i:s'),
+                'mis_a_jour_le' => date('Y-m-d H:i:s'),
+            ]);
+
+        return $this->trouverParIdentifiant($identifiant);
+    }
+
+    public function desactiverAdhesionPourNouvelleSaison(string $identifiant, string $saisonCible): ?array
+    {
+        $utilisateur = $this->trouverParIdentifiant($identifiant);
+
+        if ($utilisateur === null || trim($saisonCible) === '') {
+            return null;
+        }
+
+        $roleMisAJour = $utilisateur['role'] === User::ROLE_ADHERENT
+            ? User::ROLE_CONNECTE
+            : (string) $utilisateur['role'];
+
+        DB::table('compte_membre')
+            ->where('identifiant', $identifiant)
+            ->update([
+                'code_role' => $roleMisAJour,
+                'code_statut_adhesion' => User::STATUT_ADHESION_AUCUNE,
+                'saison_adhesion_active' => null,
+                'saison_relance_adhesion' => trim($saisonCible),
                 'mis_a_jour_le' => date('Y-m-d H:i:s'),
             ]);
 
@@ -372,6 +442,9 @@ final class UserRepository
             'role' => (string) ($row['code_role'] ?? User::ROLE_CONNECTE),
             'statut_compte' => (string) ($row['code_statut_compte'] ?? User::STATUT_COMPTE_ACTIF),
             'statut_adhesion' => (string) ($row['code_statut_adhesion'] ?? User::STATUT_ADHESION_AUCUNE),
+            'saison_adhesion' => (string) ($row['saison_adhesion_active'] ?? ''),
+            'saison_relance_adhesion' => (string) ($row['saison_relance_adhesion'] ?? ''),
+            'adhesion_renouvelee_le' => $this->formaterDateIso($row['adhesion_renouvelee_le'] ?? null),
             'cree_le' => $this->formaterDateIso($row['cree_le'] ?? null),
             'mis_a_jour_le' => $this->formaterDateIso($row['mis_a_jour_le'] ?? null),
         ];
@@ -427,5 +500,14 @@ final class UserRepository
         } catch (\Throwable) {
             return (string) $value;
         }
+    }
+
+    private function calculerSaisonPourDate(DateTimeImmutable $date): string
+    {
+        $annee = (int) $date->format('Y');
+        $mois = (int) $date->format('n');
+        $debut = $mois >= 9 ? $annee : $annee - 1;
+
+        return sprintf('%d-%d', $debut, $debut + 1);
     }
 }

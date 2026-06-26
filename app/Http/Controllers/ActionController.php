@@ -17,6 +17,7 @@ use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\UserRepository;
+use App\Services\AdhesionRenewalService;
 use App\Services\NewsletterMailerService;
 use App\Support\BoutiqueCartService;
 use App\Support\SensitiveActionRateLimiter;
@@ -48,6 +49,7 @@ final class ActionController extends Controller
             UploadStorage::dossierMedias(),
             $newsletterRepository,
             NewsletterMailerService::depuisEnvironnement($newsletterRepository),
+            new AdhesionRenewalService(new UserRepository),
             new SensitiveActionRateLimiter,
             new BoutiqueCartService,
             new BoutiqueProduitRepository
