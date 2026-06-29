@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\CommandeLocale;
 use App\Repositories\UserRepository;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -18,6 +17,8 @@ final class BoutiqueCartTest extends TestCase
 {
     use RefreshDatabase;
 
+    private const LIEN_HELLOASSO_PAR_DEFAUT = 'https://www.helloasso.com/associations/les-cavaliers-d-herouville';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -25,9 +26,9 @@ final class BoutiqueCartTest extends TestCase
         $this->seed(DatabaseSeeder::class);
     }
 
-    public function test_un_membre_peut_ajouter_un_produit_au_panier_depuis_la_boutique(): void
+    public function test_un_compte_connecte_peut_ouvrir_la_boutique_et_voir_le_lien_helloasso_unique(): void
     {
-        $membre = $this->creerMembre('panier-boutique@example.test');
+        $membre = $this->creerMembre('helloasso-boutique@example.test');
         $this->creerProduitBoutique([
             'identifiant_produit' => 'polo-club',
             'reference_produit' => 'TEXT-POLO',
@@ -42,51 +43,61 @@ final class BoutiqueCartTest extends TestCase
             'avantages_json' => '["Broderie","Tissu respirant"]',
             'identifiant_auteur' => (string) $membre['identifiant'],
         ]);
-        $jetonCsrf = 'jeton-boutique-panier';
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $membre['identifiant'],
+        ])->get('/boutique')
+            ->assertOk()
+            ->assertSee('Polo officiel du club', false)
+            ->assertSee('Ouvrir sur HelloAsso', false)
+            ->assertSee(self::LIEN_HELLOASSO_PAR_DEFAUT, false)
+            ->assertDontSee('Panier et paiement', false)
+            ->assertDontSee('Ajouter au panier', false)
+            ->assertDontSee('Continuer vers le paiement CB', false);
+    }
+
+    public function test_un_ancien_post_de_validation_redirige_vers_helloasso_sans_creer_de_commande(): void
+    {
+        $membre = $this->creerMembre('checkout-helloasso@example.test');
+        $this->creerProduitBoutique([
+            'identifiant_produit' => 'polo-club',
+            'reference_produit' => 'TEXT-POLO',
+            'titre_produit' => 'Polo officiel du club',
+            'categorie_produit' => 'textile',
+            'public_cible' => 'tous',
+            'prix_euros' => 32,
+            'badge' => 'Club',
+            'mode_vente' => 'reservation',
+            'texte_produit' => 'Polo brode pour les rencontres du club.',
+            'resume_produit' => 'Coupe mixte et tissu respirant.',
+            'avantages_json' => '["Broderie","Tissu respirant"]',
+            'identifiant_auteur' => (string) $membre['identifiant'],
+        ]);
+        $jetonCsrf = 'jeton-boutique-helloasso';
 
         $reponse = $this->withSession([
             'identifiant_utilisateur' => (string) $membre['identifiant'],
             '_token' => $jetonCsrf,
+            'panier_boutique' => [
+                'polo-club' => ['quantite' => 2],
+            ],
         ])->post('/boutique', [
             '_token' => $jetonCsrf,
             'jeton_csrf' => $jetonCsrf,
-            'action' => 'ajouter_au_panier',
-            'identifiant_produit' => 'polo-club',
+            'action' => 'checkout_cart',
         ]);
 
-        $reponse->assertRedirect('/boutique#boutique-panier');
-        $reponse->assertSessionHas('panier_boutique', function (mixed $panier): bool {
-            return is_array($panier)
-                && (int) (($panier['polo-club']['quantite'] ?? 0)) === 1;
-        });
+        $reponse->assertRedirect(self::LIEN_HELLOASSO_PAR_DEFAUT);
 
-        $this->withSession([
+        $this->assertDatabaseMissing('commande_locale', [
             'identifiant_utilisateur' => (string) $membre['identifiant'],
-            'panier_boutique' => session('panier_boutique'),
-        ])->get('/boutique')
-            ->assertOk()
-            ->assertSeeText('Panier et paiement')
-            ->assertSeeText('Polo officiel du club')
-            ->assertSeeText('32 EUR');
+            'reference_produit' => 'polo-club',
+        ]);
     }
 
-    public function test_la_finalisation_du_panier_cree_des_commandes_avec_quantite_total_et_mode_paiement(): void
+    public function test_la_page_boutique_utilise_le_lien_helloasso_personnalise_enregistre_en_base(): void
     {
-        $membre = $this->creerMembre('checkout-boutique@example.test');
-        $this->creerProduitBoutique([
-            'identifiant_produit' => 'polo-club',
-            'reference_produit' => 'TEXT-POLO',
-            'titre_produit' => 'Polo officiel du club',
-            'categorie_produit' => 'textile',
-            'public_cible' => 'tous',
-            'prix_euros' => 32,
-            'badge' => 'Club',
-            'mode_vente' => 'reservation',
-            'texte_produit' => 'Polo brode pour les rencontres du club.',
-            'resume_produit' => 'Coupe mixte et tissu respirant.',
-            'avantages_json' => '["Broderie","Tissu respirant"]',
-            'identifiant_auteur' => (string) $membre['identifiant'],
-        ]);
+        $membre = $this->creerMembre('helloasso-personnalise@example.test');
         $this->creerProduitBoutique([
             'identifiant_produit' => 'gourde-club',
             'reference_produit' => 'ACC-GOURDE',
@@ -101,58 +112,22 @@ final class BoutiqueCartTest extends TestCase
             'avantages_json' => '["Legere","Reutilisable"]',
             'identifiant_auteur' => (string) $membre['identifiant'],
         ]);
-        $jetonCsrf = 'jeton-boutique-checkout';
 
-        $reponse = $this->withSession([
-            'identifiant_utilisateur' => (string) $membre['identifiant'],
-            '_token' => $jetonCsrf,
-            'panier_boutique' => [
-                'polo-club' => ['quantite' => 2],
-                'gourde-club' => ['quantite' => 1],
-            ],
-        ])->post('/boutique', [
-            '_token' => $jetonCsrf,
-            'jeton_csrf' => $jetonCsrf,
-            'action' => 'valider_panier',
-            'mode_paiement' => CommandeLocale::MODE_PAIEMENT_CARTE_BANCAIRE,
+        $lienPersonnalise = 'https://www.helloasso.com/associations/les-cavaliers-d-herouville/collectes/boutique-stage';
+
+        DB::table('parametre_site')->insert([
+            'cle_parametre' => 'lien_boutique_helloasso',
+            'valeur_texte' => $lienPersonnalise,
+            'cree_le' => now()->format('Y-m-d H:i:s'),
+            'mis_a_jour_le' => now()->format('Y-m-d H:i:s'),
         ]);
-
-        $reponse->assertRedirect('/boutique#boutique-commandes');
-        $reponse->assertSessionMissing('panier_boutique');
-
-        $this->assertDatabaseHas('commande_locale', [
-            'identifiant_utilisateur' => (string) $membre['identifiant'],
-            'reference_produit' => 'polo-club',
-            'quantite' => 2,
-            'prix_unitaire_euros' => 32,
-            'prix_total_euros' => 64,
-            'code_mode_paiement' => CommandeLocale::MODE_PAIEMENT_CARTE_BANCAIRE,
-            'code_statut_paiement' => CommandeLocale::STATUT_PAIEMENT_EN_ATTENTE_PRESTATAIRE,
-        ]);
-
-        $this->assertDatabaseHas('commande_locale', [
-            'identifiant_utilisateur' => (string) $membre['identifiant'],
-            'reference_produit' => 'gourde-club',
-            'quantite' => 1,
-            'prix_unitaire_euros' => 14,
-            'prix_total_euros' => 14,
-            'code_mode_paiement' => CommandeLocale::MODE_PAIEMENT_CARTE_BANCAIRE,
-            'code_statut_paiement' => CommandeLocale::STATUT_PAIEMENT_EN_ATTENTE_PRESTATAIRE,
-        ]);
-    }
-
-    public function test_la_page_boutique_prepare_le_paiement_cb_sans_collecter_de_numero_de_carte(): void
-    {
-        $membre = $this->creerMembre('cb-boutique@example.test');
 
         $this->withSession([
             'identifiant_utilisateur' => (string) $membre['identifiant'],
         ])->get('/boutique')
             ->assertOk()
-            ->assertSeeText('Carte bancaire')
-            ->assertDontSee('name="numero_carte"', false)
-            ->assertDontSee('name="cvv"', false)
-            ->assertDontSee('name="cryptogramme"', false);
+            ->assertSee($lienPersonnalise, false)
+            ->assertDontSee('href="'.self::LIEN_HELLOASSO_PAR_DEFAUT.'"', false);
     }
 
     /**

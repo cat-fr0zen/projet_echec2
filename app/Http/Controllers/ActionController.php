@@ -9,12 +9,14 @@ namespace App\Http\Controllers;
 
 use App\Repositories\ArticleRepository;
 use App\Repositories\BoutiqueProduitRepository;
+use App\Repositories\BureauMembreRepository;
 use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
+use App\Repositories\ParametreSiteRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\UserRepository;
 use App\Services\AdhesionRenewalService;
@@ -52,7 +54,9 @@ final class ActionController extends Controller
             new AdhesionRenewalService(new UserRepository),
             new SensitiveActionRateLimiter,
             new BoutiqueCartService,
-            new BoutiqueProduitRepository
+            new BoutiqueProduitRepository,
+            new ParametreSiteRepository,
+            new BureauMembreRepository
         );
 
         $handler->traiter();

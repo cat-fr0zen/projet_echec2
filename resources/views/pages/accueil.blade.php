@@ -60,6 +60,7 @@ $blocsAccueilGroupes = array_values(
 );
 $grilleAccueilGroupesAffichee = false;
 $cspNonce = (string) request()->attributes->get('csp_nonce', '');
+$lienHelloAssoBoutique = (string) ($siteData['lien_helloasso_boutique'] ?? \App\Repositories\ParametreSiteRepository::LIEN_HELLOASSO_PAR_DEFAUT);
 ?>
 
 <section class="hero-grid">
@@ -71,7 +72,7 @@ $cspNonce = (string) request()->attributes->get('csp_nonce', '');
         <div class="button-row">
             <a
                 class="button button-primary"
-                href="https://www.helloasso.com/associations/les-cavaliers-d-herouville"
+                href="<?= e($lienHelloAssoBoutique) ?>"
                 target="_blank"
                 rel="noopener noreferrer external"
                 referrerpolicy="no-referrer"
@@ -118,11 +119,12 @@ $cspNonce = (string) request()->attributes->get('csp_nonce', '');
             data-dammier-is-authenticated="<?= ($authData['is_authenticated'] ?? false) ? 'true' : 'false' ?>"
             data-dammier-submit-url="<?= e(url_route('accueil')) ?>"
             data-dammier-csrf="<?= e((string) ($siteData['jeton_csrf'] ?? '')) ?>"
+            aria-labelledby="dammier-title"
         >
             <div class="dammier_header">
                 <div>
                     <p class="eyebrow">Casse-tête hebdomadaire</p>
-                    <h2><?= e((string) ($dammierPuzzle['dammier_title'] ?? 'Puzzle hebdomadaire')) ?></h2>
+                    <h2 id="dammier-title"><?= e((string) ($dammierPuzzle['dammier_title'] ?? 'Puzzle hebdomadaire')) ?></h2>
                     <p class="card-tag">Difficulté : <?= e($libelleDifficulteDammier) ?> · <?= e((string) $nombreCoupsBlancsDammier) ?> coups blancs</p>
                 </div>
             </div>

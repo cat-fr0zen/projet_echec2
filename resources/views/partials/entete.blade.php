@@ -56,7 +56,7 @@ $slugNavigationActive = str_starts_with((string) $pageCourante, 'cours-') ? 'gui
                 type="button"
                 class="theme-toggle"
                 data-theme-toggle
-                aria-label="<?= $donneesSite['theme'] === 'dark' ? 'Activer le theme clair' : 'Activer le theme sombre' ?>"
+                aria-label="<?= $donneesSite['theme'] === 'dark' ? 'Activer le thème clair' : 'Activer le thème sombre' ?>"
                 aria-pressed="<?= $donneesSite['theme'] === 'dark' ? 'true' : 'false' ?>"
             >
                 <span class="theme-icon theme-icon--sun" aria-hidden="true">
@@ -73,6 +73,7 @@ $slugNavigationActive = str_starts_with((string) $pageCourante, 'cours-') ? 'gui
                 data-burger-toggle
                 aria-expanded="false"
                 aria-controls="burger-panel"
+                aria-haspopup="dialog"
                 aria-label="Ouvrir le menu"
             >
                 <span class="burger-label">Menu</span>
@@ -156,7 +157,7 @@ $slugNavigationActive = str_starts_with((string) $pageCourante, 'cours-') ? 'gui
             <?php if ($donneesAuthentification['est_connecte']): ?>
                 <div class="burger-links">
                     <a class="burger-link" href="<?= e(url_route('profil')) ?>">Profil</a>
-                    <a class="burger-link" href="<?= e(url_route('parametres')) ?>">Parametres</a>
+                    <a class="burger-link" href="<?= e(url_route('parametres')) ?>">Paramètres</a>
                     <?php if ($donneesAuthentification['est_admin'] ?? false): ?>
                         <a class="burger-link" href="<?= e(url_route('admin')) ?>">Administration</a>
                     <?php endif; ?>
@@ -165,10 +166,10 @@ $slugNavigationActive = str_starts_with((string) $pageCourante, 'cours-') ? 'gui
                     <input type="hidden" name="action" value="deconnexion">
                     <input type="hidden" name="_token" value="<?= e($donneesSite['jeton_csrf']) ?>">
                     <input type="hidden" name="jeton_csrf" value="<?= e($donneesSite['jeton_csrf']) ?>">
-                    <button type="submit" class="button button-secondary burger-logout-button">Deconnexion</button>
+                    <button type="submit" class="button button-secondary burger-logout-button">Déconnexion</button>
                 </form>
             <?php else: ?>
-                <p class="burger-helper">Connecte-toi pour acceder a la boutique, a ton profil membre et aux espaces reserves selon ton role.</p>
+                <p class="burger-helper">Connecte-toi pour accéder à la boutique, à ton profil membre et aux espaces réservés selon ton rôle.</p>
                 <button type="button" class="button button-primary" data-auth-open data-auth-tab="connexion">Connexion</button>
             <?php endif; ?>
         </section>

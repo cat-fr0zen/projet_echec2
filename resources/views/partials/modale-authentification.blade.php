@@ -119,6 +119,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
 
 <?php if (!$donneesAuthentification['est_connecte']): ?>
     <div
+        id="auth-modal"
         class="auth-modal"
         data-auth-modal
         data-auth-open-state="<?= e($modaleOuverte) ?>"
@@ -130,7 +131,7 @@ $champInscriptionDescription = $construireMetaChamp('auth-register-description',
         aria-describedby="auth-modal-description"
     >
         <div class="auth-modal-panel" tabindex="-1">
-            <button type="button" class="auth-close" data-auth-close aria-label="Fermer la fenêtre">×</button>
+            <button type="button" class="auth-close" data-auth-close aria-label="Fermer la fenêtre">&times;</button>
             <p class="eyebrow">Espace membre</p>
             <h2 id="auth-modal-title"><?= e($modaleAuthentification['title']) ?></h2>
             <p id="auth-modal-description" class="auth-modal-description">

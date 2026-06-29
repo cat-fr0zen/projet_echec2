@@ -61,6 +61,8 @@ final class AdminCourseShopManagementTest extends TestCase
         $reponse->assertSee('Gerer les PDF de cours', false);
         $reponse->assertSee('Gerer le catalogue de la boutique', false);
         $reponse->assertSee('Ajouter un produit', false);
+        $reponse->assertSee('Lien HelloAsso unique', false);
+        $reponse->assertSee('Gerer les cartes du bureau visibles sur l', false);
     }
 
     public function test_un_admin_peut_ajouter_un_document_de_cours_depuis_la_page_admin(): void
@@ -188,6 +190,140 @@ final class AdminCourseShopManagementTest extends TestCase
         $this->assertDatabaseMissing('boutique_produit', [
             'identifiant_produit' => $identifiantProduit,
         ]);
+    }
+
+    public function test_un_admin_peut_modifier_le_lien_helloasso_utilise_par_toute_la_boutique(): void
+    {
+        $administrateur = $this->creerAdministrateur('admin-helloasso@example.test');
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+        ])->get('/admin')->assertOk();
+
+        $jetonCsrf = (string) session()->token();
+        $lienHelloAsso = 'https://www.helloasso.com/associations/les-cavaliers-d-herouville/collectes/boutique-admin';
+
+        $reponse = $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+            '_token' => $jetonCsrf,
+        ])->post('/admin', [
+            '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
+            'action' => 'mettre_a_jour_lien_helloasso_boutique',
+            'lien_helloasso_boutique' => $lienHelloAsso,
+        ]);
+
+        $reponse->assertRedirect('/admin#admin-boutique');
+
+        $this->assertDatabaseHas('parametre_site', [
+            'cle_parametre' => 'lien_boutique_helloasso',
+            'valeur_texte' => $lienHelloAsso,
+        ]);
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+        ])->get('/boutique')
+            ->assertOk()
+            ->assertSee($lienHelloAsso, false);
+    }
+
+    public function test_un_admin_peut_modifier_les_textes_du_bureau_et_gerer_les_cartes(): void
+    {
+        $administrateur = $this->creerAdministrateur('admin-bureau@example.test');
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+        ])->get('/admin')->assertOk();
+
+        $jetonCsrf = (string) session()->token();
+
+        $miseAJourTextes = $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+            '_token' => $jetonCsrf,
+        ])->post('/admin', [
+            '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
+            'action' => 'mettre_a_jour_textes_bureau',
+            'bureau_surtitre' => 'Equipe dirigeante',
+            'bureau_titre' => 'Les responsables du club',
+            'bureau_description' => 'Presentation modifiable du bureau.',
+        ]);
+
+        $miseAJourTextes->assertRedirect('/admin#admin-bureau-club');
+        $this->assertDatabaseHas('parametre_site', [
+            'cle_parametre' => 'bureau_section_titre',
+            'valeur_texte' => 'Les responsables du club',
+        ]);
+
+        $ajout = $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+            '_token' => $jetonCsrf,
+        ])->post('/admin', [
+            '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
+            'action' => 'ajouter_membre_bureau',
+            'prenom_membre_bureau' => 'Claire',
+            'nom_membre_bureau' => 'DUPONT',
+            'role_membre_bureau' => 'Secretaire',
+            'description_membre_bureau' => 'Coordonne les echanges administratifs du club.',
+            'photo_membre_bureau' => '',
+            'ordre_affichage_membre_bureau' => '4',
+            'visible_membre_bureau' => '1',
+        ]);
+
+        $ajout->assertRedirect('/admin#admin-bureau-club');
+
+        $identifiantMembreBureau = (string) DB::table('bureau_membre')
+            ->where('prenom', 'Claire')
+            ->value('identifiant_membre_bureau');
+
+        $this->assertNotSame('', $identifiantMembreBureau);
+
+        $miseAJourCarte = $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+            '_token' => $jetonCsrf,
+        ])->post('/admin', [
+            '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
+            'action' => 'modifier_membre_bureau',
+            'identifiant_membre_bureau' => $identifiantMembreBureau,
+            'prenom_membre_bureau' => 'Claire',
+            'nom_membre_bureau' => 'DUPONT',
+            'role_membre_bureau' => 'Secretaire generale',
+            'description_membre_bureau' => 'Suit les documents et la communication interne.',
+            'photo_membre_bureau' => '',
+            'ordre_affichage_membre_bureau' => '2',
+            'visible_membre_bureau' => '1',
+        ]);
+
+        $miseAJourCarte->assertRedirect('/admin#admin-bureau-club');
+        $this->assertDatabaseHas('bureau_membre', [
+            'identifiant_membre_bureau' => $identifiantMembreBureau,
+            'role_affiche' => 'Secretaire generale',
+            'ordre_affichage' => 2,
+        ]);
+
+        $suppression = $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+            '_token' => $jetonCsrf,
+        ])->post('/admin', [
+            '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
+            'action' => 'supprimer_membre_bureau',
+            'identifiant_membre_bureau' => 'bureau_francois',
+        ]);
+
+        $suppression->assertRedirect('/admin#admin-bureau-club');
+        $this->assertDatabaseMissing('bureau_membre', [
+            'identifiant_membre_bureau' => 'bureau_francois',
+        ]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('Equipe dirigeante', false)
+            ->assertSee('Les responsables du club', false)
+            ->assertSee('Secretaire generale', false)
+            ->assertDontSee('Francois', false);
     }
 
     public function test_la_page_boutique_affiche_les_produits_enregistres_en_base_pour_un_compte_connecte(): void

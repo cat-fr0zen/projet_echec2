@@ -45,9 +45,12 @@
 
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 7rem;
     width: 100%;
     overflow-x: hidden;
     overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
 }
 
 body {
@@ -88,6 +91,28 @@ input,
 textarea,
 select {
     font: inherit;
+    line-height: 1.2;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+    display: block;
+    max-width: 100%;
+}
+
+img,
+svg,
+video,
+canvas {
+    height: auto;
+}
+
+iframe,
+textarea {
+    width: 100%;
 }
 
 h1,
@@ -109,6 +134,22 @@ p {
     margin: 0;
 }
 
+.site-header,
+.page-shell,
+.panel,
+.page-banner,
+.info-card,
+.section-head,
+.brand,
+.footer-title,
+.metric-value,
+.status-pill,
+.burger-panel-title,
+.shop-card-reference {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
 .skip-link {
     position: absolute;
     top: 1rem;
@@ -123,6 +164,11 @@ p {
 
 .skip-link:focus {
     transform: translateY(0);
+}
+
+.skip-link:focus-visible {
+    outline: 3px solid rgba(196, 154, 67, 0.75);
+    outline-offset: 4px;
 }
 
 .page-noise {
@@ -284,6 +330,15 @@ p {
 .footer-overview > * {
     min-width: 0;
     max-width: 100%;
+}
+
+.header-rail > *,
+.burger-panel-topbar > *,
+.shop-results-bar > *,
+.shop-card-head > *,
+.shop-order-head > *,
+.footer-review-item-head > * {
+    min-width: 0;
 }
 
 .hero-grid,
@@ -2075,11 +2130,13 @@ body.modal-open {
 
 .auth-tab-row {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.6rem;
     margin-top: 1rem;
 }
 
 .auth-tab-button {
+    flex: 1 1 12rem;
     min-height: 2.8rem;
     padding: 0.72rem 0.95rem;
     border: 1px solid rgba(255, 250, 243, 0.18);

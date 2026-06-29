@@ -4,12 +4,19 @@
  */
 
 $membresBureau = is_array($siteData['membres_bureau'] ?? null) ? $siteData['membres_bureau'] : [];
+$bureauSection = is_array($siteData['bureau_section'] ?? null) ? $siteData['bureau_section'] : [];
 ?>
 <section class="section-block reveal reveal-6" data-accueil-slot="chiffres_du_club">
     <div class="section-head">
-        <p class="eyebrow">Bureau du club</p>
-        <h2>Les membres du bureau des échecs.</h2>
-        <p>Retrouve les responsables du club avec leur rôle, leur présentation et une photo quand elle est disponible.</p>
+        <?php if (trim((string) ($bureauSection['eyebrow'] ?? '')) !== ''): ?>
+            <p class="eyebrow"><?= e((string) ($bureauSection['eyebrow'] ?? '')) ?></p>
+        <?php endif; ?>
+        <?php if (trim((string) ($bureauSection['title'] ?? $bureauSection['titre'] ?? '')) !== ''): ?>
+            <h2><?= e((string) ($bureauSection['title'] ?? $bureauSection['titre'] ?? '')) ?></h2>
+        <?php endif; ?>
+        <?php if (trim((string) ($bureauSection['description'] ?? '')) !== ''): ?>
+            <p><?= e((string) ($bureauSection['description'] ?? '')) ?></p>
+        <?php endif; ?>
     </div>
 
     <div class="card-grid card-grid--three bureau-grid">

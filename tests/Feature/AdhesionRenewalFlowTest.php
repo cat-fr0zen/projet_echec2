@@ -106,6 +106,112 @@ final class AdhesionRenewalFlowTest extends TestCase
         Mail::assertSent(AdhesionRenewalReminderMail::class, 1);
     }
 
+    public function test_la_commande_annuelle_n_agit_pas_hors_du_1er_septembre_sans_option_forcer(): void
+    {
+        Mail::fake();
+
+        $this->creerMembre('admin-hors-date@example.test');
+        $membre = $this->creerMembre('membre-hors-date@example.test');
+        $depotUtilisateurs = new UserRepository;
+
+        $depotUtilisateurs->mettreAJourAcces(
+            (string) $membre['identifiant'],
+            User::ROLE_ADHERENT,
+            User::STATUT_COMPTE_ACTIF,
+            User::STATUT_ADHESION_ACTIVE
+        );
+
+        $this->artisan('adhesions:renouvellement-annuel', [
+            '--date' => '2026-08-31',
+        ])->expectsOutputToContain('Comptes retrogrades : 0')
+            ->assertExitCode(0);
+
+        $membreMisAJour = $depotUtilisateurs->trouverParIdentifiant((string) $membre['identifiant']);
+
+        self::assertNotNull($membreMisAJour);
+        self::assertSame(User::ROLE_ADHERENT, $membreMisAJour['role']);
+        self::assertSame(User::STATUT_ADHESION_ACTIVE, $membreMisAJour['statut_adhesion']);
+
+        Mail::assertNothingSent();
+    }
+
+    public function test_un_prof_ou_admin_garde_son_role_mais_perd_le_statut_adhesion_a_la_nouvelle_saison(): void
+    {
+        Mail::fake();
+
+        $administrateur = $this->creerMembre('admin-saison@example.test');
+        $professeur = $this->creerMembre('prof-saison@example.test');
+        $depotUtilisateurs = new UserRepository;
+
+        $depotUtilisateurs->mettreAJourAcces(
+            (string) $administrateur['identifiant'],
+            User::ROLE_ADMIN,
+            User::STATUT_COMPTE_ACTIF,
+            User::STATUT_ADHESION_ACTIVE
+        );
+
+        $depotUtilisateurs->mettreAJourAcces(
+            (string) $professeur['identifiant'],
+            User::ROLE_PROF,
+            User::STATUT_COMPTE_ACTIF,
+            User::STATUT_ADHESION_ACTIVE
+        );
+
+        $this->artisan('adhesions:renouvellement-annuel', [
+            '--date' => '2026-09-01',
+        ])->expectsOutputToContain('Comptes retrogrades : 2')
+            ->assertExitCode(0);
+
+        $adminMisAJour = $depotUtilisateurs->trouverParIdentifiant((string) $administrateur['identifiant']);
+        $profMisAJour = $depotUtilisateurs->trouverParIdentifiant((string) $professeur['identifiant']);
+
+        self::assertNotNull($adminMisAJour);
+        self::assertNotNull($profMisAJour);
+        self::assertSame(User::ROLE_ADMIN, $adminMisAJour['role']);
+        self::assertSame(User::ROLE_PROF, $profMisAJour['role']);
+        self::assertSame(User::STATUT_ADHESION_AUCUNE, $adminMisAJour['statut_adhesion']);
+        self::assertSame(User::STATUT_ADHESION_AUCUNE, $profMisAJour['statut_adhesion']);
+
+        Mail::assertSent(AdhesionRenewalReminderMail::class, 2);
+    }
+
+    public function test_un_compte_suspendu_n_est_pas_modifie_par_la_commande_annuelle(): void
+    {
+        Mail::fake();
+
+        $administrateur = $this->creerMembre('admin-suspendu@example.test');
+        $membre = $this->creerMembre('membre-suspendu@example.test');
+        $depotUtilisateurs = new UserRepository;
+
+        $depotUtilisateurs->mettreAJourAcces(
+            (string) $administrateur['identifiant'],
+            User::ROLE_ADMIN,
+            User::STATUT_COMPTE_ACTIF,
+            User::STATUT_ADHESION_AUCUNE
+        );
+
+        $depotUtilisateurs->mettreAJourAcces(
+            (string) $membre['identifiant'],
+            User::ROLE_ADHERENT,
+            User::STATUT_COMPTE_SUSPENDU,
+            User::STATUT_ADHESION_ACTIVE
+        );
+
+        $this->artisan('adhesions:renouvellement-annuel', [
+            '--date' => '2026-09-01',
+        ])->expectsOutputToContain('Comptes retrogrades : 0')
+            ->assertExitCode(0);
+
+        $membreMisAJour = $depotUtilisateurs->trouverParIdentifiant((string) $membre['identifiant']);
+
+        self::assertNotNull($membreMisAJour);
+        self::assertSame(User::ROLE_ADHERENT, $membreMisAJour['role']);
+        self::assertSame(User::STATUT_COMPTE_SUSPENDU, $membreMisAJour['statut_compte']);
+        self::assertSame(User::STATUT_ADHESION_ACTIVE, $membreMisAJour['statut_adhesion']);
+
+        Mail::assertNothingSent();
+    }
+
     public function test_valider_une_commande_d_adhesion_reactive_le_compte_du_membre_connecte(): void
     {
         $administrateur = $this->creerMembre('admin-boutique-adhesion@example.test');
@@ -154,6 +260,52 @@ final class AdhesionRenewalFlowTest extends TestCase
             AdhesionRenewalService::saisonPourDate(new \DateTimeImmutable('now')),
             (string) ($membreMisAJour['saison_adhesion'] ?? '')
         );
+    }
+
+    public function test_valider_une_commande_non_adhesion_ne_reactive_pas_le_compte(): void
+    {
+        $administrateur = $this->creerMembre('admin-boutique-standard@example.test');
+        $membre = $this->creerMembre('membre-boutique-standard@example.test');
+        $depotUtilisateurs = new UserRepository;
+        $depotCommandes = new OrderRepository;
+
+        $depotUtilisateurs->mettreAJourAcces(
+            (string) $membre['identifiant'],
+            User::ROLE_CONNECTE,
+            User::STATUT_COMPTE_ACTIF,
+            User::STATUT_ADHESION_AUCUNE
+        );
+
+        $commande = $depotCommandes->creer([
+            'identifiant_utilisateur' => (string) $membre['identifiant'],
+            'reference_produit' => 'TEXT-001',
+            'produit' => 'Polo du club',
+            'categorie' => 'textile',
+            'quantite' => 1,
+            'prix_unitaire_euros' => 32,
+            'prix_total_euros' => 32,
+            'code_mode_paiement' => CommandeLocale::MODE_PAIEMENT_SUR_PLACE,
+            'code_statut_paiement' => CommandeLocale::STATUT_PAIEMENT_A_FINALISER,
+        ]);
+
+        $jetonCsrf = 'jeton-admin-non-adhesion';
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+            '_token' => $jetonCsrf,
+        ])->post('/admin', [
+            '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
+            'action' => 'update_order_status',
+            'identifiant_commande' => (string) ($commande['identifiant'] ?? ''),
+            'statut_commande' => CommandeLocale::STATUT_VALIDEE,
+        ])->assertRedirect('/admin');
+
+        $membreMisAJour = $depotUtilisateurs->trouverParIdentifiant((string) $membre['identifiant']);
+
+        self::assertNotNull($membreMisAJour);
+        self::assertSame(User::ROLE_CONNECTE, $membreMisAJour['role']);
+        self::assertSame(User::STATUT_ADHESION_AUCUNE, $membreMisAJour['statut_adhesion']);
     }
 
     /**

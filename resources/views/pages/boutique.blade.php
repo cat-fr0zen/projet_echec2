@@ -2,15 +2,11 @@
 /**
  * Vue: Boutique.
  *
- * Mini-shop du club avec filtres, panier, recapitulatif et validation locale.
+ * Catalogue du club avec filtres et redirection unique vers HelloAsso.
  */
 $catalogueBoutique = $donneesSite['cartes_boutique'] ?? [];
 $authData = $siteData['authentification'];
-$memberOrders = $siteData['member_orders'] ?? [];
 $membre = is_array($authData['user'] ?? null) ? $authData['user'] : [];
-$panierBoutique = is_array($siteData['panier_boutique'] ?? null) ? $siteData['panier_boutique'] : [];
-$configurationPaiement = is_array($siteData['paiement_boutique'] ?? null) ? $siteData['paiement_boutique'] : [];
-$lignesPanier = is_array($panierBoutique['lignes'] ?? null) ? $panierBoutique['lignes'] : [];
 $recherche = trim((string) ($_GET['q'] ?? ''));
 $categorieActive = trim((string) ($_GET['categorie'] ?? ''));
 $publicActif = trim((string) ($_GET['public'] ?? ''));
@@ -18,17 +14,7 @@ $triActif = trim((string) ($_GET['tri'] ?? 'recommandes'));
 $enStockSeulement = (string) ($_GET['en_stock'] ?? '') === '1';
 $adhesionSeulement = (string) ($_GET['adhesion_only'] ?? '') === '1';
 $prixMaxCatalogue = 0;
-$quantitesPanier = [];
-$paiementCarteActif = (bool) ($configurationPaiement['active'] ?? false);
-$prestatairePaiement = trim((string) ($configurationPaiement['prestataire'] ?? 'Prestataire externe'));
-
-foreach ($lignesPanier as $lignePanier) {
-    $identifiantPanier = trim((string) ($lignePanier['identifiant'] ?? ''));
-
-    if ($identifiantPanier !== '') {
-        $quantitesPanier[$identifiantPanier] = (int) ($lignePanier['quantite'] ?? 0);
-    }
-}
+$lienHelloAssoBoutique = (string) ($siteData['lien_helloasso_boutique'] ?? \App\Repositories\ParametreSiteRepository::LIEN_HELLOASSO_PAR_DEFAUT);
 
 foreach ($catalogueBoutique as $produitBoutique) {
     $prixMaxCatalogue = max($prixMaxCatalogue, (int) ($produitBoutique['prix_euros'] ?? 0));
@@ -139,7 +125,7 @@ $libelleAdhesion = (string) ($membre['membership_label'] ?? ($estAdherent ? 'Adh
 <section class="page-banner reveal reveal-2">
     <p class="eyebrow">Mini shop du club</p>
     <h1><?= e($donneesPage['titre']) ?></h1>
-    <p><?= e($donneesPage['intro']) ?></p>
+    <p>Retrouve les adhesions, les textiles du club et le materiel avec filtres, tri et lien unique vers HelloAsso.</p>
 </section>
 
 <section class="shop-summary-grid reveal reveal-3">
@@ -152,13 +138,13 @@ $libelleAdhesion = (string) ($membre['membership_label'] ?? ($estAdherent ? 'Adh
     <article class="panel shop-summary-card">
         <p class="card-tag">Disponibles</p>
         <strong class="shop-summary-value"><?= e((string) $nbProduitsDisponibles) ?></strong>
-        <p>Produits ou demandes actuellement ouverts a la reservation.</p>
+        <p>Produits ou demandes actuellement ouverts depuis le catalogue du club.</p>
     </article>
 
     <article class="panel shop-summary-card">
-        <p class="card-tag">Panier</p>
-        <strong class="shop-summary-value"><?= e((string) ($panierBoutique['quantite_totale'] ?? 0)) ?></strong>
-        <p><?= e((string) ($panierBoutique['nombre_lignes'] ?? 0)) ?> ligne<?= ((int) ($panierBoutique['nombre_lignes'] ?? 0)) > 1 ? 's' : '' ?> pour <?= e((string) ($panierBoutique['sous_total_euros'] ?? 0)) ?> EUR.</p>
+        <p class="card-tag">HelloAsso</p>
+        <strong class="shop-summary-value">1 lien</strong>
+        <p>Tous les articles du site utilisent la meme redirection externe pour l'adhesion et les achats.</p>
     </article>
 </section>
 
@@ -167,7 +153,7 @@ $libelleAdhesion = (string) ($membre['membership_label'] ?? ($estAdherent ? 'Adh
         <div class="section-head section-head--compact">
             <p class="eyebrow">Filtrer les produits</p>
             <h2>Affiner la boutique</h2>
-            <p>Trie les objets du club, les reservations et les formules d'adhesion comme dans un mini shop.</p>
+            <p>Trie le catalogue du club puis ouvre HelloAsso pour finaliser l'adhesion, la reservation ou l'achat.</p>
         </div>
 
         <form method="get" action="<?= e(url_route('boutique')) ?>" class="shop-filter-form">
@@ -252,28 +238,37 @@ $libelleAdhesion = (string) ($membre['membership_label'] ?? ($estAdherent ? 'Adh
             <h3><?= e($libelleAdhesion) ?></h3>
             <p>
                 <?= $estAdherent
-                    ? "Ton compte est deja rattache a une adhesion active. Tu peux surtout utiliser cette page pour le textile et le materiel."
-                    : "Tu n'as pas encore d'adhesion active. Les cartes Adhesion servent a preparer une demande propre avant validation du club." ?>
+                    ? "Ton compte est deja rattache a une adhesion active. Tu peux maintenant utiliser la boutique pour les textiles, accessoires et autres besoins du club."
+                    : "Tu n'as pas encore d'adhesion active. Les formules d'adhesion visibles ici t'enverront sur HelloAsso pour finaliser la demande." ?>
             </p>
             <p class="shop-membership-note">
-                Carte bancaire : aucun numero de carte n'est collecte sur le site.
-                Le vrai debit devra passer par <?= e($prestatairePaiement) ?> ou un autre prestataire externe.
+                Aucun numero de carte n'est saisi sur ce site.
+                Le paiement et l'adhesion passent directement par HelloAsso.
             </p>
+            <a
+                class="button button-secondary shop-card-button"
+                href="<?= e($lienHelloAssoBoutique) ?>"
+                target="_blank"
+                rel="noopener noreferrer external"
+                referrerpolicy="no-referrer"
+            >
+                Ouvrir HelloAsso
+            </a>
         </article>
     </aside>
 
     <div class="shop-main">
-        <article class="panel">
+        <article class="panel" id="boutique-catalogue" aria-labelledby="boutique-results-title">
             <div class="shop-results-bar">
-                <div>
+                <div role="status" aria-live="polite">
                     <p class="eyebrow">Catalogue filtre</p>
-                    <h2><?= e((string) count($resultatsBoutique)) ?> resultat<?= count($resultatsBoutique) > 1 ? 's' : '' ?></h2>
-                    <p>Selection de produits, packs et adhesion avec reservation locale depuis l'espace membre.</p>
+                    <h2 id="boutique-results-title"><?= e((string) count($resultatsBoutique)) ?> resultat<?= count($resultatsBoutique) > 1 ? 's' : '' ?></h2>
+                    <p>Selection de produits, packs et adhesion avec redirection externe unique vers HelloAsso.</p>
                 </div>
                 <div class="shop-results-meta">
                     <span class="status-pill"><?= e((string) $nbProduitsDisponibles) ?> disponibles</span>
                     <span class="status-pill"><?= e((string) $nbDemandesAdhesion) ?> formules adhesion</span>
-                    <span class="status-pill"><?= e((string) ($panierBoutique['quantite_totale'] ?? 0)) ?> dans le panier</span>
+                    <span class="status-pill">Paiement externe</span>
                 </div>
             </div>
 
@@ -287,14 +282,8 @@ $libelleAdhesion = (string) ($membre['membership_label'] ?? ($estAdherent ? 'Adh
                 <div class="shop-grid">
                     <?php foreach ($resultatsBoutique as $produitBoutique): ?>
                         <?php
-                        $identifiantProduit = (string) ($produitBoutique['identifiant'] ?? '');
-                        $estAdhesion = (string) ($produitBoutique['categorie'] ?? '') === 'adhesion';
                         $estReservable = (bool) ($produitBoutique['en_stock'] ?? false) || in_array((string) ($produitBoutique['mode_vente'] ?? ''), ['precommande', 'adhesion'], true);
-                        $estDejaAdherent = $estAdherent && $estAdhesion;
-                        $quantiteDansPanier = (int) ($quantitesPanier[$identifiantProduit] ?? 0);
-                        $libelleBouton = $estAdhesion
-                            ? ($quantiteDansPanier > 0 ? "Remplacer l'adhesion du panier" : "Ajouter l'adhesion au panier")
-                            : ($quantiteDansPanier > 0 ? 'Ajouter encore au panier' : 'Ajouter au panier');
+                        $estAdhesion = (string) ($produitBoutique['categorie'] ?? '') === 'adhesion';
                         ?>
                         <article class="info-card shop-card<?= ! $estReservable ? ' shop-card--muted' : '' ?>">
                             <div class="shop-card-head">
@@ -324,189 +313,50 @@ $libelleAdhesion = (string) ($membre['membership_label'] ?? ($estAdherent ? 'Adh
                                 </ul>
                             <?php endif; ?>
 
-                            <?php if ($quantiteDansPanier > 0): ?>
-                                <p class="shop-inline-note">
-                                    Dans le panier : <?= e((string) $quantiteDansPanier) ?>.
-                                </p>
+                            <?php if ($estAdhesion && $estAdherent): ?>
+                                <p class="shop-inline-note">Ton compte est deja adherent. Tu peux tout de meme verifier ou renouveler ta formule depuis HelloAsso si besoin.</p>
                             <?php endif; ?>
 
-                            <?php if ($estDejaAdherent): ?>
-                                <p class="shop-inline-note">Ton compte est deja adherent. Cette formule n'a pas besoin d'etre redemandee.</p>
-                            <?php endif; ?>
+                            <a
+                                class="button button-primary shop-card-button"
+                                href="<?= e($lienHelloAssoBoutique) ?>"
+                                target="_blank"
+                                rel="noopener noreferrer external"
+                                referrerpolicy="no-referrer"
+                            >
+                                Ouvrir sur HelloAsso
+                            </a>
 
-                            <form method="post" action="<?= e(url_route('boutique')) ?>" class="article-form shop-card-form">
-                                <input type="hidden" name="action" value="add_to_cart">
-                                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
-                                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
-                                <input type="hidden" name="identifiant_produit" value="<?= e($identifiantProduit) ?>">
-                                <button
-                                    type="submit"
-                                    class="button button-primary shop-card-button"
-                                    <?= ! $estReservable || $estDejaAdherent ? 'disabled' : '' ?>
-                                >
-                                    <?= e($estDejaAdherent ? 'Adhesion deja active' : $libelleBouton) ?>
-                                </button>
-                            </form>
+                            <p class="shop-inline-note">
+                                Tous les articles du club utilisent le meme lien securise HelloAsso.
+                            </p>
                         </article>
                     <?php endforeach; ?>
                 </div>
             <?php endif; ?>
         </article>
 
-        <section id="boutique-panier" class="panel panel-contrast shop-cart-panel">
+        <section class="panel panel-contrast shop-orders-panel">
             <div class="section-head section-head--compact">
-                <p class="eyebrow">Panier</p>
-                <h2>Panier et paiement</h2>
-                <p>Le site prepare le recapitulatif et la commande, sans jamais demander de numero de carte en direct.</p>
+                <p class="eyebrow">Paiement externe</p>
+                <h2>Le site sert maintenant de catalogue</h2>
+                <p>Tu consultes les produits ici, puis tu bascules sur HelloAsso pour finaliser l'adhesion, la reservation ou le paiement.</p>
             </div>
 
-            <?php if (($panierBoutique['est_vide'] ?? true) === true): ?>
-                <div class="empty-state empty-state--contrast">
-                    <p class="card-tag">Panier vide</p>
-                    <h3>Ajoute d'abord un produit ou une adhesion depuis le catalogue.</h3>
-                    <p>Le recapitulatif et la preparation du paiement apparaitront ici.</p>
-                </div>
-            <?php else: ?>
-                <div class="shop-cart-layout">
-                    <div class="stack-list shop-cart-list">
-                        <?php foreach ($lignesPanier as $lignePanier): ?>
-                            <?php
-                            $estAdhesionPanier = (bool) ($lignePanier['est_adhesion'] ?? false);
-                            $quantiteLigne = (int) ($lignePanier['quantite'] ?? 1);
-                            $prixUnitaireLigne = (int) ($lignePanier['prix_unitaire_euros'] ?? 0);
-                            $totalLigne = (int) ($lignePanier['prix_total_euros'] ?? 0);
-                            ?>
-                            <article class="schedule-item shop-cart-item">
-                                <div class="shop-order-head">
-                                    <div>
-                                        <p class="card-tag"><?= e((string) ($lignePanier['categorie_label'] ?? 'Produit')) ?></p>
-                                        <p class="shop-card-reference"><?= e((string) ($lignePanier['reference'] ?? 'REF')) ?></p>
-                                    </div>
-                                    <span class="shop-card-badge"><?= e((string) ($lignePanier['badge'] ?? 'Club')) ?></span>
-                                </div>
-
-                                <h3><?= e((string) ($lignePanier['titre'] ?? 'Produit')) ?></h3>
-                                <p class="shop-cart-pricing"><?= e((string) $prixUnitaireLigne) ?> EUR x <?= e((string) $quantiteLigne) ?> = <?= e((string) $totalLigne) ?> EUR</p>
-
-                                <?php if (trim((string) ($lignePanier['resume'] ?? '')) !== ''): ?>
-                                    <p class="shop-card-summary"><?= e((string) ($lignePanier['resume'] ?? '')) ?></p>
-                                <?php endif; ?>
-
-                                <div class="shop-cart-actions">
-                                    <?php if ($estAdhesionPanier): ?>
-                                        <p class="shop-help">Quantite fixe : 1 formule d'adhesion par ligne.</p>
-                                    <?php else: ?>
-                                        <form method="post" action="<?= e(url_route('boutique')) ?>" class="shop-cart-update-form">
-                                            <input type="hidden" name="action" value="update_cart">
-                                            <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
-                                            <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
-                                            <input type="hidden" name="identifiant_produit" value="<?= e((string) ($lignePanier['identifiant'] ?? '')) ?>">
-                                            <input
-                                                class="shop-input shop-input--compact"
-                                                type="number"
-                                                name="quantite_panier"
-                                                min="0"
-                                                max="99"
-                                                value="<?= e((string) $quantiteLigne) ?>"
-                                            >
-                                            <button type="submit" class="button button-secondary">Mettre a jour</button>
-                                        </form>
-                                    <?php endif; ?>
-
-                                    <form method="post" action="<?= e(url_route('boutique')) ?>" class="shop-cart-remove-form">
-                                        <input type="hidden" name="action" value="remove_from_cart">
-                                        <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
-                                        <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
-                                        <input type="hidden" name="identifiant_produit" value="<?= e((string) ($lignePanier['identifiant'] ?? '')) ?>">
-                                        <button type="submit" class="button button-secondary">Retirer</button>
-                                    </form>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-
-                    <aside class="shop-cart-summary">
-                        <p class="card-tag">Recapitulatif</p>
-                        <h3><?= e((string) ($panierBoutique['sous_total_euros'] ?? 0)) ?> EUR</h3>
-                        <ul class="shop-total-list">
-                            <li><?= e((string) ($panierBoutique['nombre_lignes'] ?? 0)) ?> ligne<?= ((int) ($panierBoutique['nombre_lignes'] ?? 0)) > 1 ? 's' : '' ?></li>
-                            <li><?= e((string) ($panierBoutique['quantite_totale'] ?? 0)) ?> article<?= ((int) ($panierBoutique['quantite_totale'] ?? 0)) > 1 ? 's' : '' ?> au total</li>
-                            <li>Paiement souhaite : carte bancaire</li>
-                        </ul>
-
-                        <article class="shop-payment-card<?= ! $paiementCarteActif ? ' shop-payment-card--pending' : '' ?>">
-                            <p class="card-tag">Carte bancaire</p>
-                            <p><?= e((string) ($configurationPaiement['resume'] ?? '')) ?></p>
-                            <p class="shop-help">Aucun champ numero de carte ou cryptogramme n'est expose sur cette page.</p>
-                        </article>
-
-                        <form method="post" action="<?= e(url_route('boutique')) ?>" class="shop-checkout-form">
-                            <input type="hidden" name="action" value="checkout_cart">
-                            <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
-                            <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
-                            <input type="hidden" name="mode_paiement" value="carte_bancaire">
-                            <button type="submit" class="button button-primary shop-card-button">
-                                <?= e($paiementCarteActif ? 'Continuer vers le paiement CB' : 'Finaliser la commande') ?>
-                            </button>
-                        </form>
-
-                        <form method="post" action="<?= e(url_route('boutique')) ?>" class="shop-clear-form">
-                            <input type="hidden" name="action" value="clear_cart">
-                            <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
-                            <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
-                            <button type="submit" class="button button-secondary shop-card-button">Vider le panier</button>
-                        </form>
-
-                        <?php if (! $paiementCarteActif): ?>
-                            <p class="shop-help">
-                                Pour un vrai debit CB, il faudra ensuite relier cette etape a <?= e($prestatairePaiement) ?>,
-                                Stripe, SumUp ou un autre prestataire conforme.
-                            </p>
-                        <?php endif; ?>
-                    </aside>
-                </div>
-            <?php endif; ?>
-        </section>
-
-        <section id="boutique-commandes" class="panel panel-contrast shop-orders-panel">
-            <div class="section-head section-head--compact">
-                <p class="eyebrow">Mes demandes</p>
-                <h2>Suivre reservations et adhesion</h2>
-                <p>Chaque validation de panier cree une ou plusieurs commandes locales que le club pourra ensuite traiter.</p>
+            <div class="empty-state empty-state--contrast">
+                <p class="card-tag">Redirection unique</p>
+                <h3>Un seul lien pour tout le catalogue.</h3>
+                <p>Le club peut modifier ce lien depuis l'administration sans changer chaque fiche produit une par une.</p>
+                <a
+                    class="button button-primary shop-card-button"
+                    href="<?= e($lienHelloAssoBoutique) ?>"
+                    target="_blank"
+                    rel="noopener noreferrer external"
+                    referrerpolicy="no-referrer"
+                >
+                    Ouvrir sur HelloAsso
+                </a>
             </div>
-
-            <?php if ($memberOrders === []): ?>
-                <div class="empty-state empty-state--contrast">
-                    <p class="card-tag">Aucune demande</p>
-                    <h3>Rien n'a encore ete valide depuis la boutique.</h3>
-                    <p>Quand tu finaliseras un panier, le suivi apparaitra ici.</p>
-                </div>
-            <?php else: ?>
-                <div class="stack-list shop-order-list">
-                    <?php foreach ($memberOrders as $commande): ?>
-                        <?php
-                        $quantiteCommande = max(1, (int) ($commande['quantite'] ?? 1));
-                        $totalCommande = $commande['prix_total_euros'] ?? null;
-                        $lotCommande = trim((string) ($commande['lot_commande'] ?? ''));
-                        ?>
-                        <article class="schedule-item shop-order-card">
-                            <div class="shop-order-head">
-                                <p class="card-tag"><?= e((string) ($commande['libelle_statut'] ?? 'En attente')) ?></p>
-                                <span class="shop-order-category"><?= e((string) ($commande['categorie'] ?? 'Produit')) ?></span>
-                            </div>
-                            <h3><?= e((string) ($commande['produit'] ?? 'Commande')) ?></h3>
-                            <p>Quantite : <?= e((string) $quantiteCommande) ?>.</p>
-                            <?php if ($totalCommande !== null): ?>
-                                <p>Total estime : <?= e((string) $totalCommande) ?> EUR.</p>
-                            <?php endif; ?>
-                            <p>Paiement : <?= e((string) ($commande['libelle_mode_paiement'] ?? 'Reglement au club')) ?> - <?= e((string) ($commande['libelle_statut_paiement'] ?? 'A finaliser')) ?>.</p>
-                            <?php if ($lotCommande !== ''): ?>
-                                <p class="shop-order-batch">Lot : <?= e($lotCommande) ?></p>
-                            <?php endif; ?>
-                        </article>
-                    <?php endforeach; ?>
-                </div>
-            <?php endif; ?>
         </section>
     </div>
 </section>

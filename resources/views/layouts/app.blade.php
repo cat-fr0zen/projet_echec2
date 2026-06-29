@@ -36,6 +36,7 @@ $cspNonce = (string) request()->attributes->get('csp_nonce', '');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
     <meta name="description" content="<?= e($descriptionMeta) ?>">
     <title><?= e($metaTitre) ?></title>
     <link rel="icon" type="image/png" href="<?= e($logoClubUrl) ?>">

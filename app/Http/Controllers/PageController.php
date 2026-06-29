@@ -8,7 +8,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Repositories\BoutiqueProduitRepository;
+use App\Repositories\BureauMembreRepository;
 use App\Repositories\NewsletterRepository;
+use App\Repositories\ParametreSiteRepository;
 use App\Services\ChessComService;
 use App\Services\LichessService;
 use App\Support\BoutiqueCartService;
@@ -52,7 +54,9 @@ final class PageController extends Controller
             recuperer_messages_flash(),
             recuperer_etat_formulaire(),
             new BoutiqueCartService,
-            new BoutiqueProduitRepository
+            new BoutiqueProduitRepository,
+            new ParametreSiteRepository,
+            new BureauMembreRepository
         );
 
         return response($renderer->afficher($page ?? 'accueil'));

@@ -174,7 +174,7 @@ function initConsentGate() {
     document.addEventListener("keydown", handleKeydown);
 
     if (continueButton instanceof HTMLElement) {
-        continueButton.focus();
+        focusElementWithoutScroll(continueButton);
     }
 
     if (acceptButton instanceof HTMLButtonElement) {
@@ -335,6 +335,8 @@ function initBurgerMenu() {
         return;
     }
 
+    burgerToggle.setAttribute("aria-haspopup", "dialog");
+
     function syncPanelLayout() {
         if (!(siteHeader instanceof HTMLElement)) {
             return;
@@ -414,28 +416,13 @@ function initBurgerMenu() {
         });
     });
 
-    document.addEventListener("click", (event) => {
-        if (burgerPanel.hidden) {
-            return;
-        }
-
-        const target = event.target;
-
-        if (!(target instanceof Node)) {
-            return;
-        }
-
-        if (!burgerPanel.contains(target) && !burgerToggle.contains(target)) {
-            setOpenState(false);
-        }
-    });
-
     document.addEventListener("keydown", (event) => {
         if (!burgerPanel.hidden) {
             trapFocus(event, burgerPanel);
         }
 
-        if (event.key === "Escape") {
+        if (event.key === "Escape" && !burgerPanel.hidden) {
+            event.preventDefault();
             setOpenState(false);
         }
     });
@@ -459,9 +446,13 @@ function initAuthModal() {
     const closeButtons = Array.from(modalRoot.querySelectorAll("[data-auth-close]"));
     const tabButtons = Array.from(modalRoot.querySelectorAll("[data-auth-tab-trigger]"));
     const panels = Array.from(modalRoot.querySelectorAll("[data-auth-panel]"));
+    const modalPanel = modalRoot.querySelector(".auth-modal-panel");
     const initialOpenState = modalRoot.getAttribute("data-auth-open-state") === "true";
+    const modalId = modalRoot.id || "auth-modal";
     let previousFocusedElement = null;
     let currentTab = modalRoot.getAttribute("data-auth-tab") || "connexion";
+
+    modalRoot.id = modalId;
 
     function renderTab(tabName) {
         currentTab = tabName === "inscription" ? "inscription" : "connexion";
@@ -486,6 +477,9 @@ function initAuthModal() {
         modalRoot.hidden = false;
         modalRoot.setAttribute("aria-hidden", "false");
         document.body.classList.add("modal-open");
+        if (modalPanel instanceof HTMLElement) {
+            modalPanel.scrollTop = 0;
+        }
         const errorSummary = modalRoot.querySelector(".auth-errors");
 
         if (errorSummary instanceof HTMLElement) {
@@ -510,6 +504,8 @@ function initAuthModal() {
     }
 
     openButtons.forEach((button) => {
+        button.setAttribute("aria-haspopup", "dialog");
+        button.setAttribute("aria-controls", modalId);
         button.addEventListener("click", () => {
             openModal(button.getAttribute("data-auth-tab") || "connexion");
         });
@@ -563,6 +559,7 @@ function initAuthModal() {
         }
 
         if (event.key === "Escape" && !modalRoot.hidden) {
+            event.preventDefault();
             closeModal();
         }
     });
@@ -1474,12 +1471,6 @@ function initDeleteConfirmations() {
         });
     });
 
-    modalRoot.addEventListener("click", (event) => {
-        if (event.target === modalRoot) {
-            closeModal();
-        }
-    });
-
     document.addEventListener("keydown", (event) => {
         if (modalRoot.hidden) {
             return;
@@ -1488,6 +1479,7 @@ function initDeleteConfirmations() {
         trapFocus(event, modalRoot);
 
         if (event.key === "Escape") {
+            event.preventDefault();
             closeModal();
         }
     });
@@ -1534,12 +1526,14 @@ function initAdminTabs() {
         tabButtons.forEach((button) => {
             const isActive = (button.getAttribute("data-admin-tab-trigger") || "") === nextTab;
             button.classList.toggle("is-active", isActive);
-            button.setAttribute("aria-selected", isActive ? "true" : "false");
+            button.setAttribute("aria-pressed", isActive ? "true" : "false");
+            button.setAttribute("tabindex", isActive ? "0" : "-1");
         });
 
         tabPanels.forEach((panel) => {
             const shouldShow = (panel.getAttribute("data-admin-tab-panel") || "") === nextTab;
             panel.hidden = !shouldShow;
+            panel.setAttribute("aria-hidden", shouldShow ? "false" : "true");
         });
 
         if (updateHash && nextTab) {
@@ -1550,6 +1544,38 @@ function initAdminTabs() {
     tabButtons.forEach((button) => {
         button.addEventListener("click", () => {
             activateTab(button.getAttribute("data-admin-tab-trigger") || "", true);
+        });
+
+        button.addEventListener("keydown", (event) => {
+            const currentIndex = tabButtons.indexOf(button);
+
+            if (currentIndex < 0) {
+                return;
+            }
+
+            let nextIndex = currentIndex;
+
+            if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                nextIndex = (currentIndex + 1) % tabButtons.length;
+            } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                nextIndex = (currentIndex - 1 + tabButtons.length) % tabButtons.length;
+            } else if (event.key === "Home") {
+                nextIndex = 0;
+            } else if (event.key === "End") {
+                nextIndex = tabButtons.length - 1;
+            } else {
+                return;
+            }
+
+            event.preventDefault();
+            const nextButton = tabButtons[nextIndex];
+
+            if (!(nextButton instanceof HTMLButtonElement)) {
+                return;
+            }
+
+            focusElementWithoutScroll(nextButton);
+            activateTab(nextButton.getAttribute("data-admin-tab-trigger") || "", true);
         });
     });
 
@@ -1573,6 +1599,14 @@ function initLegalModals() {
         return;
     }
 
+    modalRoots.forEach((modal) => {
+        const modalId = modal.getAttribute("data-legal-modal") || "";
+
+        if (modalId !== "" && !modal.id) {
+            modal.id = `legal-modal-${modalId}`;
+        }
+    });
+
     function closeModal(modal = currentModal) {
         if (!(modal instanceof HTMLElement)) {
             return;
@@ -1585,6 +1619,12 @@ function initLegalModals() {
             currentModal = null;
             document.body.classList.remove("modal-open");
         }
+
+        openButtons.forEach((button) => {
+            const controlsId = button.getAttribute("aria-controls");
+            const buttonTargetsClosedModal = controlsId !== "" && controlsId === modal.id;
+            button.setAttribute("aria-expanded", buttonTargetsClosedModal ? "false" : button.getAttribute("aria-expanded") || "false");
+        });
 
         if (previousFocusedElement instanceof HTMLElement) {
             focusElementWithoutScroll(previousFocusedElement);
@@ -1610,14 +1650,29 @@ function initLegalModals() {
         modal.setAttribute("aria-hidden", "false");
         document.body.classList.add("modal-open");
 
+        openButtons.forEach((button) => {
+            const targetsCurrentModal = button.getAttribute("data-legal-open") === modalId;
+            button.setAttribute("aria-expanded", targetsCurrentModal ? "true" : "false");
+        });
+
         const [firstFocusableElement] = getFocusableElements(modal);
 
         focusElementWithoutScroll(firstFocusableElement);
     }
 
     openButtons.forEach((button) => {
+        const modalId = button.getAttribute("data-legal-open") || "";
+        const targetModal = modalRoots.find((modal) => modal.getAttribute("data-legal-modal") === modalId);
+
+        button.setAttribute("aria-haspopup", "dialog");
+        button.setAttribute("aria-expanded", "false");
+
+        if (targetModal instanceof HTMLElement && targetModal.id !== "") {
+            button.setAttribute("aria-controls", targetModal.id);
+        }
+
         button.addEventListener("click", () => {
-            openModal(button.getAttribute("data-legal-open") || "", button);
+            openModal(modalId, button);
         });
     });
 
@@ -1643,6 +1698,7 @@ function initLegalModals() {
         trapFocus(event, currentModal);
 
         if (event.key === "Escape") {
+            event.preventDefault();
             closeModal(currentModal);
         }
     });

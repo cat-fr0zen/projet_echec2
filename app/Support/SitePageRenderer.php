@@ -9,6 +9,7 @@ namespace App\Support;
 
 use App\Models\User;
 use App\Repositories\ArticleRepository;
+use App\Repositories\BureauMembreRepository;
 use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
@@ -16,6 +17,7 @@ use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
+use App\Repositories\ParametreSiteRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\TraficVisiteursRepository;
 use App\Repositories\UserRepository;
@@ -47,7 +49,9 @@ final class SitePageRenderer
         private array $messagesFlash,
         private array $formState,
         private ?BoutiqueCartService $boutiqueCartService = null,
-        private ?BoutiqueProduitRepository $boutiqueProduitRepository = null
+        private ?BoutiqueProduitRepository $boutiqueProduitRepository = null,
+        private ?ParametreSiteRepository $parametreSiteRepository = null,
+        private ?BureauMembreRepository $bureauMembreRepository = null
     ) {}
 
     public function afficher(string $segment): string
@@ -87,7 +91,17 @@ final class SitePageRenderer
         $siteData['cartes_cours_strategie'] = $this->siteContent->obtenirCartesCoursStrategie();
         $siteData['cartes_mediatheque'] = $this->siteContent->obtenirCartesMediatheque();
         $this->boutiqueProduitRepository ??= new BoutiqueProduitRepository;
+        $this->parametreSiteRepository ??= new ParametreSiteRepository;
+        $this->bureauMembreRepository ??= new BureauMembreRepository;
         $siteData['cartes_boutique'] = $this->boutiqueProduitRepository->listerCatalogue();
+        $siteData['lien_helloasso_boutique'] = $this->parametreSiteRepository->obtenirLienBoutiqueHelloAsso();
+        $siteData['helloasso_shop_url'] = $siteData['lien_helloasso_boutique'];
+        $siteData['bureau_section'] = $this->chargerTextesSectionBureau($siteData);
+        $siteData['bureau_section_texts'] = $siteData['bureau_section'];
+        $siteData['membres_bureau'] = $this->bureauMembreRepository->listerPourAccueil(
+            is_array($siteData['membres_bureau'] ?? null) ? $siteData['membres_bureau'] : []
+        );
+        $siteData['bureau_members'] = $siteData['membres_bureau'];
         $this->boutiqueCartService ??= new BoutiqueCartService;
         $siteData['panier_boutique'] = $this->boutiqueCartService->obtenirPanier($siteData['cartes_boutique']);
         $siteData['paiement_boutique'] = $this->boutiqueCartService->configurationPaiementCarte();
@@ -245,6 +259,10 @@ final class SitePageRenderer
                 ? $this->boutiqueProduitRepository->listerTousPourAdmin()
                 : [];
             $siteData['all_shop_products'] = $siteData['tous_produits_boutique'];
+            $siteData['tous_membres_bureau'] = $authData['est_admin']
+                ? $this->bureauMembreRepository->listerTousPourAdmin()
+                : [];
+            $siteData['all_bureau_members'] = $siteData['tous_membres_bureau'];
             $siteData['tous_utilisateurs'] = $authData['est_admin'] ? $this->userRepository->listerTous() : [];
             $siteData['all_users'] = $siteData['tous_utilisateurs'];
             $siteData['resume_roles_compte'] = $authData['est_admin'] ? $this->userRepository->resumerRoles() : [];
@@ -340,6 +358,16 @@ final class SitePageRenderer
         $siteData['all_articles'] = [];
         $siteData['tous_medias'] = [];
         $siteData['all_media'] = [];
+        $this->parametreSiteRepository ??= new ParametreSiteRepository;
+        $this->bureauMembreRepository ??= new BureauMembreRepository;
+        $siteData['lien_helloasso_boutique'] = $this->parametreSiteRepository->obtenirLienBoutiqueHelloAsso();
+        $siteData['helloasso_shop_url'] = $siteData['lien_helloasso_boutique'];
+        $siteData['bureau_section'] = $this->chargerTextesSectionBureau($siteData);
+        $siteData['bureau_section_texts'] = $siteData['bureau_section'];
+        $siteData['membres_bureau'] = $this->bureauMembreRepository->listerPourAccueil(
+            is_array($siteData['membres_bureau'] ?? null) ? $siteData['membres_bureau'] : []
+        );
+        $siteData['bureau_members'] = $siteData['membres_bureau'];
         $siteData['panier_boutique'] = [
             'lignes' => [],
             'nombre_lignes' => 0,
@@ -358,6 +386,8 @@ final class SitePageRenderer
         $siteData['member_orders'] = [];
         $siteData['toutes_commandes'] = [];
         $siteData['all_orders'] = [];
+        $siteData['tous_membres_bureau'] = [];
+        $siteData['all_bureau_members'] = [];
         $siteData['resume_trafic_visiteurs'] = [];
         $siteData['dammier_puzzle'] = $this->puzzleDeSecoursHorsBase();
         $siteData['dammier_classement'] = [];
@@ -368,6 +398,42 @@ final class SitePageRenderer
         $siteData['constructeur_accueil_blocs_actifs'] = $this->constructeurPagesRepository->listerActifsPourPage('accueil');
 
         return $siteData;
+    }
+
+    /**
+     * @param  array<string, mixed>  $siteData
+     * @return array<string, string>
+     */
+    private function chargerTextesSectionBureau(array $siteData): array
+    {
+        $bureauSectionParDefaut = is_array($siteData['bureau_section'] ?? null) ? $siteData['bureau_section'] : [];
+
+        return [
+            'surtitre' => $this->parametreSiteRepository?->obtenirTexte(
+                ParametreSiteRepository::CLE_BUREAU_SURTITRE,
+                (string) ($bureauSectionParDefaut['surtitre'] ?? 'Bureau du club')
+            ) ?? 'Bureau du club',
+            'eyebrow' => $this->parametreSiteRepository?->obtenirTexte(
+                ParametreSiteRepository::CLE_BUREAU_SURTITRE,
+                (string) ($bureauSectionParDefaut['eyebrow'] ?? 'Bureau du club')
+            ) ?? 'Bureau du club',
+            'titre' => $this->parametreSiteRepository?->obtenirTexte(
+                ParametreSiteRepository::CLE_BUREAU_TITRE,
+                (string) ($bureauSectionParDefaut['titre'] ?? "Les membres du bureau des échecs.")
+            ) ?? "Les membres du bureau des échecs.",
+            'title' => $this->parametreSiteRepository?->obtenirTexte(
+                ParametreSiteRepository::CLE_BUREAU_TITRE,
+                (string) ($bureauSectionParDefaut['title'] ?? "Les membres du bureau des échecs.")
+            ) ?? "Les membres du bureau des échecs.",
+            'description' => $this->parametreSiteRepository?->obtenirTexte(
+                ParametreSiteRepository::CLE_BUREAU_DESCRIPTION,
+                (string) ($bureauSectionParDefaut['description'] ?? '')
+            ) ?? '',
+            'text' => $this->parametreSiteRepository?->obtenirTexte(
+                ParametreSiteRepository::CLE_BUREAU_DESCRIPTION,
+                (string) ($bureauSectionParDefaut['text'] ?? '')
+            ) ?? '',
+        ];
     }
 
     /**

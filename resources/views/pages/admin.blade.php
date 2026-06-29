@@ -33,6 +33,9 @@ $blocsConstructeurAccueil = is_array($siteData['constructeur_accueil_blocs'] ?? 
 $courseDocumentsParRubrique = is_array($siteData['documents_cours_par_rubrique'] ?? null) ? $siteData['documents_cours_par_rubrique'] : [];
 $coursePeutGererDocuments = (bool) ($siteData['peut_gerer_documents_cours'] ?? false);
 $shopProducts = is_array($siteData['all_shop_products'] ?? null) ? $siteData['all_shop_products'] : [];
+$shopHelloAssoLink = (string) ($siteData['lien_helloasso_boutique'] ?? \App\Repositories\ParametreSiteRepository::LIEN_HELLOASSO_PAR_DEFAUT);
+$bureauSection = is_array($siteData['bureau_section'] ?? null) ? $siteData['bureau_section'] : [];
+$bureauMembers = is_array($siteData['all_bureau_members'] ?? null) ? $siteData['all_bureau_members'] : [];
 $shopCategories = \App\Repositories\BoutiqueProduitRepository::CATEGORIES;
 $shopPublics = \App\Repositories\BoutiqueProduitRepository::PUBLICS;
 $shopModesVente = \App\Repositories\BoutiqueProduitRepository::MODES_VENTE;
@@ -94,7 +97,8 @@ while (count($lignesHorairesAdmin) < 10) {
             type="button"
             class="admin-tab-button<?= $adminTabKey === 'newsletter' ? ' is-active' : '' ?>"
             data-admin-tab-trigger="<?= e($adminTabKey) ?>"
-            aria-selected="<?= $adminTabKey === 'newsletter' ? 'true' : 'false' ?>"
+            aria-pressed="<?= $adminTabKey === 'newsletter' ? 'true' : 'false' ?>"
+            tabindex="<?= $adminTabKey === 'newsletter' ? '0' : '-1' ?>"
         >
             <?= e($adminTabLabel) ?>
         </button>
@@ -614,6 +618,33 @@ while (count($lignesHorairesAdmin) < 10) {
     <div class="split-grid">
         <article class="panel">
             <div class="section-head section-head--compact">
+                <p class="eyebrow">Paiement externe</p>
+                <h2>Lien HelloAsso unique</h2>
+                <p>Tous les produits de la boutique utilisent ce meme lien externe. Le site ne gere plus de paiement direct.</p>
+            </div>
+
+            <form method="post" action="<?= e(url_route('admin')) ?>#admin-boutique" class="admin-form">
+                <input type="hidden" name="action" value="mettre_a_jour_lien_helloasso_boutique">
+                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+                <label class="form-group">
+                    <span>URL HelloAsso de la boutique</span>
+                    <input
+                        type="url"
+                        name="lien_helloasso_boutique"
+                        value="<?= e($shopHelloAssoLink) ?>"
+                        maxlength="2000"
+                        placeholder="https://www.helloasso.com/..."
+                        required
+                    >
+                    <small class="form-helper">Tous les boutons de la boutique publique utiliseront ce lien.</small>
+                </label>
+
+                <button type="submit" class="button button-secondary">Enregistrer le lien HelloAsso</button>
+            </form>
+
+            <div class="section-head section-head--compact">
                 <p class="eyebrow">Nouveau produit</p>
                 <h2>Ajouter un produit</h2>
             </div>
@@ -871,6 +902,198 @@ while (count($lignesHorairesAdmin) < 10) {
                 <?php endif; ?>
             </div>
         </article>
+    </div>
+</section>
+
+<section id="admin-bureau-club" class="section-block reveal reveal-5 admin-tab-panel" data-admin-tab-panel="contenus">
+    <div class="section-head">
+        <p class="eyebrow">Bureau du club</p>
+        <h2>Gerer les cartes du bureau visibles sur l'accueil.</h2>
+        <p>Tu peux modifier tous les textes, ajouter une nouvelle carte ou supprimer une personne sans toucher au code.</p>
+    </div>
+
+    <div class="split-grid">
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Textes generaux</p>
+                <h2>Modifier le bloc bureau.</h2>
+                <p>Ces textes apparaissent juste au-dessus des cartes du bureau sur la page d'accueil.</p>
+            </div>
+
+            <form method="post" action="<?= e(url_route('admin')) ?>#admin-bureau-club" class="admin-form">
+                <input type="hidden" name="action" value="mettre_a_jour_textes_bureau">
+                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+                <label class="form-group">
+                    <span>Surtitre</span>
+                    <input
+                        type="text"
+                        name="bureau_surtitre"
+                        maxlength="80"
+                        value="<?= e((string) ($bureauSection['surtitre'] ?? $bureauSection['eyebrow'] ?? '')) ?>"
+                        placeholder="Bureau du club"
+                    >
+                </label>
+
+                <label class="form-group">
+                    <span>Titre principal</span>
+                    <input
+                        type="text"
+                        name="bureau_titre"
+                        maxlength="180"
+                        value="<?= e((string) ($bureauSection['titre'] ?? $bureauSection['title'] ?? '')) ?>"
+                        placeholder="Les membres du bureau des échecs."
+                    >
+                </label>
+
+                <label class="form-group">
+                    <span>Texte d'introduction</span>
+                    <textarea
+                        name="bureau_description"
+                        rows="4"
+                        maxlength="600"
+                        placeholder="Presentation du bloc bureau"
+                    ><?= e((string) ($bureauSection['description'] ?? '')) ?></textarea>
+                </label>
+
+                <button type="submit" class="button button-primary">Enregistrer les textes</button>
+            </form>
+        </article>
+
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Nouvelle carte</p>
+                <h2>Ajouter un membre du bureau.</h2>
+                <p>Chaque carte peut contenir un prenom, un nom, un role, une description et un lien photo optionnel.</p>
+            </div>
+
+            <form method="post" action="<?= e(url_route('admin')) ?>#admin-bureau-club" class="admin-form">
+                <input type="hidden" name="action" value="ajouter_membre_bureau">
+                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+                <div class="admin-schedule-settings">
+                    <label class="form-group">
+                        <span>Prenom</span>
+                        <input type="text" name="prenom_membre_bureau" maxlength="100" placeholder="Claire">
+                    </label>
+
+                    <label class="form-group">
+                        <span>Nom</span>
+                        <input type="text" name="nom_membre_bureau" maxlength="100" placeholder="DUPONT">
+                    </label>
+
+                    <label class="form-group">
+                        <span>Role affiche</span>
+                        <input type="text" name="role_membre_bureau" maxlength="160" placeholder="Secretaire">
+                    </label>
+
+                    <label class="form-group">
+                        <span>Position</span>
+                        <input type="number" name="ordre_affichage_membre_bureau" min="1" max="999" value="4" required>
+                    </label>
+                </div>
+
+                <label class="form-group">
+                    <span>Description</span>
+                    <textarea name="description_membre_bureau" rows="4" maxlength="1200" placeholder="Presentation de la personne"></textarea>
+                </label>
+
+                <label class="form-group">
+                    <span>Lien photo optionnel</span>
+                    <input type="text" name="photo_membre_bureau" maxlength="2048" placeholder="assets/media/... ou https://...">
+                </label>
+
+                <label class="form-group">
+                    <span class="checkbox-inline">
+                        <input type="checkbox" name="visible_membre_bureau" value="1" checked>
+                        <span>Afficher cette carte publiquement</span>
+                    </span>
+                </label>
+
+                <button type="submit" class="button button-secondary">Ajouter la carte</button>
+            </form>
+        </article>
+    </div>
+
+    <div class="admin-list">
+        <?php if ($bureauMembers === []): ?>
+            <div class="empty-state">
+                <p class="card-tag">Aucun membre</p>
+                <h3>Aucune carte bureau n'est enregistree pour le moment.</h3>
+            </div>
+        <?php else: ?>
+            <?php foreach ($bureauMembers as $bureauMember): ?>
+                <article class="info-card admin-card">
+                    <p class="card-tag"><?= e((string) ($bureauMember['role'] ?? 'Bureau')) ?></p>
+                    <h3><?= e((string) ($bureauMember['nom_complet'] ?? 'Membre du bureau')) ?></h3>
+                    <p><?= e((string) ($bureauMember['description'] ?? '')) ?></p>
+
+                    <form method="post" action="<?= e(url_route('admin')) ?>#admin-bureau-club" class="admin-form">
+                        <input type="hidden" name="action" value="modifier_membre_bureau">
+                        <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                        <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                        <input type="hidden" name="identifiant_membre_bureau" value="<?= e((string) ($bureauMember['identifiant_membre_bureau'] ?? '')) ?>">
+
+                        <div class="admin-schedule-settings">
+                            <label class="form-group">
+                                <span>Prenom</span>
+                                <input type="text" name="prenom_membre_bureau" maxlength="100" value="<?= e((string) ($bureauMember['prenom'] ?? '')) ?>">
+                            </label>
+
+                            <label class="form-group">
+                                <span>Nom</span>
+                                <input type="text" name="nom_membre_bureau" maxlength="100" value="<?= e((string) ($bureauMember['nom'] ?? '')) ?>">
+                            </label>
+
+                            <label class="form-group">
+                                <span>Role affiche</span>
+                                <input type="text" name="role_membre_bureau" maxlength="160" value="<?= e((string) ($bureauMember['role'] ?? '')) ?>">
+                            </label>
+
+                            <label class="form-group">
+                                <span>Position</span>
+                                <input type="number" name="ordre_affichage_membre_bureau" min="1" max="999" value="<?= e((string) ($bureauMember['ordre_affichage'] ?? 1)) ?>" required>
+                            </label>
+                        </div>
+
+                        <label class="form-group">
+                            <span>Description</span>
+                            <textarea name="description_membre_bureau" rows="4" maxlength="1200"><?= e((string) ($bureauMember['description'] ?? '')) ?></textarea>
+                        </label>
+
+                        <label class="form-group">
+                            <span>Lien photo optionnel</span>
+                            <input type="text" name="photo_membre_bureau" maxlength="2048" value="<?= e((string) ($bureauMember['photo'] ?? '')) ?>">
+                        </label>
+
+                        <label class="form-group">
+                            <span class="checkbox-inline">
+                                <input type="checkbox" name="visible_membre_bureau" value="1"<?= (bool) ($bureauMember['est_actif'] ?? false) ? ' checked' : '' ?>>
+                                <span>Carte visible publiquement</span>
+                            </span>
+                        </label>
+
+                        <button type="submit" class="button button-primary">Enregistrer les changements</button>
+                    </form>
+
+                    <form
+                        method="post"
+                        action="<?= e(url_route('admin')) ?>#admin-bureau-club"
+                        class="admin-form admin-inline-form"
+                        data-confirm-delete
+                        data-confirm-message="Supprimer definitivement cette carte du bureau ?"
+                    >
+                        <input type="hidden" name="action" value="supprimer_membre_bureau">
+                        <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                        <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                        <input type="hidden" name="identifiant_membre_bureau" value="<?= e((string) ($bureauMember['identifiant_membre_bureau'] ?? '')) ?>">
+                        <button type="submit" class="button button-secondary button-danger">Supprimer</button>
+                    </form>
+                </article>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 </section>
 

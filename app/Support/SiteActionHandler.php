@@ -9,6 +9,7 @@ namespace App\Support;
 
 use App\Models\CommandeLocale;
 use App\Repositories\ArticleRepository;
+use App\Repositories\BureauMembreRepository;
 use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
@@ -16,6 +17,7 @@ use App\Repositories\DammierRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
+use App\Repositories\ParametreSiteRepository;
 use App\Repositories\ScheduleRepository;
 use App\Repositories\UserRepository;
 use App\Services\AdhesionRenewalService;
@@ -75,12 +77,16 @@ final class SiteActionHandler
         private ?AdhesionRenewalService $adhesionRenewalService = null,
         private ?SensitiveActionRateLimiter $rateLimiter = null,
         private ?BoutiqueCartService $boutiqueCartService = null,
-        private ?BoutiqueProduitRepository $depotProduitsBoutique = null
+        private ?BoutiqueProduitRepository $depotProduitsBoutique = null,
+        private ?ParametreSiteRepository $depotParametresSite = null,
+        private ?BureauMembreRepository $depotMembresBureau = null
     ) {
         $this->adhesionRenewalService ??= new AdhesionRenewalService($this->depotUtilisateurs);
         $this->rateLimiter ??= new SensitiveActionRateLimiter;
         $this->boutiqueCartService ??= new BoutiqueCartService;
         $this->depotProduitsBoutique ??= new BoutiqueProduitRepository;
+        $this->depotParametresSite ??= new ParametreSiteRepository;
+        $this->depotMembresBureau ??= new BureauMembreRepository;
     }
 
     /**
@@ -183,6 +189,10 @@ final class SiteActionHandler
             case 'delete_shop_product':
                 $this->traiterSuppressionProduitBoutique();
                 break;
+            case 'mettre_a_jour_lien_helloasso_boutique':
+            case 'update_shop_helloasso_link':
+                $this->traiterMiseAJourLienHelloAssoBoutique();
+                break;
             case 'moderer_article':
             case 'review_article':
                 $this->traiterModerationArticle();
@@ -214,6 +224,22 @@ final class SiteActionHandler
             case 'mettre_a_jour_constructeur_accueil':
             case 'update_home_builder':
                 $this->traiterMiseAJourConstructeurAccueil();
+                break;
+            case 'mettre_a_jour_textes_bureau':
+            case 'update_club_office_texts':
+                $this->traiterMiseAJourTextesBureau();
+                break;
+            case 'ajouter_membre_bureau':
+            case 'create_club_office_member':
+                $this->traiterAjoutMembreBureau();
+                break;
+            case 'modifier_membre_bureau':
+            case 'update_club_office_member':
+                $this->traiterMiseAJourMembreBureau();
+                break;
+            case 'supprimer_membre_bureau':
+            case 'delete_club_office_member':
+                $this->traiterSuppressionMembreBureau();
                 break;
             case 'notifier_objet_boutique':
             case 'notify_shop_item':
@@ -434,6 +460,126 @@ final class SiteActionHandler
         $this->depotConstructeurPages->mettreAJourBlocsAccueil($donnees);
         ajouter_message_flash('success', "Le constructeur de l'accueil a été mis à jour.");
         rediriger_vers(url_route('admin').'#admin-constructeur');
+    }
+
+    /** Permet a l'admin de modifier les textes du bloc bureau sur l'accueil. */
+    private function traiterMiseAJourTextesBureau(): void
+    {
+        $this->exigerAdmin();
+
+        $surtitre = trim((string) ($_POST['bureau_surtitre'] ?? ''));
+        $titre = trim((string) ($_POST['bureau_titre'] ?? ''));
+        $description = trim((string) ($_POST['bureau_description'] ?? ''));
+        $erreurs = [];
+
+        if (mb_strlen($surtitre) > 80) {
+            $erreurs[] = 'Le surtitre du bureau doit rester inferieur a 80 caracteres.';
+        }
+
+        if (mb_strlen($titre) > 180) {
+            $erreurs[] = 'Le titre du bureau doit rester inferieur a 180 caracteres.';
+        }
+
+        if (mb_strlen($description) > 600) {
+            $erreurs[] = 'Le texte de presentation du bureau doit rester inferieur a 600 caracteres.';
+        }
+
+        if ($erreurs !== []) {
+            foreach ($erreurs as $erreur) {
+                ajouter_message_flash('error', $erreur);
+            }
+
+            rediriger_vers($this->urlAdminBureau());
+        }
+
+        $this->depotParametresSite?->mettreAJourTexte(ParametreSiteRepository::CLE_BUREAU_SURTITRE, $surtitre);
+        $this->depotParametresSite?->mettreAJourTexte(ParametreSiteRepository::CLE_BUREAU_TITRE, $titre);
+        $this->depotParametresSite?->mettreAJourTexte(ParametreSiteRepository::CLE_BUREAU_DESCRIPTION, $description);
+
+        ajouter_message_flash('success', 'Les textes du bloc bureau ont ete mis a jour.');
+        rediriger_vers($this->urlAdminBureau());
+    }
+
+    /** Permet a l'admin d'ajouter une nouvelle carte dans le bloc bureau. */
+    private function traiterAjoutMembreBureau(): void
+    {
+        $this->exigerAdmin();
+
+        ['donnees' => $donnees, 'erreurs' => $erreurs] = $this->validerMembreBureauDepuisFormulaire();
+
+        if ($erreurs !== []) {
+            foreach ($erreurs as $erreur) {
+                ajouter_message_flash('error', $erreur);
+            }
+
+            rediriger_vers($this->urlAdminBureau());
+        }
+
+        $this->depotMembresBureau?->creer($donnees);
+
+        ajouter_message_flash('success', 'Le membre du bureau a ete ajoute.');
+        rediriger_vers($this->urlAdminBureau());
+    }
+
+    /** Permet a l'admin de modifier une carte existante du bloc bureau. */
+    private function traiterMiseAJourMembreBureau(): void
+    {
+        $this->exigerAdmin();
+
+        $identifiantMembreBureau = trim((string) ($_POST['identifiant_membre_bureau'] ?? ''));
+
+        if ($identifiantMembreBureau === '') {
+            ajouter_message_flash('error', 'Le membre du bureau demande est invalide.');
+            rediriger_vers($this->urlAdminBureau());
+        }
+
+        if ($this->depotMembresBureau?->trouverParIdentifiant($identifiantMembreBureau) === null) {
+            ajouter_message_flash('error', 'Le membre du bureau demande est introuvable.');
+            rediriger_vers($this->urlAdminBureau());
+        }
+
+        ['donnees' => $donnees, 'erreurs' => $erreurs] = $this->validerMembreBureauDepuisFormulaire();
+
+        if ($erreurs !== []) {
+            foreach ($erreurs as $erreur) {
+                ajouter_message_flash('error', $erreur);
+            }
+
+            rediriger_vers($this->urlAdminBureau());
+        }
+
+        $miseAJour = $this->depotMembresBureau?->mettreAJour($identifiantMembreBureau, $donnees) ?? false;
+
+        if (! $miseAJour) {
+            ajouter_message_flash('error', 'La mise a jour du membre du bureau a echoue.');
+            rediriger_vers($this->urlAdminBureau());
+        }
+
+        ajouter_message_flash('success', 'Le membre du bureau a ete mis a jour.');
+        rediriger_vers($this->urlAdminBureau());
+    }
+
+    /** Permet a l'admin de supprimer une carte du bloc bureau. */
+    private function traiterSuppressionMembreBureau(): void
+    {
+        $this->exigerAdmin();
+
+        $identifiantMembreBureau = trim((string) ($_POST['identifiant_membre_bureau'] ?? ''));
+
+        if ($identifiantMembreBureau === '') {
+            ajouter_message_flash('error', 'Le membre du bureau demande est invalide.');
+            rediriger_vers($this->urlAdminBureau());
+        }
+
+        $suppression = $this->depotMembresBureau?->supprimer($identifiantMembreBureau) ?? false;
+
+        if (! $suppression) {
+            ajouter_message_flash('error', 'La suppression du membre du bureau a echoue.');
+            rediriger_vers($this->urlAdminBureau());
+        }
+
+        ajouter_message_flash('success', 'Le membre du bureau a ete supprime.');
+        rediriger_vers($this->urlAdminBureau());
     }
 
     /** Inscrit une adresse a la newsletter avec consentement explicite. */
@@ -996,6 +1142,9 @@ final class SiteActionHandler
             rediriger_vers(url_route('boutique'));
         }
 
+        $this->boutiqueCartService?->vider();
+        rediriger_vers($this->obtenirLienHelloAssoBoutique());
+
         $this->boutiqueCartService?->ajouterProduit($catalogue, $identifiantProduit);
         $estAdhesion = (string) ($produit['categorie'] ?? '') === 'adhesion';
 
@@ -1030,6 +1179,9 @@ final class SiteActionHandler
             rediriger_vers(url_route('boutique').'#boutique-panier');
         }
 
+        $this->boutiqueCartService?->vider();
+        rediriger_vers($this->obtenirLienHelloAssoBoutique());
+
         $this->boutiqueCartService?->mettreAJourQuantite($catalogue, $identifiantProduit, $quantite);
         ajouter_message_flash('success', 'Le panier a ete mis a jour.');
         rediriger_vers(url_route('boutique').'#boutique-panier');
@@ -1053,6 +1205,10 @@ final class SiteActionHandler
         }
 
         $this->boutiqueCartService?->retirerProduit($identifiantProduit);
+        ajouter_message_flash('success', 'Le panier local a ete nettoye.');
+        rediriger_vers(url_route('boutique'));
+
+        $this->boutiqueCartService?->retirerProduit($identifiantProduit);
         ajouter_message_flash('success', 'Le produit a ete retire du panier.');
         rediriger_vers(url_route('boutique').'#boutique-panier');
     }
@@ -1068,6 +1224,10 @@ final class SiteActionHandler
         }
 
         $this->boutiqueCartService?->vider();
+        ajouter_message_flash('success', 'Le panier local a ete vide.');
+        rediriger_vers(url_route('boutique'));
+
+        $this->boutiqueCartService?->vider();
         ajouter_message_flash('success', 'Le panier a ete vide.');
         rediriger_vers(url_route('boutique').'#boutique-panier');
     }
@@ -1081,6 +1241,9 @@ final class SiteActionHandler
             ajouter_message_flash('error', 'Vous devez etre connecte pour finaliser le panier.');
             rediriger_vers(url_route('accueil'));
         }
+
+        $this->boutiqueCartService?->vider();
+        rediriger_vers($this->obtenirLienHelloAssoBoutique());
 
         $catalogue = $this->obtenirCatalogueBoutique();
         $panier = $this->boutiqueCartService?->obtenirPanier($catalogue) ?? ['lignes' => []];
@@ -1106,7 +1269,7 @@ final class SiteActionHandler
                 'identifiant_utilisateur' => $utilisateurCourant['identifiant'],
                 'reference_produit' => (string) ($lignePanier['identifiant'] ?? ''),
                 'produit' => (string) ($lignePanier['titre'] ?? 'Produit'),
-                'categorie' => (string) ($lignePanier['categorie_label'] ?? 'Produit'),
+                'categorie' => (string) ($lignePanier['categorie'] ?? $lignePanier['categorie_label'] ?? 'Produit'),
                 'quantite' => (int) ($lignePanier['quantite'] ?? 1),
                 'prix_unitaire_euros' => (int) ($lignePanier['prix_unitaire_euros'] ?? 0),
                 'prix_total_euros' => (int) ($lignePanier['prix_total_euros'] ?? 0),
@@ -1223,6 +1386,39 @@ final class SiteActionHandler
         }
 
         ajouter_message_flash('success', 'Le produit boutique a ete supprime.');
+        rediriger_vers($pageRedirection);
+    }
+
+    /** Met a jour le lien HelloAsso unique utilise par toute la boutique. */
+    private function traiterMiseAJourLienHelloAssoBoutique(): void
+    {
+        $this->exigerAdmin();
+
+        $pageRedirection = $this->urlAdminBoutique();
+        $lienHelloAsso = trim((string) ($_POST['lien_helloasso_boutique'] ?? ''));
+
+        if ($lienHelloAsso === '' || mb_strlen($lienHelloAsso) > 2000 || ! filter_var($lienHelloAsso, FILTER_VALIDATE_URL)) {
+            ajouter_message_flash('error', 'Le lien HelloAsso doit etre une URL valide.');
+            rediriger_vers($pageRedirection);
+        }
+
+        $schema = strtolower((string) parse_url($lienHelloAsso, PHP_URL_SCHEME));
+        $hote = strtolower((string) parse_url($lienHelloAsso, PHP_URL_HOST));
+
+        if (! in_array($schema, ['http', 'https'], true) || ! str_contains($hote, 'helloasso.com')) {
+            ajouter_message_flash('error', 'Le lien boutique doit pointer vers HelloAsso.');
+            rediriger_vers($pageRedirection);
+        }
+
+        $lienEnregistre = $this->depotParametresSite?->mettreAJourLienBoutiqueHelloAsso($lienHelloAsso)
+            ?? ParametreSiteRepository::LIEN_HELLOASSO_PAR_DEFAUT;
+
+        if ($lienEnregistre !== $lienHelloAsso) {
+            ajouter_message_flash('error', 'Le lien HelloAsso ne peut pas etre enregistre tant que la migration parametre_site nest pas appliquee.');
+            rediriger_vers($pageRedirection);
+        }
+
+        ajouter_message_flash('success', 'Le lien HelloAsso de la boutique a ete mis a jour.');
         rediriger_vers($pageRedirection);
     }
 
@@ -2024,6 +2220,17 @@ final class SiteActionHandler
         return url_route('admin').'#admin-boutique';
     }
 
+    private function urlAdminBureau(): string
+    {
+        return url_route('admin').'#admin-bureau-club';
+    }
+
+    private function obtenirLienHelloAssoBoutique(): string
+    {
+        return $this->depotParametresSite?->obtenirLienBoutiqueHelloAsso()
+            ?? ParametreSiteRepository::LIEN_HELLOASSO_PAR_DEFAUT;
+    }
+
     private function urlRedirectionGestionCours(string $rubrique, string $pageOrigine): string
     {
         if ($pageOrigine === 'admin') {
@@ -2066,6 +2273,61 @@ final class SiteActionHandler
     private function obtenirCatalogueBoutique(): array
     {
         return $this->depotProduitsBoutique?->listerCatalogue() ?? [];
+    }
+
+    /**
+     * @return array{donnees: array<string, mixed>, erreurs: array<int, string>}
+     */
+    private function validerMembreBureauDepuisFormulaire(): array
+    {
+        $prenom = trim((string) ($_POST['prenom_membre_bureau'] ?? ''));
+        $nom = trim((string) ($_POST['nom_membre_bureau'] ?? ''));
+        $role = trim((string) ($_POST['role_membre_bureau'] ?? ''));
+        $description = trim((string) ($_POST['description_membre_bureau'] ?? ''));
+        $photo = trim((string) ($_POST['photo_membre_bureau'] ?? ''));
+        $ordreAffichage = (int) ($_POST['ordre_affichage_membre_bureau'] ?? 1);
+        $erreurs = [];
+
+        if ($prenom === '' && $nom === '') {
+            $erreurs[] = 'Le membre du bureau doit avoir au moins un prenom ou un nom.';
+        }
+
+        if (mb_strlen($prenom) > 100) {
+            $erreurs[] = 'Le prenom du membre du bureau doit rester inferieur a 100 caracteres.';
+        }
+
+        if (mb_strlen($nom) > 100) {
+            $erreurs[] = 'Le nom du membre du bureau doit rester inferieur a 100 caracteres.';
+        }
+
+        if (mb_strlen($role) > 160) {
+            $erreurs[] = 'Le role affiche doit rester inferieur a 160 caracteres.';
+        }
+
+        if (mb_strlen($description) > 1200) {
+            $erreurs[] = 'La description du membre du bureau doit rester inferieure a 1200 caracteres.';
+        }
+
+        if (mb_strlen($photo) > 2048) {
+            $erreurs[] = 'Le lien photo du membre du bureau doit rester inferieur a 2048 caracteres.';
+        }
+
+        if ($ordreAffichage < 1 || $ordreAffichage > 999) {
+            $erreurs[] = "L'ordre d'affichage du membre du bureau doit rester compris entre 1 et 999.";
+        }
+
+        return [
+            'donnees' => [
+                'prenom' => $prenom,
+                'nom' => $nom,
+                'role_affiche' => $role,
+                'description' => $description,
+                'photo_url' => $photo,
+                'ordre_affichage' => $ordreAffichage,
+                'est_actif' => (string) ($_POST['visible_membre_bureau'] ?? '') === '1',
+            ],
+            'erreurs' => $erreurs,
+        ];
     }
 
     /**

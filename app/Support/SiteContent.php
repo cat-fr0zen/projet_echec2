@@ -33,6 +33,15 @@ final class SiteContent
             ['slug' => 'contact', 'label' => 'Contact'],
         ];
 
+        $bureauSection = [
+            'surtitre' => 'Bureau du club',
+            'eyebrow' => 'Bureau du club',
+            'titre' => "Les membres du bureau des échecs.",
+            'title' => "Les membres du bureau des échecs.",
+            'description' => 'Retrouve les responsables du club avec leur rôle, leur présentation et une photo quand elle est disponible.',
+            'text' => 'Retrouve les responsables du club avec leur rôle, leur présentation et une photo quand elle est disponible.',
+        ];
+
         $membresBureau = [
             $this->membreBureau(
                 'Jean-Patrick',
@@ -378,6 +387,8 @@ final class SiteContent
             'primary_nav' => $navigationPrincipale,
             'navigation_secondaire' => $navigationSecondaire,
             'secondary_nav' => $navigationSecondaire,
+            'bureau_section' => $bureauSection,
+            'bureau_section_texts' => $bureauSection,
             'membres_bureau' => $membresBureau,
             'bureau_members' => $membresBureau,
             'valeurs' => $valeurs,

@@ -94,7 +94,7 @@ final class AdhesionRenewalService
     public function activerDepuisCommandeValidee(array $commande, ?DateTimeImmutable $dateReference = null): ?array
     {
         $statut = (string) ($commande['statut'] ?? '');
-        $categorie = (string) ($commande['categorie'] ?? '');
+        $categorie = $this->normaliserCategorieCommande($commande['categorie'] ?? '');
         $identifiantUtilisateur = (string) ($commande['identifiant_utilisateur'] ?? '');
 
         if (
@@ -163,5 +163,15 @@ final class AdhesionRenewalService
 
             return false;
         }
+    }
+
+    private function normaliserCategorieCommande(mixed $categorie): string
+    {
+        $categorieNormalisee = mb_strtolower(trim((string) $categorie));
+
+        return match ($categorieNormalisee) {
+            'adhesion', 'adhésion' => 'adhesion',
+            default => $categorieNormalisee,
+        };
     }
 }

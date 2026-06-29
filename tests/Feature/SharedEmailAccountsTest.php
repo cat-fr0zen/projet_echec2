@@ -166,4 +166,32 @@ final class SharedEmailAccountsTest extends TestCase
             ->assertRedirect('/profil')
             ->assertSessionHas('identifiant_utilisateur');
     }
+
+    public function test_la_connexion_par_licence_accepte_les_variantes_de_casse_et_espaces(): void
+    {
+        (new UserRepository())->creer([
+            'nom' => 'Licence',
+            'prenom' => 'Normalisee',
+            'date_naissance' => '1990-03-04',
+            'courriel' => 'licence-normalisee@example.test',
+            'numero_licence' => 'FFE TEST 99',
+            'mot_de_passe' => 'Motdepasse2026!',
+            'description_profil' => '',
+            'pseudo_chess' => '',
+        ]);
+
+        $jetonConnexion = 'jeton-licence-normalisee';
+
+        $this->withSession(['_token' => $jetonConnexion])
+            ->post('/', [
+                'action' => 'connexion',
+                '_token' => $jetonConnexion,
+                'jeton_csrf' => $jetonConnexion,
+                'page_redirection' => 'accueil',
+                'identifiant_connexion' => ' ffe   test 99 ',
+                'mot_de_passe' => 'Motdepasse2026!',
+            ])
+            ->assertRedirect('/profil')
+            ->assertSessionHas('identifiant_utilisateur');
+    }
 }

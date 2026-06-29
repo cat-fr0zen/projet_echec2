@@ -2,8 +2,8 @@
 /**
  * Partiel: Consentement cookies.
  *
- * Presente une information claire sur les cookies indispensables, avec
- * un choix simple entre "essentiels seulement" et "essentiels + theme".
+ * Présente une information claire sur les cookies indispensables, avec
+ * un choix simple entre "essentiels seulement" et "essentiels + thème".
  */
 $donneesConsentement = $donneesSite['consentement'] ?? $donneesSite['consent'];
 $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_documents'] ?? [];
@@ -23,14 +23,15 @@ $documentsLegaux = $donneesSite['documents_legaux'] ?? $donneesSite['legal_docum
         <h2 id="consent-title"><?= e($donneesConsentement['titre'] ?? $donneesConsentement['title'] ?? '') ?></h2>
         <p id="consent-description" class="consent-text"><?= e($donneesConsentement['introduction'] ?? $donneesConsentement['intro'] ?? '') ?></p>
 
-        <div class="consent-docs" aria-label="Documents à consulter">
+        <section class="consent-docs" aria-labelledby="consent-documents-title">
+            <h3 id="consent-documents-title" class="sr-only">Documents à consulter</h3>
             <?php foreach ($documentsLegaux as $document): ?>
                 <article class="consent-mini-card">
                     <h3><?= e($document['titre'] ?? $document['title'] ?? '') ?></h3>
                     <p><?= e($document['resume'] ?? $document['summary'] ?? '') ?></p>
                 </article>
             <?php endforeach; ?>
-        </div>
+        </section>
 
         <p class="consent-text">
             Les cookies essentiels restent nécessaires à la sécurité, à la session membre et au bon fonctionnement du site.
