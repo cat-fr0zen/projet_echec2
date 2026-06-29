@@ -18,7 +18,7 @@ final class ConstructeurAccueilSeeder extends Seeder
         DB::table('constructeur_page_bloc')->upsert(
             ConstructeurPagesRepository::definitionsParDefaut('accueil'),
             ['code_page', 'code_bloc'],
-            ['libelle_bloc', 'description_bloc', 'ordre_affichage', 'est_actif', 'est_verrouille', 'updated_at']
+            ['libelle_bloc', 'description_bloc', 'ordre_affichage', 'est_actif', 'est_verrouille', 'titre_personnalise', 'contenu_personnalise', 'updated_at']
         );
     }
 }

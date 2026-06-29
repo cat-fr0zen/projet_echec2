@@ -46,6 +46,12 @@ final class ConstructeurAccueilTest extends TestCase
             'libelle_bloc' => 'Liens utiles',
             'est_verrouille' => 0,
         ]);
+
+        self::assertDatabaseHas('constructeur_page_bloc', [
+            'code_page' => 'accueil',
+            'code_bloc' => 'mot_du_club',
+            'titre_personnalise' => 'Présentation',
+        ]);
     }
 
     public function test_un_admin_peut_reordonner_les_blocs_mobiles_sans_bouger_les_blocs_verrouilles(): void
@@ -127,6 +133,60 @@ final class ConstructeurAccueilTest extends TestCase
         self::assertNotFalse($positionChiffres);
         self::assertLessThan($positionMotClub, $positionLiens);
         self::assertLessThan($positionChiffres, $positionMotClub);
+    }
+
+    public function test_un_admin_peut_modifier_le_texte_du_bloc_presentation_depuis_le_constructeur(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $administrateur = (new UserRepository())->creer($this->donneesCompte('admin-presentation@example.test', 'Alice', 'Admin'));
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+        ])->get('/admin')->assertOk();
+
+        $jetonCsrf = (string) session()->token();
+
+        $reponse = $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+            '_token' => $jetonCsrf,
+        ])->post('/admin', [
+            '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
+            'action' => 'update_home_builder',
+            'ordre_bloc' => [
+                'liens_utiles' => 4,
+                'mot_du_club' => 3,
+                'pieces_echecs' => 5,
+                'chiffres_du_club' => 6,
+            ],
+            'bloc_actif' => [
+                'liens_utiles' => '1',
+                'mot_du_club' => '1',
+                'pieces_echecs' => '1',
+                'chiffres_du_club' => '1',
+            ],
+            'titre_bloc' => [
+                'mot_du_club' => 'Notre club',
+            ],
+            'contenu_bloc' => [
+                'mot_du_club' => "Un texte modifié par l'administration.\nLes nouveaux membres sont les bienvenus.",
+            ],
+        ]);
+
+        $reponse->assertRedirect('/admin#admin-constructeur');
+
+        self::assertDatabaseHas('constructeur_page_bloc', [
+            'code_page' => 'accueil',
+            'code_bloc' => 'mot_du_club',
+            'titre_personnalise' => 'Notre club',
+        ]);
+
+        $reponseAccueil = $this->get('/');
+        $reponseAccueil->assertOk();
+        $reponseAccueil->assertSeeText('Notre club');
+        $reponseAccueil->assertSeeText("Un texte modifié par l'administration.");
+        $reponseAccueil->assertSeeText('Les nouveaux membres sont les bienvenus.');
     }
 
     /**

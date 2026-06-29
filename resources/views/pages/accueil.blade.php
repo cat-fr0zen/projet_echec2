@@ -16,7 +16,20 @@ $authData = $siteData['authentification'];
 $dammierPuzzle = $siteData['dammier_puzzle'] ?? [];
 $dammierClassement = $siteData['dammier_classement'] ?? [];
 $dammierPeutVoirClassement = (bool) ($siteData['dammier_peut_voir_classement'] ?? false);
+$dammierDejaJoue = (bool) ($siteData['dammier_deja_joue'] ?? false);
+$dammierScoreUtilisateur = is_array($siteData['dammier_score_utilisateur'] ?? null) ? $siteData['dammier_score_utilisateur'] : null;
 $blocsAccueilActifs = is_array($siteData['constructeur_accueil_blocs_actifs'] ?? null) ? $siteData['constructeur_accueil_blocs_actifs'] : [];
+$blocsAccueil = is_array($siteData['constructeur_accueil_blocs'] ?? null) ? $siteData['constructeur_accueil_blocs'] : [];
+$blocsAccueilParCode = [];
+foreach ($blocsAccueil as $blocAccueilReference) {
+    $codeBlocReference = (string) ($blocAccueilReference['code_bloc'] ?? '');
+
+    if ($codeBlocReference === '') {
+        continue;
+    }
+
+    $blocsAccueilParCode[$codeBlocReference] = $blocAccueilReference;
+}
 $horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horaires_club'] : [];
 $resumeHorairesClub = is_array($siteData['resume_horaires_club'] ?? null) ? $siteData['resume_horaires_club'] : [];
 $itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
@@ -29,6 +42,8 @@ $dammierPayload = [
     'dammier_classement' => $dammierClassement,
     'dammier_submit_url' => url_route('accueil'),
     'dammier_is_authenticated' => (bool) ($authData['is_authenticated'] ?? false),
+    'dammier_already_played' => $dammierDejaJoue,
+    'dammier_previous_score' => $dammierScoreUtilisateur,
 ];
 $blocsAccueilMobilesActifs = array_values(
     array_filter(

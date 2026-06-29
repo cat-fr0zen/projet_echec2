@@ -69,12 +69,14 @@ final class ConstructeurPagesRepository
             $miseAJour = $blocs[$codeBloc] ?? [];
 
             if ((bool) ($blocExistant['est_verrouille'] ?? false)) {
+                $blocExistant = $this->fusionnerContenuPersonnalise($blocExistant, $miseAJour);
                 $blocsVerrouilles[] = $blocExistant;
                 continue;
             }
 
             $blocExistant['ordre_souhaite'] = max(1, (int) ($miseAJour['ordre_affichage'] ?? $blocExistant['ordre_affichage'] ?? 1));
             $blocExistant['est_actif'] = (bool) ($miseAJour['est_actif'] ?? false);
+            $blocExistant = $this->fusionnerContenuPersonnalise($blocExistant, $miseAJour);
             $blocsMobiles[] = $blocExistant;
         }
 
@@ -101,10 +103,23 @@ final class ConstructeurPagesRepository
                 ->update([
                     'ordre_affichage' => $ordreCourant,
                     'est_actif' => (bool) ($blocMobile['est_actif'] ?? false),
+                    'titre_personnalise' => (string) ($blocMobile['titre_personnalise'] ?? ''),
+                    'contenu_personnalise' => (string) ($blocMobile['contenu_personnalise'] ?? ''),
                     'updated_at' => $instant,
                 ]);
 
             $ordreCourant++;
+        }
+
+        foreach ($blocsVerrouilles as $blocVerrouille) {
+            DB::table('constructeur_page_bloc')
+                ->where('code_page', 'accueil')
+                ->where('code_bloc', (string) $blocVerrouille['code_bloc'])
+                ->update([
+                    'titre_personnalise' => (string) ($blocVerrouille['titre_personnalise'] ?? ''),
+                    'contenu_personnalise' => (string) ($blocVerrouille['contenu_personnalise'] ?? ''),
+                    'updated_at' => $instant,
+                ]);
         }
     }
 
@@ -128,6 +143,8 @@ final class ConstructeurPagesRepository
                 'ordre_affichage' => 1,
                 'est_actif' => true,
                 'est_verrouille' => true,
+                'titre_personnalise' => '',
+                'contenu_personnalise' => '',
                 'created_at' => $instant,
                 'updated_at' => $instant,
             ],
@@ -139,6 +156,8 @@ final class ConstructeurPagesRepository
                 'ordre_affichage' => 2,
                 'est_actif' => true,
                 'est_verrouille' => true,
+                'titre_personnalise' => '',
+                'contenu_personnalise' => '',
                 'created_at' => $instant,
                 'updated_at' => $instant,
             ],
@@ -150,6 +169,8 @@ final class ConstructeurPagesRepository
                 'ordre_affichage' => 3,
                 'est_actif' => true,
                 'est_verrouille' => false,
+                'titre_personnalise' => 'Présentation',
+                'contenu_personnalise' => "Bienvenue chez Les Cavaliers d'Hérouville, un club d'échecs pas comme les autres ! Notre mission ? Faire découvrir et partager la passion du jeu d'échecs à tous. Des 5 ans jusqu'à 105 ans. Débutants curieux ou pros de la stratégie. Convivialité, apprentissage, progression... le tout dans la bonne humeur ! Que vous vouliez apprendre, progresser ou simplement jouer pour le plaisir... Venez faire travailler vos neurones dans une ambiance chaleureuse et stimulante ! Rejoignez-nous et faites partie d'une communauté passionnée !",
                 'created_at' => $instant,
                 'updated_at' => $instant,
             ],
@@ -161,6 +182,8 @@ final class ConstructeurPagesRepository
                 'ordre_affichage' => 4,
                 'est_actif' => true,
                 'est_verrouille' => false,
+                'titre_personnalise' => '',
+                'contenu_personnalise' => '',
                 'created_at' => $instant,
                 'updated_at' => $instant,
             ],
@@ -172,6 +195,8 @@ final class ConstructeurPagesRepository
                 'ordre_affichage' => 5,
                 'est_actif' => true,
                 'est_verrouille' => false,
+                'titre_personnalise' => '',
+                'contenu_personnalise' => '',
                 'created_at' => $instant,
                 'updated_at' => $instant,
             ],
@@ -183,6 +208,8 @@ final class ConstructeurPagesRepository
                 'ordre_affichage' => 6,
                 'est_actif' => true,
                 'est_verrouille' => false,
+                'titre_personnalise' => '',
+                'contenu_personnalise' => '',
                 'created_at' => $instant,
                 'updated_at' => $instant,
             ],
@@ -203,6 +230,26 @@ final class ConstructeurPagesRepository
             'ordre_affichage' => (int) ($bloc['ordre_affichage'] ?? 0),
             'est_actif' => (bool) ($bloc['est_actif'] ?? false),
             'est_verrouille' => (bool) ($bloc['est_verrouille'] ?? false),
+            'titre_personnalise' => (string) ($bloc['titre_personnalise'] ?? ''),
+            'contenu_personnalise' => (string) ($bloc['contenu_personnalise'] ?? ''),
         ];
+    }
+
+    /**
+     * @param array<string, mixed> $bloc
+     * @param array<string, mixed> $miseAJour
+     * @return array<string, mixed>
+     */
+    private function fusionnerContenuPersonnalise(array $bloc, array $miseAJour): array
+    {
+        if (array_key_exists('titre_personnalise', $miseAJour)) {
+            $bloc['titre_personnalise'] = trim((string) $miseAJour['titre_personnalise']);
+        }
+
+        if (array_key_exists('contenu_personnalise', $miseAJour)) {
+            $bloc['contenu_personnalise'] = trim((string) $miseAJour['contenu_personnalise']);
+        }
+
+        return $bloc;
     }
 }

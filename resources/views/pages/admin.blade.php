@@ -307,6 +307,28 @@ while (count($lignesHorairesAdmin) < 10) {
                                 <small class="form-helper">Décoche cette case pour masquer temporairement ce bloc.</small>
                             <?php endif; ?>
                         </label>
+
+                        <?php if ($codeBlocConstructeur === 'mot_du_club'): ?>
+                            <label class="form-group">
+                                <span>Titre du bloc</span>
+                                <input
+                                    type="text"
+                                    name="titre_bloc[<?= e($codeBlocConstructeur) ?>]"
+                                    value="<?= e((string) ($blocConstructeur['titre_personnalise'] ?? 'Présentation')) ?>"
+                                    maxlength="160"
+                                >
+                                <small class="form-helper">Ce titre s'affiche sur la carte de présentation de l'accueil.</small>
+                            </label>
+
+                            <label class="form-group">
+                                <span>Texte du bloc</span>
+                                <textarea
+                                    name="contenu_bloc[<?= e($codeBlocConstructeur) ?>]"
+                                    rows="8"
+                                ><?= e((string) ($blocConstructeur['contenu_personnalise'] ?? '')) ?></textarea>
+                                <small class="form-helper">Tu peux modifier ici le texte de présentation visible publiquement sur l'accueil.</small>
+                            </label>
+                        <?php endif; ?>
                     </div>
                 </article>
             <?php endforeach; ?>

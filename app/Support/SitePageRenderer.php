@@ -277,9 +277,18 @@ final class SitePageRenderer
                 (string) ($dammierPuzzle['dammier_week_key'] ?? ''),
                 (string) ($dammierPuzzle['dammier_id'] ?? '')
             );
+            $dammierScoreUtilisateur = $currentUser !== null
+                ? $this->dammierRepository->trouverScoreUtilisateurPourPuzzleHebdomadaire(
+                    (string) ($currentUser['identifiant'] ?? ''),
+                    (string) ($dammierPuzzle['dammier_week_key'] ?? ''),
+                    (string) ($dammierPuzzle['dammier_id'] ?? '')
+                )
+                : null;
             $siteData['dammier_puzzle'] = $dammierPuzzle;
             $siteData['dammier_classement'] = $dammierClassement;
             $siteData['dammier_peut_voir_classement'] = (bool) ($authData['est_connecte'] ?? false);
+            $siteData['dammier_deja_joue'] = $dammierScoreUtilisateur !== null;
+            $siteData['dammier_score_utilisateur'] = $dammierScoreUtilisateur;
 
             return $siteData;
         } catch (Throwable $exception) {
@@ -353,6 +362,8 @@ final class SitePageRenderer
         $siteData['dammier_puzzle'] = $this->puzzleDeSecoursHorsBase();
         $siteData['dammier_classement'] = [];
         $siteData['dammier_peut_voir_classement'] = (bool) ($authData['est_connecte'] ?? false);
+        $siteData['dammier_deja_joue'] = false;
+        $siteData['dammier_score_utilisateur'] = null;
         $siteData['constructeur_accueil_blocs'] = $this->constructeurPagesRepository->listerPourPage('accueil');
         $siteData['constructeur_accueil_blocs_actifs'] = $this->constructeurPagesRepository->listerActifsPourPage('accueil');
 

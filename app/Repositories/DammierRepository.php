@@ -60,6 +60,25 @@ final class DammierRepository
         return array_map(fn (object $row): array => $this->normaliserScore((array) $row), $rows);
     }
 
+    public function trouverScoreUtilisateurPourPuzzleHebdomadaire(string $identifiantUtilisateur, string $weekKey, string $puzzleId): ?array
+    {
+        if ($identifiantUtilisateur === '' || ! Schema::hasTable('dammier_score')) {
+            return null;
+        }
+
+        $score = $this->requeteScores()
+            ->where('dammier_week_key', $weekKey)
+            ->where('dammier_puzzle_id', $puzzleId)
+            ->where('dammier_user_id', $identifiantUtilisateur)
+            ->first();
+
+        if ($score === null) {
+            return null;
+        }
+
+        return $this->normaliserScore((array) $score);
+    }
+
     public function enregistrerScoreHebdomadaire(array $utilisateur, array $puzzle, int $movesCount, int $elapsedSeconds): array
     {
         $identifiantUtilisateur = (string) ($utilisateur['identifiant'] ?? '');
@@ -83,38 +102,16 @@ final class DammierRepository
             ];
         }
 
-        $existing = DB::table('dammier_score')
-            ->where('dammier_week_key', $weekKey)
-            ->where('dammier_puzzle_id', $puzzleId)
-            ->where('dammier_user_id', $identifiantUtilisateur)
-            ->first();
+        $scoreExistant = $this->trouverScoreUtilisateurPourPuzzleHebdomadaire(
+            $identifiantUtilisateur,
+            $weekKey,
+            $puzzleId
+        );
 
-        if ($existing !== null) {
-            $score = $this->normaliserScore((array) $existing);
-            $estMeilleur = $movesCount < $score['dammier_moves_count']
-                || ($movesCount === $score['dammier_moves_count'] && $elapsedSeconds < $score['dammier_elapsed_seconds']);
+        if ($scoreExistant !== null) {
+            $scoreExistant['dammier_record_status'] = 'already_played';
 
-            if (!$estMeilleur) {
-                $score['dammier_record_status'] = 'unchanged';
-
-                return $score;
-            }
-
-            DB::table('dammier_score')
-                ->where('dammier_score_id', $score['dammier_score_id'])
-                ->update([
-                    'dammier_moves_count' => $movesCount,
-                    'dammier_elapsed_seconds' => $elapsedSeconds,
-                    'dammier_solved_at' => date('Y-m-d H:i:s'),
-                ]);
-
-            foreach ($this->listerClassementHebdomadaire($weekKey, $puzzleId) as $row) {
-                if ($row['dammier_user_id'] === $identifiantUtilisateur) {
-                    $row['dammier_record_status'] = 'improved';
-
-                    return $row;
-                }
-            }
+            return $scoreExistant;
         }
 
         $scoreId = 'dammier_score_' . bin2hex(random_bytes(8));

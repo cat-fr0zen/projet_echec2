@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Repositories\DammierRepository;
+use App\Repositories\UserRepository;
 use Database\Seeders\DatabaseSeeder;
 use DateTimeImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -79,5 +80,68 @@ final class DammierHebdomadaireTest extends TestCase
         self::assertSame($puzzleSemaine['dammier_id'], $puzzleMemeSemaine['dammier_id']);
         self::assertNotSame($puzzleSemaine['dammier_week_key'], $puzzleSemaineSuivante['dammier_week_key']);
         self::assertNotSame($puzzleSemaine['dammier_id'], $puzzleSemaineSuivante['dammier_id']);
+    }
+
+    public function test_un_membre_ne_peut_pas_enregistrer_deux_fois_le_meme_casse_tete_hebdomadaire(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $depot = new DammierRepository();
+        $puzzle = $depot->obtenirPuzzleHebdomadaire();
+        $membre = (new UserRepository())->creer([
+            'nom' => 'Unique',
+            'prenom' => 'Joueur',
+            'date_naissance' => '2000-01-02',
+            'courriel' => 'dammier-unique@example.test',
+            'numero_licence' => 'FFE-UNIQUE-001',
+            'mot_de_passe' => 'motdepasse-solide',
+            'description_profil' => 'Compte de test',
+            'pseudo_chess' => '',
+            'pseudo_lichess' => '',
+        ]);
+
+        $premierScore = $depot->enregistrerScoreHebdomadaire($membre, $puzzle, 4, 30);
+        $secondScore = $depot->enregistrerScoreHebdomadaire($membre, $puzzle, 2, 10);
+
+        self::assertSame('created', $premierScore['dammier_record_status']);
+        self::assertSame('already_played', $secondScore['dammier_record_status']);
+        self::assertSame(4, $secondScore['dammier_moves_count']);
+        self::assertSame(30, $secondScore['dammier_elapsed_seconds']);
+        self::assertSame(
+            1,
+            (int) DB::table('dammier_score')
+                ->where('dammier_week_key', (string) ($puzzle['dammier_week_key'] ?? ''))
+                ->where('dammier_puzzle_id', (string) ($puzzle['dammier_id'] ?? ''))
+                ->where('dammier_user_id', (string) ($membre['identifiant'] ?? ''))
+                ->count()
+        );
+    }
+
+    public function test_l_accueil_signale_qu_un_casse_tete_a_deja_ete_joue_par_le_membre_connecte(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $depot = new DammierRepository();
+        $puzzle = $depot->obtenirPuzzleHebdomadaire();
+        $membre = (new UserRepository())->creer([
+            'nom' => 'Signal',
+            'prenom' => 'Joueur',
+            'date_naissance' => '2000-01-02',
+            'courriel' => 'dammier-signal@example.test',
+            'numero_licence' => 'FFE-SIGNAL-001',
+            'mot_de_passe' => 'motdepasse-solide',
+            'description_profil' => 'Compte de test',
+            'pseudo_chess' => '',
+            'pseudo_lichess' => '',
+        ]);
+
+        $depot->enregistrerScoreHebdomadaire($membre, $puzzle, 5, 42);
+
+        $reponse = $this->withSession([
+            'identifiant_utilisateur' => (string) $membre['identifiant'],
+        ])->get('/');
+
+        $reponse->assertOk();
+        $reponse->assertSee('"dammier_already_played":true', false);
     }
 }

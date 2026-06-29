@@ -936,6 +936,7 @@ function initDammierPuzzle() {
 
         const formData = new FormData();
         formData.append("action", "soumettre_resultat_dammier");
+        formData.append("_token", csrfToken);
         formData.append("jeton_csrf", csrfToken);
         formData.append("dammier_puzzle_id", String(puzzle.dammier_id || ""));
         formData.append("dammier_week_key", String(puzzle.dammier_week_key || ""));
@@ -946,11 +947,38 @@ function initDammierPuzzle() {
             method: "POST",
             headers: {
                 Accept: "application/json",
+                "X-CSRF-TOKEN": csrfToken,
                 "X-Requested-With": "XMLHttpRequest",
             },
             body: formData,
         })
-            .then((response) => response.json())
+            .then(async (response) => {
+                let result = null;
+
+                try {
+                    result = await response.json();
+                } catch (error) {
+                    result = null;
+                }
+
+                if (response.status === 419) {
+                    return {
+                        success: false,
+                        message: "Ta session a expiré. Recharge la page puis reconnecte-toi si besoin.",
+                    };
+                }
+
+                if (result && typeof result === "object") {
+                    return result;
+                }
+
+                return {
+                    success: false,
+                    message: response.ok
+                        ? "Le score n'a pas pu être confirmé."
+                        : "Le score n'a pas pu être envoyé.",
+                };
+            })
             .then((result) => {
                 if (!result?.success) {
                     setFeedback(result?.message || "Score non enregistré.", "error");
