@@ -14,6 +14,7 @@ use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
+use App\Repositories\EvenementRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
@@ -79,7 +80,8 @@ final class SiteActionHandler
         private ?BoutiqueCartService $boutiqueCartService = null,
         private ?BoutiqueProduitRepository $depotProduitsBoutique = null,
         private ?ParametreSiteRepository $depotParametresSite = null,
-        private ?BureauMembreRepository $depotMembresBureau = null
+        private ?BureauMembreRepository $depotMembresBureau = null,
+        private ?EvenementRepository $depotEvenements = null
     ) {
         $this->adhesionRenewalService ??= new AdhesionRenewalService($this->depotUtilisateurs);
         $this->rateLimiter ??= new SensitiveActionRateLimiter;
@@ -87,6 +89,7 @@ final class SiteActionHandler
         $this->depotProduitsBoutique ??= new BoutiqueProduitRepository;
         $this->depotParametresSite ??= new ParametreSiteRepository;
         $this->depotMembresBureau ??= new BureauMembreRepository;
+        $this->depotEvenements ??= new EvenementRepository($this->depotParametresSite);
     }
 
     /**
@@ -244,6 +247,14 @@ final class SiteActionHandler
             case 'notifier_objet_boutique':
             case 'notify_shop_item':
                 $this->traiterNotificationObjetBoutique();
+                break;
+            case 'ajouter_evenement_special':
+            case 'create_special_event':
+                $this->traiterAjoutEvenementSpecial();
+                break;
+            case 'supprimer_evenement_special':
+            case 'delete_special_event':
+                $this->traiterSuppressionEvenementSpecial();
                 break;
             case 'inscription_newsletter':
             case 'newsletter_subscribe':
@@ -435,9 +446,12 @@ final class SiteActionHandler
         $actifs = is_array($_POST['bloc_actif'] ?? null) ? $_POST['bloc_actif'] : [];
         $titres = is_array($_POST['titre_bloc'] ?? null) ? $_POST['titre_bloc'] : [];
         $contenus = is_array($_POST['contenu_bloc'] ?? null) ? $_POST['contenu_bloc'] : [];
+        $libellesLiensUtiles = is_array($_POST['accueil_lien_utile_libelle'] ?? null) ? $_POST['accueil_lien_utile_libelle'] : [];
+        $urlsLiensUtiles = is_array($_POST['accueil_lien_utile_url'] ?? null) ? $_POST['accueil_lien_utile_url'] : [];
         $donnees = [];
         $codesBlocs = array_unique(array_merge(
             array_map(static fn (mixed $cle): string => trim((string) $cle), array_keys($ordres)),
+            array_map(static fn (mixed $cle): string => trim((string) $cle), array_keys($actifs)),
             array_map(static fn (mixed $cle): string => trim((string) $cle), array_keys($titres)),
             array_map(static fn (mixed $cle): string => trim((string) $cle), array_keys($contenus))
         ));
@@ -457,7 +471,38 @@ final class SiteActionHandler
             ];
         }
 
+        $lienUtile1Libelle = trim((string) ($libellesLiensUtiles[1] ?? ParametreSiteRepository::ACCUEIL_LIEN_UTILE_1_LIBELLE_PAR_DEFAUT));
+        $lienUtile1Url = trim((string) ($urlsLiensUtiles[1] ?? ParametreSiteRepository::ACCUEIL_LIEN_UTILE_1_URL_PAR_DEFAUT));
+        $lienUtile2Libelle = trim((string) ($libellesLiensUtiles[2] ?? ParametreSiteRepository::ACCUEIL_LIEN_UTILE_2_LIBELLE_PAR_DEFAUT));
+        $lienUtile2Url = trim((string) ($urlsLiensUtiles[2] ?? ParametreSiteRepository::ACCUEIL_LIEN_UTILE_2_URL_PAR_DEFAUT));
+        $erreurs = [];
+
+        if ($lienUtile1Libelle === '' || $lienUtile2Libelle === '') {
+            $erreurs[] = 'Les libelles des liens utiles ne peuvent pas etre vides.';
+        }
+
+        foreach ([$lienUtile1Url, $lienUtile2Url] as $lienUtileAccueil) {
+            $urlValidee = filter_var($lienUtileAccueil, FILTER_VALIDATE_URL);
+
+            if ($urlValidee === false || ! in_array(parse_url($lienUtileAccueil, PHP_URL_SCHEME), ['http', 'https'], true)) {
+                $erreurs[] = 'Les liens utiles doivent utiliser une URL complete en http ou https.';
+                break;
+            }
+        }
+
+        if ($erreurs !== []) {
+            foreach ($erreurs as $erreur) {
+                ajouter_message_flash('error', $erreur);
+            }
+
+            rediriger_vers(url_route('admin').'#admin-constructeur');
+        }
+
         $this->depotConstructeurPages->mettreAJourBlocsAccueil($donnees);
+        $this->depotParametresSite?->mettreAJourTexte(ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_1_LIBELLE, $lienUtile1Libelle);
+        $this->depotParametresSite?->mettreAJourTexte(ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_1_URL, $lienUtile1Url);
+        $this->depotParametresSite?->mettreAJourTexte(ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_2_LIBELLE, $lienUtile2Libelle);
+        $this->depotParametresSite?->mettreAJourTexte(ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_2_URL, $lienUtile2Url);
         ajouter_message_flash('success', "Le constructeur de l'accueil a été mis à jour.");
         rediriger_vers(url_route('admin').'#admin-constructeur');
     }
@@ -1317,6 +1362,8 @@ final class SiteActionHandler
             rediriger_vers($pageRedirection);
         }
 
+        $this->newsletterMailer?->notifierNouvelObjetBoutique((string) ($produit['titre'] ?? $donneesProduit['donnees']['titre_produit'] ?? ''));
+
         ajouter_message_flash('success', 'Le produit boutique a ete ajoute.');
         rediriger_vers($pageRedirection);
     }
@@ -1568,6 +1615,68 @@ final class SiteActionHandler
         rediriger_vers(url_route('admin').'#admin-newsletter-boutique');
     }
 
+    private function traiterAjoutEvenementSpecial(): void
+    {
+        $this->exigerAdmin();
+
+        $titre = trim((string) ($_POST['evenement_titre'] ?? ''));
+        $date = trim((string) ($_POST['evenement_date'] ?? ''));
+        $lieu = trim((string) ($_POST['evenement_lieu'] ?? ''));
+        $description = trim((string) ($_POST['evenement_description'] ?? ''));
+        $erreurs = [];
+
+        if ($titre === '' || mb_strlen($titre) > 160) {
+            $erreurs[] = "Le titre de l'evenement est obligatoire et doit rester court.";
+        }
+
+        if ($date === '' || preg_match('/^\d{4}-\d{2}-\d{2}$/', $date) !== 1) {
+            $erreurs[] = "La date de l'evenement est obligatoire.";
+        }
+
+        if ($lieu !== '' && mb_strlen($lieu) > 160) {
+            $erreurs[] = "Le lieu de l'evenement doit rester inferieur a 160 caracteres.";
+        }
+
+        if ($description === '' || mb_strlen($description) > 1000) {
+            $erreurs[] = "La description de l'evenement est obligatoire et doit rester raisonnable.";
+        }
+
+        if ($erreurs !== []) {
+            foreach ($erreurs as $erreur) {
+                ajouter_message_flash('error', $erreur);
+            }
+
+            rediriger_vers(url_route('admin').'#admin-evenements');
+        }
+
+        $evenement = $this->depotEvenements?->ajouter([
+            'titre' => $titre,
+            'date' => $date,
+            'lieu' => $lieu,
+            'description' => $description,
+        ]) ?? [];
+
+        $this->notifierNouvelEvenement((string) ($evenement['titre'] ?? $titre), url_route('activites'));
+
+        ajouter_message_flash('success', 'Le nouvel evenement a ete ajoute et la newsletter a ete envoyee aux inscrits.');
+        rediriger_vers(url_route('admin').'#admin-evenements');
+    }
+
+    private function traiterSuppressionEvenementSpecial(): void
+    {
+        $this->exigerAdmin();
+
+        $identifiant = trim((string) ($_POST['identifiant_evenement'] ?? ''));
+
+        if ($identifiant === '' || ! ($this->depotEvenements?->supprimer($identifiant) ?? false)) {
+            ajouter_message_flash('error', "Impossible de supprimer cet evenement.");
+            rediriger_vers(url_route('admin').'#admin-evenements');
+        }
+
+        ajouter_message_flash('success', "L'evenement a ete supprime.");
+        rediriger_vers(url_route('admin').'#admin-evenements');
+    }
+
     /**
      * Recoit un score du mini-jeu dammier et renvoie le classement mis a jour.
      */
@@ -1663,6 +1772,19 @@ final class SiteActionHandler
             $this->newsletterMailer->notifierNouvelObjetBoutique($titreProduit);
         } catch (Throwable $exception) {
             error_log('[newsletter-boutique] '.$exception->getMessage());
+        }
+    }
+
+    private function notifierNouvelEvenement(string $titreEvenement, string $urlEvenement): void
+    {
+        if ($this->newsletterMailer === null) {
+            return;
+        }
+
+        try {
+            $this->newsletterMailer->notifierNouvelEvenement($titreEvenement, $urlEvenement);
+        } catch (Throwable $exception) {
+            error_log('[newsletter-evenement] '.$exception->getMessage());
         }
     }
 
@@ -2344,12 +2466,13 @@ final class SiteActionHandler
         $descriptionProduit = trim((string) ($_POST['description_produit_boutique'] ?? ''));
         $resumeProduit = trim((string) ($_POST['resume_produit_boutique'] ?? ''));
         $ordreAffichage = (int) ($_POST['ordre_affichage_produit_boutique'] ?? 1);
-        $prixProduit = filter_var($_POST['prix_produit_boutique'] ?? null, FILTER_VALIDATE_INT, [
-            'options' => [
-                'min_range' => 0,
-                'max_range' => 10000,
-            ],
-        ]);
+        $prixProduitBrut = trim((string) ($_POST['prix_produit_boutique'] ?? ''));
+        $prixProduitNormalise = str_replace([' ', ','], ['', '.'], $prixProduitBrut);
+        $prixProduit = null;
+
+        if ($prixProduitNormalise !== '' && preg_match('/^\d+(?:\.\d{1,2})?$/', $prixProduitNormalise) === 1) {
+            $prixProduit = (int) round(((float) $prixProduitNormalise) * 100);
+        }
         $avantages = preg_split('/\r\n|\r|\n/', (string) ($_POST['avantages_produit_boutique'] ?? '')) ?: [];
         $avantages = array_values(array_filter(array_map(
             static fn (string $avantage): string => trim($avantage),
@@ -2377,8 +2500,8 @@ final class SiteActionHandler
             $erreurs[] = 'Le mode de vente choisi est invalide.';
         }
 
-        if ($prixProduit === false) {
-            $erreurs[] = 'Le prix doit etre un nombre entier compris entre 0 et 10000 euros.';
+        if ($prixProduit === null || $prixProduit < 0 || $prixProduit > 1000000) {
+            $erreurs[] = 'Le prix doit etre un montant compris entre 0,00 et 10 000,00 euros.';
         }
 
         if (mb_strlen($badge) > 80) {
@@ -2407,7 +2530,7 @@ final class SiteActionHandler
                 'titre_produit' => $titreProduit,
                 'categorie_produit' => $categorieProduit,
                 'public_cible' => $publicCible,
-                'prix_euros' => (int) ($prixProduit === false ? 0 : $prixProduit),
+                'prix_euros' => max(0, (int) ($prixProduit ?? 0)),
                 'badge' => $badge,
                 'mode_vente' => $modeVente,
                 'texte_produit' => $descriptionProduit,

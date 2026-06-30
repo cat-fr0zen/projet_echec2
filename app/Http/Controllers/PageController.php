@@ -9,6 +9,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\BureauMembreRepository;
+use App\Repositories\EvenementRepository;
 use App\Repositories\NewsletterRepository;
 use App\Repositories\ParametreSiteRepository;
 use App\Services\ChessComService;
@@ -56,9 +57,48 @@ final class PageController extends Controller
             new BoutiqueCartService,
             new BoutiqueProduitRepository,
             new ParametreSiteRepository,
-            new BureauMembreRepository
+            new BureauMembreRepository,
+            new EvenementRepository(new ParametreSiteRepository)
         );
 
         return response($renderer->afficher($page ?? 'accueil'));
+    }
+
+    public function showArticle(Request $request, string $identifiant): Response|RedirectResponse
+    {
+        $jetonLegacyDesabonnement = trim((string) $request->query('newsletter_unsubscribe', ''));
+
+        if ($jetonLegacyDesabonnement !== '') {
+            return redirect()->route('newsletter.unsubscribe', ['jeton' => $jetonLegacyDesabonnement]);
+        }
+
+        $renderer = new SitePageRenderer(
+            new SiteContent(),
+            new \App\Repositories\UserRepository(),
+            new \App\Repositories\ArticleRepository(),
+            new \App\Repositories\CoursDocumentRepository(),
+            new \App\Repositories\MediaRepository(),
+            new \App\Repositories\OrderRepository(),
+            new \App\Repositories\DammierRepository(),
+            new \App\Repositories\ScheduleRepository(),
+            new \App\Repositories\ConstructeurPagesRepository(),
+            new NewsletterRepository(),
+            new \App\Repositories\TraficVisiteursRepository(),
+            new ChessComService(storage_path('app/cache/chesscom')),
+            new LichessService(storage_path('app/cache/lichess')),
+            new \App\Services\GoogleReviewsService(
+                storage_path('app/cache/google-avis'),
+                (string) env('GOOGLE_PLACES_API_KEY', '')
+            ),
+            recuperer_messages_flash(),
+            recuperer_etat_formulaire(),
+            new BoutiqueCartService,
+            new BoutiqueProduitRepository,
+            new ParametreSiteRepository,
+            new BureauMembreRepository,
+            new EvenementRepository(new ParametreSiteRepository)
+        );
+
+        return response($renderer->afficherArticle($identifiant));
     }
 }

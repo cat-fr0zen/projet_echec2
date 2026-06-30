@@ -19,6 +19,7 @@ final class NewsletterMailerService
     public const TYPE_ARTICLE = 'article';
     public const TYPE_COURS = 'cours';
     public const TYPE_BOUTIQUE = 'boutique';
+    public const TYPE_EVENEMENT = 'evenement';
     public const TYPE_CONFIRMATION = 'confirmation';
 
     public function __construct(
@@ -109,6 +110,18 @@ final class NewsletterMailerService
             $titre,
             $this->construireUrl('/boutique'),
             "Un nouvel objet ou une nouvelle information boutique vient d'etre publiee.\n\n{$titre}\n\n"
+        );
+    }
+
+    public function notifierNouvelEvenement(string $titreEvenement, string $urlEvenement = '/activites'): void
+    {
+        $titre = trim($titreEvenement) !== '' ? trim($titreEvenement) : 'Nouvel evenement';
+        $this->notifierTous(
+            self::TYPE_EVENEMENT,
+            'Nouvel evenement special du club',
+            $titre,
+            $this->construireUrl($urlEvenement),
+            "Un nouvel evenement special vient d'etre ajoute par le club.\n\n{$titre}\n\n"
         );
     }
 

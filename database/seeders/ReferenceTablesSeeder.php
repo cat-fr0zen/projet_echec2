@@ -64,6 +64,7 @@ final class ReferenceTablesSeeder extends Seeder
             ['code_type_evenement' => 'article', 'libelle_type_evenement' => 'Article'],
             ['code_type_evenement' => 'cours', 'libelle_type_evenement' => 'Cours'],
             ['code_type_evenement' => 'boutique', 'libelle_type_evenement' => 'Boutique'],
+            ['code_type_evenement' => 'evenement', 'libelle_type_evenement' => 'Evenement'],
             ['code_type_evenement' => 'confirmation', 'libelle_type_evenement' => 'Confirmation'],
         ]);
 

@@ -1586,6 +1586,580 @@ function initAdminTabs() {
     activateTab(resolveTabFromHash(), false);
 }
 
+function initCourseSearch() {
+    const searchRoots = Array.from(document.querySelectorAll("[data-course-search]"));
+
+    searchRoots.forEach((searchRoot) => {
+        if (!(searchRoot instanceof HTMLElement)) {
+            return;
+        }
+
+        const rubriqueRoot = searchRoot.closest(".course-rubrique");
+        const input = searchRoot.querySelector("[data-course-search-input]");
+        const resetButton = searchRoot.querySelector("[data-course-search-reset]");
+        const statusNode = searchRoot.querySelector("[data-course-search-status]");
+        const emptyState = rubriqueRoot?.querySelector("[data-course-search-empty]");
+        const groups = Array.from(rubriqueRoot?.querySelectorAll("[data-course-search-group]") || []);
+        const items = Array.from(rubriqueRoot?.querySelectorAll("[data-course-search-item]") || []);
+
+        if (!(rubriqueRoot instanceof HTMLElement) || !(input instanceof HTMLInputElement) || items.length === 0) {
+            return;
+        }
+
+        const defaultStatus = `${items.length} document${items.length > 1 ? "s" : ""} disponible${items.length > 1 ? "s" : ""}.`;
+        const emptyMessage = searchRoot.getAttribute("data-course-search-empty-message") || "Aucun document ne correspond a cette recherche.";
+
+        function normalizeText(value) {
+            return String(value || "")
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .toLowerCase()
+                .trim();
+        }
+
+        function setStatus(message) {
+            if (statusNode instanceof HTMLElement) {
+                statusNode.textContent = message;
+            }
+        }
+
+        function updateSearch() {
+            const query = normalizeText(input.value);
+            let visibleCount = 0;
+
+            groups.forEach((group) => {
+                if (!(group instanceof HTMLElement)) {
+                    return;
+                }
+
+                const groupText = normalizeText(group.getAttribute("data-course-search-text"));
+                const subgroups = Array.from(group.querySelectorAll("[data-course-search-subgroup]"));
+                const groupMatches = query !== "" && groupText.includes(query);
+
+                subgroups.forEach((subgroup) => {
+                    if (!(subgroup instanceof HTMLElement)) {
+                        return;
+                    }
+
+                    const subgroupText = normalizeText(subgroup.getAttribute("data-course-search-text"));
+                    const subgroupMatches = query !== "" && subgroupText.includes(query);
+                    const subgroupItems = Array.from(subgroup.querySelectorAll("[data-course-search-item]"));
+
+                    subgroupItems.forEach((item) => {
+                        if (!(item instanceof HTMLElement)) {
+                            return;
+                        }
+
+                        const itemText = normalizeText(item.getAttribute("data-course-search-text"));
+                        const matches = query === "" || groupMatches || subgroupMatches || itemText.includes(query);
+
+                        item.hidden = !matches;
+
+                        if (matches) {
+                            visibleCount += 1;
+                        }
+                    });
+                });
+
+                subgroups.forEach((subgroup) => {
+                    if (!(subgroup instanceof HTMLElement)) {
+                        return;
+                    }
+
+                    const subgroupVisibleItems = Array.from(subgroup.querySelectorAll("[data-course-search-item]")).filter((item) => item instanceof HTMLElement && !item.hidden);
+                    const subgroupText = normalizeText(subgroup.getAttribute("data-course-search-text"));
+                    const subgroupMatches = query !== "" && subgroupText.includes(query);
+                    subgroup.hidden = subgroupVisibleItems.length === 0 && !subgroupMatches;
+                });
+
+                const hasVisibleSubgroup = subgroups.some((subgroup) => subgroup instanceof HTMLElement && !subgroup.hidden);
+                const visibleItems = Array.from(group.querySelectorAll("[data-course-search-item]")).filter((item) => item instanceof HTMLElement && !item.hidden);
+                group.hidden = visibleItems.length === 0 && !hasVisibleSubgroup && !groupMatches;
+            });
+
+            if (resetButton instanceof HTMLButtonElement) {
+                resetButton.hidden = query === "";
+            }
+
+            if (emptyState instanceof HTMLElement) {
+                emptyState.hidden = visibleCount !== 0;
+            }
+
+            if (query === "") {
+                setStatus(defaultStatus);
+                return;
+            }
+
+            if (visibleCount === 0) {
+                setStatus(emptyMessage);
+                return;
+            }
+
+            setStatus(`${visibleCount} resultat${visibleCount > 1 ? "s" : ""} pour "${input.value.trim()}".`);
+        }
+
+        input.addEventListener("input", updateSearch);
+
+        if (resetButton instanceof HTMLButtonElement) {
+            resetButton.addEventListener("click", () => {
+                input.value = "";
+                updateSearch();
+                focusElementWithoutScroll(input);
+            });
+        }
+
+        setStatus(defaultStatus);
+    });
+}
+
+function initArticleSearch() {
+    const searchRoot = document.querySelector("[data-article-search]");
+
+    if (!(searchRoot instanceof HTMLElement)) {
+        return;
+    }
+
+    const input = searchRoot.querySelector("[data-article-search-input]");
+    const resetButton = searchRoot.querySelector("[data-article-search-reset]");
+    const statusNode = searchRoot.querySelector("[data-article-search-status]");
+    const listRoot = document.querySelector("[data-article-search-list]");
+    const emptyState = document.querySelector("[data-article-search-empty]");
+    const items = Array.from(document.querySelectorAll("[data-article-search-item]"));
+
+    if (!(input instanceof HTMLInputElement) || !(listRoot instanceof HTMLElement) || items.length === 0) {
+        return;
+    }
+
+    const normalize = (value) => value.toLocaleLowerCase("fr-FR").trim();
+
+    const update = () => {
+        const query = normalize(input.value);
+        let visibleCount = 0;
+
+        items.forEach((item) => {
+            if (!(item instanceof HTMLElement)) {
+                return;
+            }
+
+            const haystack = normalize(item.getAttribute("data-article-search-text") || "");
+            const shouldShow = query === "" || haystack.includes(query);
+            item.hidden = !shouldShow;
+
+            if (shouldShow) {
+                visibleCount += 1;
+            }
+        });
+
+        if (emptyState instanceof HTMLElement) {
+            emptyState.hidden = visibleCount !== 0;
+        }
+
+        if (statusNode instanceof HTMLElement) {
+            statusNode.textContent = query === ""
+                ? `${visibleCount} article${visibleCount > 1 ? "s" : ""} visible${visibleCount > 1 ? "s" : ""}.`
+                : `${visibleCount} résultat${visibleCount > 1 ? "s" : ""} pour "${input.value.trim()}".`;
+        }
+    };
+
+    input.addEventListener("input", update);
+
+    if (resetButton instanceof HTMLButtonElement) {
+        resetButton.addEventListener("click", () => {
+            input.value = "";
+            update();
+            input.focus();
+        });
+    }
+
+    update();
+}
+
+
+function initScrollJumpButton() {
+    const button = document.querySelector("[data-scroll-jump]");
+    const icon = button?.querySelector("[data-scroll-jump-icon]");
+    const label = button?.querySelector("[data-scroll-jump-label]");
+    const mobileQuery = window.matchMedia("(max-width: 640px)");
+
+    if (!(button instanceof HTMLButtonElement)) {
+        return;
+    }
+
+    function updateButtonState() {
+        const scrollingElement = document.scrollingElement || document.documentElement;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+        const maxScroll = Math.max(scrollingElement.scrollHeight - viewportHeight, 0);
+        const currentScroll = window.scrollY || scrollingElement.scrollTop || 0;
+        const canScroll = maxScroll > viewportHeight * 0.4;
+
+        if (!mobileQuery.matches || !canScroll) {
+            button.hidden = true;
+            button.classList.remove("is-visible");
+            return;
+        }
+
+        const shouldGoTop = currentScroll > maxScroll * 0.55;
+        const nextLabel = shouldGoTop ? "Haut" : "Bas";
+        const nextIcon = shouldGoTop ? "↑" : "↓";
+        const nextAriaLabel = shouldGoTop ? "Aller en haut de la page" : "Aller en bas de la page";
+
+        button.hidden = false;
+        button.classList.add("is-visible");
+        button.setAttribute("aria-label", nextAriaLabel);
+        button.setAttribute("title", nextAriaLabel);
+        button.dataset.scrollDirection = shouldGoTop ? "top" : "bottom";
+
+        if (icon instanceof HTMLElement) {
+            icon.textContent = nextIcon;
+        }
+
+        if (label instanceof HTMLElement) {
+            label.textContent = nextLabel;
+        }
+    }
+
+    button.addEventListener("click", () => {
+        const direction = button.dataset.scrollDirection === "top" ? "top" : "bottom";
+        const scrollingElement = document.scrollingElement || document.documentElement;
+        const targetTop = direction === "top" ? 0 : scrollingElement.scrollHeight;
+
+        window.scrollTo({
+            top: targetTop,
+            behavior: "smooth",
+        });
+    });
+
+    window.addEventListener("scroll", updateButtonState, { passive: true });
+    window.addEventListener("resize", updateButtonState);
+
+    if (typeof mobileQuery.addEventListener === "function") {
+        mobileQuery.addEventListener("change", updateButtonState);
+    } else if (typeof mobileQuery.addListener === "function") {
+        mobileQuery.addListener(updateButtonState);
+    }
+
+    updateButtonState();
+}
+
+function initAccessibilityTools() {
+    const openButtons = Array.from(document.querySelectorAll("[data-accessibility-open]"));
+    const panelRoot = document.querySelector("[data-accessibility-panel]");
+    const closeButton = panelRoot?.querySelector("[data-accessibility-close]");
+    const presetButton = panelRoot?.querySelector("[data-accessibility-preset]");
+    const resetButton = panelRoot?.querySelector("[data-accessibility-reset]");
+    const readButton = panelRoot?.querySelector("[data-accessibility-read]");
+    const stopReadButton = panelRoot?.querySelector("[data-accessibility-stop-read]");
+    const fontDecreaseButton = panelRoot?.querySelector("[data-accessibility-font-decrease]");
+    const fontIncreaseButton = panelRoot?.querySelector("[data-accessibility-font-increase]");
+    const fontValue = panelRoot?.querySelector("[data-accessibility-font-value]");
+    const statusNode = panelRoot?.querySelector("[data-accessibility-status]");
+    const readableFontToggle = panelRoot?.querySelector("[data-accessibility-readable-font]");
+    const spacingToggle = panelRoot?.querySelector("[data-accessibility-spacing]");
+    const contrastToggle = panelRoot?.querySelector("[data-accessibility-contrast]");
+    const visibleActionsToggle = panelRoot?.querySelector("[data-accessibility-visible-actions]");
+    const reducedMotionToggle = panelRoot?.querySelector("[data-accessibility-reduced-motion]");
+    const storageKey = "site_accessibility_preferences";
+    let previousFocusedElement = null;
+
+    if (openButtons.length === 0 || !(panelRoot instanceof HTMLElement)) {
+        return;
+    }
+
+    const defaultPreferences = {
+        fontScale: 1,
+        readableFont: false,
+        spacing: false,
+        contrast: false,
+        visibleActions: false,
+        reducedMotion: false,
+    };
+
+    function setStatus(message) {
+        if (statusNode instanceof HTMLElement) {
+            statusNode.textContent = message;
+        }
+    }
+
+    function loadPreferences() {
+        try {
+            const serialized = window.localStorage.getItem(storageKey);
+
+            if (!serialized) {
+                return { ...defaultPreferences };
+            }
+
+            return { ...defaultPreferences, ...JSON.parse(serialized) };
+        } catch (error) {
+            return { ...defaultPreferences };
+        }
+    }
+
+    let preferences = loadPreferences();
+
+    function savePreferences() {
+        window.localStorage.setItem(storageKey, JSON.stringify(preferences));
+    }
+
+    function syncControls() {
+        if (fontValue instanceof HTMLElement) {
+            fontValue.textContent = `${Math.round(preferences.fontScale * 100)} %`;
+        }
+
+        if (readableFontToggle instanceof HTMLInputElement) {
+            readableFontToggle.checked = preferences.readableFont;
+        }
+
+        if (spacingToggle instanceof HTMLInputElement) {
+            spacingToggle.checked = preferences.spacing;
+        }
+
+        if (contrastToggle instanceof HTMLInputElement) {
+            contrastToggle.checked = preferences.contrast;
+        }
+
+        if (visibleActionsToggle instanceof HTMLInputElement) {
+            visibleActionsToggle.checked = preferences.visibleActions;
+        }
+
+        if (reducedMotionToggle instanceof HTMLInputElement) {
+            reducedMotionToggle.checked = preferences.reducedMotion;
+        }
+    }
+
+    function applyPreferences(announceMessage = "") {
+        document.documentElement.style.setProperty("--reading-font-scale", String(preferences.fontScale));
+        document.body.setAttribute("data-readable-font", preferences.readableFont ? "true" : "false");
+        document.body.setAttribute("data-readable-spacing", preferences.spacing ? "true" : "false");
+        document.body.setAttribute("data-high-contrast", preferences.contrast ? "true" : "false");
+        document.body.setAttribute("data-visible-actions", preferences.visibleActions ? "true" : "false");
+        document.body.setAttribute("data-reduced-motion", preferences.reducedMotion ? "true" : "false");
+        syncControls();
+
+        if (announceMessage) {
+            setStatus(announceMessage);
+        }
+    }
+
+    function openPanel() {
+        previousFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        panelRoot.hidden = false;
+        panelRoot.setAttribute("aria-hidden", "false");
+        openButtons.forEach((button) => {
+            if (button instanceof HTMLButtonElement) {
+                button.setAttribute("aria-expanded", "true");
+            }
+        });
+        document.body.classList.add("modal-open");
+        const focusTarget = panelRoot.querySelector(".accessibility-panel__close");
+        focusElementWithoutScroll(focusTarget instanceof HTMLElement ? focusTarget : panelRoot);
+    }
+
+    function closePanel() {
+        panelRoot.hidden = true;
+        panelRoot.setAttribute("aria-hidden", "true");
+        openButtons.forEach((button) => {
+            if (button instanceof HTMLButtonElement) {
+                button.setAttribute("aria-expanded", "false");
+            }
+        });
+        document.body.classList.remove("modal-open");
+
+        if (previousFocusedElement instanceof HTMLElement) {
+            focusElementWithoutScroll(previousFocusedElement);
+        }
+    }
+
+    function clampFontScale(value) {
+        return Math.min(1.4, Math.max(0.9, Math.round(value * 100) / 100));
+    }
+
+    function updatePreference(key, value, statusMessage) {
+        preferences = { ...preferences, [key]: value };
+        savePreferences();
+        applyPreferences(statusMessage);
+    }
+
+    openButtons.forEach((button) => {
+        if (!(button instanceof HTMLButtonElement)) {
+            return;
+        }
+
+        button.addEventListener("click", openPanel);
+    });
+
+    if (closeButton instanceof HTMLButtonElement) {
+        closeButton.addEventListener("click", closePanel);
+    }
+
+    if (presetButton instanceof HTMLButtonElement) {
+        presetButton.addEventListener("click", () => {
+            preferences = {
+                ...preferences,
+                fontScale: 1.18,
+                readableFont: true,
+                spacing: true,
+                contrast: true,
+                visibleActions: true,
+                reducedMotion: true,
+            };
+            savePreferences();
+            applyPreferences("Le mode lecture confortable est active.");
+        });
+    }
+
+    if (resetButton instanceof HTMLButtonElement) {
+        resetButton.addEventListener("click", () => {
+            preferences = { ...defaultPreferences };
+            savePreferences();
+            if ("speechSynthesis" in window) {
+                window.speechSynthesis.cancel();
+            }
+            applyPreferences("Les reglages d'accessibilite ont ete reinitialises.");
+        });
+    }
+
+    if (fontDecreaseButton instanceof HTMLButtonElement) {
+        fontDecreaseButton.addEventListener("click", () => {
+            updatePreference("fontScale", clampFontScale(preferences.fontScale - 0.05), "La taille du texte a ete reduite.");
+        });
+    }
+
+    if (fontIncreaseButton instanceof HTMLButtonElement) {
+        fontIncreaseButton.addEventListener("click", () => {
+            updatePreference("fontScale", clampFontScale(preferences.fontScale + 0.05), "La taille du texte a ete augmentee.");
+        });
+    }
+
+    [
+        [readableFontToggle, "readableFont", "Police plus lisible mise a jour."],
+        [spacingToggle, "spacing", "Espacement du texte mis a jour."],
+        [contrastToggle, "contrast", "Contraste renforce mis a jour."],
+        [visibleActionsToggle, "visibleActions", "Visibilite des actions mise a jour."],
+        [reducedMotionToggle, "reducedMotion", "Reduction des animations mise a jour."],
+    ].forEach(([input, key, message]) => {
+        if (!(input instanceof HTMLInputElement)) {
+            return;
+        }
+
+        input.addEventListener("change", () => {
+            updatePreference(key, input.checked, message);
+        });
+    });
+
+    if (readButton instanceof HTMLButtonElement) {
+        readButton.addEventListener("click", () => {
+            if (!("speechSynthesis" in window) || typeof window.SpeechSynthesisUtterance !== "function") {
+                setStatus("La synthese vocale n'est pas disponible sur cet appareil.");
+                return;
+            }
+
+            const pageTitle = document.querySelector("main h1");
+            const mainContent = document.querySelector("main");
+            const text = [
+                pageTitle instanceof HTMLElement ? pageTitle.textContent : "",
+                mainContent instanceof HTMLElement ? mainContent.innerText : "",
+            ]
+                .filter(Boolean)
+                .join(". ")
+                .replace(/\s+/g, " ")
+                .trim();
+
+            if (text === "") {
+                setStatus("Aucun contenu lisible n'a ete trouve sur cette page.");
+                return;
+            }
+
+            window.speechSynthesis.cancel();
+            const utterance = new window.SpeechSynthesisUtterance(text);
+            utterance.lang = "fr-FR";
+            utterance.rate = 0.95;
+            utterance.onstart = () => setStatus("Lecture vocale demarree.");
+            utterance.onend = () => setStatus("Lecture vocale terminee.");
+            utterance.onerror = () => setStatus("La lecture vocale a rencontre un probleme.");
+            window.speechSynthesis.speak(utterance);
+        });
+    }
+
+    if (stopReadButton instanceof HTMLButtonElement) {
+        stopReadButton.addEventListener("click", () => {
+            if ("speechSynthesis" in window) {
+                window.speechSynthesis.cancel();
+                setStatus("Lecture vocale arretee.");
+            }
+        });
+    }
+
+    panelRoot.addEventListener("click", (event) => {
+        if (event.target === panelRoot) {
+            closePanel();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (panelRoot.hidden) {
+            return;
+        }
+
+        trapFocus(event, panelRoot);
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+            closePanel();
+        }
+    });
+
+    applyPreferences();
+    setStatus("Choisis les reglages les plus confortables pour ta lecture.");
+}
+
+function initShopSidebarDrawer() {
+    const toggleButton = document.querySelector("[data-shop-sidebar-toggle]");
+    const toggleIcon = toggleButton?.querySelector("[data-shop-sidebar-toggle-icon]");
+    const sidebar = document.querySelector("[data-shop-sidebar]");
+    const mobileQuery = window.matchMedia("(max-width: 640px)");
+
+    if (!(toggleButton instanceof HTMLButtonElement) || !(sidebar instanceof HTMLElement)) {
+        return;
+    }
+
+    function setOpenState(isOpen) {
+        if (!mobileQuery.matches) {
+            sidebar.classList.remove("is-open");
+            toggleButton.setAttribute("aria-expanded", "false");
+            toggleButton.setAttribute("aria-label", "Ouvrir les filtres de la boutique");
+            toggleButton.setAttribute("title", "Ouvrir les filtres");
+
+            if (toggleIcon instanceof HTMLElement) {
+                toggleIcon.innerHTML = "&gt;";
+            }
+
+            return;
+        }
+
+        sidebar.classList.toggle("is-open", isOpen);
+        toggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        toggleButton.setAttribute("aria-label", isOpen ? "Fermer les filtres de la boutique" : "Ouvrir les filtres de la boutique");
+        toggleButton.setAttribute("title", isOpen ? "Fermer les filtres" : "Ouvrir les filtres");
+
+        if (toggleIcon instanceof HTMLElement) {
+            toggleIcon.innerHTML = isOpen ? "&lt;" : "&gt;";
+        }
+    }
+
+    toggleButton.addEventListener("click", () => {
+        const isOpen = toggleButton.getAttribute("aria-expanded") === "true";
+        setOpenState(!isOpen);
+    });
+
+    if (typeof mobileQuery.addEventListener === "function") {
+        mobileQuery.addEventListener("change", () => setOpenState(false));
+    } else if (typeof mobileQuery.addListener === "function") {
+        mobileQuery.addListener(() => setOpenState(false));
+    }
+
+    setOpenState(false);
+}
+
 /**
  * Gere les pop-ups legaux du footer (documents obligatoires et registre cookies).
  */
@@ -1716,6 +2290,11 @@ document.addEventListener("DOMContentLoaded", () => {
     initDammierPuzzle();
     initArticleEditor();
     initAdminTabs();
+    initCourseSearch();
+    initArticleSearch();
+    initScrollJumpButton();
+    initAccessibilityTools();
+    initShopSidebarDrawer();
     initDeleteConfirmations();
     initLegalModals();
     initSettingsActions();

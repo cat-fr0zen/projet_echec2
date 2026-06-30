@@ -26,7 +26,7 @@ final class AdhesionRenewalReminderMail extends Mailable
     public function build(): self
     {
         return $this
-            ->subject("Renouvellement adhesion {$this->saisonCible}")
+            ->subject("[noreply] URGENT - Renouvellement adhesion {$this->saisonCible}")
             ->view('emails.adhesion.renewal-reminder');
     }
 }

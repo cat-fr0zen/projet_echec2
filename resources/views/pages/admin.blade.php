@@ -27,6 +27,7 @@ $latestVisits = is_array($trafficSummary['dernieres_visites'] ?? null) ? $traffi
 $newsletterSummary = is_array($siteData['resume_newsletter'] ?? null) ? $siteData['resume_newsletter'] : [];
 $newsletterSubscribers = is_array($siteData['newsletter_abonnements_admin'] ?? null) ? $siteData['newsletter_abonnements_admin'] : [];
 $newsletterSends = is_array($siteData['newsletter_envois_admin'] ?? null) ? $siteData['newsletter_envois_admin'] : [];
+$specialEvents = is_array($siteData['evenements_speciaux'] ?? null) ? $siteData['evenements_speciaux'] : [];
 $horairesClub = is_array($siteData['horaires_club'] ?? null) ? $siteData['horaires_club'] : [];
 $itemsHorairesClub = is_array($horairesClub['items'] ?? null) ? $horairesClub['items'] : [];
 $blocsConstructeurAccueil = is_array($siteData['constructeur_accueil_blocs'] ?? null) ? $siteData['constructeur_accueil_blocs'] : [];
@@ -34,11 +35,15 @@ $courseDocumentsParRubrique = is_array($siteData['documents_cours_par_rubrique']
 $coursePeutGererDocuments = (bool) ($siteData['peut_gerer_documents_cours'] ?? false);
 $shopProducts = is_array($siteData['all_shop_products'] ?? null) ? $siteData['all_shop_products'] : [];
 $shopHelloAssoLink = (string) ($siteData['lien_helloasso_boutique'] ?? \App\Repositories\ParametreSiteRepository::LIEN_HELLOASSO_PAR_DEFAUT);
+$homeUsefulLinks = is_array($siteData['accueil_liens_utiles'] ?? null) ? $siteData['accueil_liens_utiles'] : [];
 $bureauSection = is_array($siteData['bureau_section'] ?? null) ? $siteData['bureau_section'] : [];
 $bureauMembers = is_array($siteData['all_bureau_members'] ?? null) ? $siteData['all_bureau_members'] : [];
 $shopCategories = \App\Repositories\BoutiqueProduitRepository::CATEGORIES;
 $shopPublics = \App\Repositories\BoutiqueProduitRepository::PUBLICS;
 $shopModesVente = \App\Repositories\BoutiqueProduitRepository::MODES_VENTE;
+$shopFormatPrice = static function (int $priceInCents): string {
+    return number_format($priceInCents / 100, 2, ',', ' ');
+};
 $courseRubriqueLabels = \App\Repositories\CoursDocumentRepository::RUBRIQUES;
 $courseAncresRubriques = [
     'livrets' => 'cours-bibliotheque-livrets',
@@ -65,6 +70,8 @@ $courseRubriqueConfigs = [
 $lignesHorairesAdmin = $itemsHorairesClub;
 $adminTabs = [
     'newsletter' => 'Newsletter',
+    'accueil' => 'Accueil',
+    'evenements' => 'Evenements',
     'pilotage' => 'Pilotage',
     'trafic' => 'Trafic',
     'horaires' => 'Horaires',
@@ -142,7 +149,7 @@ while (count($lignesHorairesAdmin) < 10) {
                 <h2>Qui reçoit la newsletter ?</h2>
             </div>
 
-            <div class="admin-list">
+            <div class="admin-list admin-list--compact">
                 <?php if ($newsletterSubscribers === []): ?>
                     <div class="empty-state">
                         <p class="card-tag">Aucun email</p>
@@ -150,11 +157,10 @@ while (count($lignesHorairesAdmin) < 10) {
                     </div>
                 <?php else: ?>
                     <?php foreach ($newsletterSubscribers as $abonneNewsletter): ?>
-                        <article class="info-card admin-card">
+                        <article class="info-card admin-card admin-card--compact">
                             <p class="card-tag"><?= e((string) ($abonneNewsletter['statut_libelle'] ?? $abonneNewsletter['statut'] ?? 'Actif')) ?></p>
                             <h3><?= e((string) ($abonneNewsletter['courriel'] ?? '')) ?></h3>
-                            <p>Source : <?= e((string) ($abonneNewsletter['source_inscription'] ?? 'footer')) ?></p>
-                            <p class="card-subtitle">Inscrit le : <?= e((string) ($abonneNewsletter['cree_le'] ?? '')) ?></p>
+                            <p class="card-subtitle">Source : <?= e((string) ($abonneNewsletter['source_inscription'] ?? 'footer')) ?> · Inscrit le : <?= e((string) ($abonneNewsletter['cree_le'] ?? '')) ?></p>
                             <?php if (($abonneNewsletter['desabonne_le'] ?? '') !== ''): ?>
                                 <p class="card-subtitle">Désabonné le : <?= e((string) $abonneNewsletter['desabonne_le']) ?></p>
                             <?php endif; ?>
@@ -257,10 +263,10 @@ while (count($lignesHorairesAdmin) < 10) {
     </div>
 </section>
 
-<section id="admin-constructeur" class="section-block reveal reveal-3 admin-tab-panel" data-admin-tab-panel="pilotage">
+<section id="admin-constructeur" class="section-block reveal reveal-3 admin-tab-panel" data-admin-tab-panel="accueil">
     <div class="section-head">
         <p class="eyebrow">Constructeur</p>
-        <h2>Organiser l'accueil avec des blocs interchangeables.</h2>
+        <h2>Modifier simplement les blocs de l'accueil.</h2>
         <p>Les blocs verrouillés restent à leur place. Les autres peuvent être déplacés ou masqués sans toucher au code.</p>
     </div>
 
@@ -275,26 +281,26 @@ while (count($lignesHorairesAdmin) < 10) {
                 $codeBlocConstructeur = (string) ($blocConstructeur['code_bloc'] ?? '');
                 $estVerrouilleConstructeur = (bool) ($blocConstructeur['est_verrouille'] ?? false);
                 $estActifConstructeur = (bool) ($blocConstructeur['est_actif'] ?? false);
+                $premierLienAccueil = is_array($homeUsefulLinks[0] ?? null) ? $homeUsefulLinks[0] : [];
+                $secondLienAccueil = is_array($homeUsefulLinks[1] ?? null) ? $homeUsefulLinks[1] : [];
+                $titreBlocConstructeur = (string) ($blocConstructeur['titre_personnalise'] ?? '');
+                if ($titreBlocConstructeur === '') {
+                    $titreBlocConstructeur = $codeBlocConstructeur === 'liens_utiles' ? 'Liste de liens utiles' : 'Presentation';
+                }
                 ?>
                 <article class="info-card admin-card">
                     <p class="card-tag"><?= e((string) ($blocConstructeur['libelle_bloc'] ?? 'Bloc')) ?></p>
-                    <h3><?= e($estVerrouilleConstructeur ? 'Bloc fixe' : 'Bloc interchangeable') ?></h3>
-                    <p><?= e((string) ($blocConstructeur['description_bloc'] ?? '')) ?></p>
+                    <h3><?= e((string) ($blocConstructeur['description_bloc'] ?? '')) ?></h3>
 
                     <div class="admin-schedule-settings">
-                        <label class="form-group">
-                            <span>Position sur la page d'accueil</span>
-                            <input
-                                type="number"
-                                min="1"
-                                name="ordre_bloc[<?= e($codeBlocConstructeur) ?>]"
-                                value="<?= e((string) ($blocConstructeur['ordre_affichage'] ?? 1)) ?>"
-                                <?= $estVerrouilleConstructeur ? 'readonly' : '' ?>
-                            >
-                        </label>
+                        <input
+                            type="hidden"
+                            name="ordre_bloc[<?= e($codeBlocConstructeur) ?>]"
+                            value="<?= e((string) ($blocConstructeur['ordre_affichage'] ?? 1)) ?>"
+                        >
 
                         <label class="form-group">
-                            <span>Affichage public</span>
+                            <span>Visible sur le site</span>
                             <span class="checkbox-inline">
                                 <input
                                     type="checkbox"
@@ -303,7 +309,7 @@ while (count($lignesHorairesAdmin) < 10) {
                                     <?= $estActifConstructeur ? 'checked' : '' ?>
                                     <?= $estVerrouilleConstructeur ? 'disabled' : '' ?>
                                 >
-                                <span><?= e($estVerrouilleConstructeur ? 'Toujours visible' : 'Visible sur le site') ?></span>
+                                <span><?= e($estVerrouilleConstructeur ? 'Toujours visible' : 'Afficher ce bloc') ?></span>
                             </span>
                             <?php if ($estVerrouilleConstructeur): ?>
                                 <small class="form-helper">Ce bloc reste visible et ne peut pas être déplacé.</small>
@@ -312,7 +318,7 @@ while (count($lignesHorairesAdmin) < 10) {
                             <?php endif; ?>
                         </label>
 
-                        <?php if ($codeBlocConstructeur === 'mot_du_club'): ?>
+                        <?php if ($codeBlocConstructeur === 'mot_du_club' || $codeBlocConstructeur === 'liens_utiles'): ?>
                             <label class="form-group">
                                 <span>Titre du bloc</span>
                                 <input
@@ -333,13 +339,136 @@ while (count($lignesHorairesAdmin) < 10) {
                                 <small class="form-helper">Tu peux modifier ici le texte de présentation visible publiquement sur l'accueil.</small>
                             </label>
                         <?php endif; ?>
+
+                        <?php if ($codeBlocConstructeur === 'liens_utiles'): ?>
+                            <label class="form-group">
+                                <span>Libelle du lien 1</span>
+                                <input
+                                    type="text"
+                                    name="accueil_lien_utile_libelle[1]"
+                                    value="<?= e((string) ($premierLienAccueil['label'] ?? \App\Repositories\ParametreSiteRepository::ACCUEIL_LIEN_UTILE_1_LIBELLE_PAR_DEFAUT)) ?>"
+                                    maxlength="160"
+                                >
+                            </label>
+
+                            <label class="form-group">
+                                <span>URL du lien 1</span>
+                                <input
+                                    type="url"
+                                    name="accueil_lien_utile_url[1]"
+                                    value="<?= e((string) ($premierLienAccueil['url'] ?? \App\Repositories\ParametreSiteRepository::ACCUEIL_LIEN_UTILE_1_URL_PAR_DEFAUT)) ?>"
+                                    inputmode="url"
+                                >
+                            </label>
+
+                            <label class="form-group">
+                                <span>Libelle du lien 2</span>
+                                <input
+                                    type="text"
+                                    name="accueil_lien_utile_libelle[2]"
+                                    value="<?= e((string) ($secondLienAccueil['label'] ?? \App\Repositories\ParametreSiteRepository::ACCUEIL_LIEN_UTILE_2_LIBELLE_PAR_DEFAUT)) ?>"
+                                    maxlength="160"
+                                >
+                            </label>
+
+                            <label class="form-group">
+                                <span>URL du lien 2</span>
+                                <input
+                                    type="url"
+                                    name="accueil_lien_utile_url[2]"
+                                    value="<?= e((string) ($secondLienAccueil['url'] ?? \App\Repositories\ParametreSiteRepository::ACCUEIL_LIEN_UTILE_2_URL_PAR_DEFAUT)) ?>"
+                                    inputmode="url"
+                                >
+                                <small class="form-helper">Les liens externes de l'accueil se modifient ici.</small>
+                            </label>
+                        <?php endif; ?>
                     </div>
                 </article>
             <?php endforeach; ?>
         </div>
 
-        <button type="submit" class="button button-primary">Enregistrer le constructeur</button>
+        <button type="submit" class="button button-primary">Enregistrer l'accueil</button>
     </form>
+</section>
+
+<section id="admin-evenements" class="section-block reveal reveal-3 admin-tab-panel" data-admin-tab-panel="evenements">
+    <div class="section-head">
+        <p class="eyebrow">Evenements</p>
+        <h2>Ajouter des evenements speciaux du club.</h2>
+        <p>Chaque nouvel evenement ajoute ici apparait sur la page Evenements et peut etre annonce aux inscrits newsletter.</p>
+    </div>
+
+    <div class="split-grid">
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Nouvel evenement</p>
+                <h2>Creer une annonce officielle.</h2>
+            </div>
+
+            <form method="post" action="<?= e(url_route('admin')) ?>#admin-evenements" class="admin-form">
+                <input type="hidden" name="action" value="create_special_event">
+                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+                <label class="form-group">
+                    <span>Titre</span>
+                    <input type="text" name="evenement_titre" maxlength="160" required>
+                </label>
+
+                <label class="form-group">
+                    <span>Date</span>
+                    <input type="date" name="evenement_date" required>
+                </label>
+
+                <label class="form-group">
+                    <span>Lieu</span>
+                    <input type="text" name="evenement_lieu" maxlength="160" placeholder="Exemple : Herouville-Saint-Clair">
+                </label>
+
+                <label class="form-group">
+                    <span>Description</span>
+                    <textarea name="evenement_description" rows="5" maxlength="1000" required></textarea>
+                </label>
+
+                <button type="submit" class="button button-primary">Publier l'evenement</button>
+            </form>
+        </article>
+
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Evenements en ligne</p>
+                <h2>Ce qui est visible sur le site.</h2>
+            </div>
+
+            <?php if ($specialEvents === []): ?>
+                <div class="empty-state">
+                    <p class="card-tag">Aucun evenement</p>
+                    <h3>Le calendrier special est vide.</h3>
+                </div>
+            <?php else: ?>
+                <div class="admin-list">
+                    <?php foreach ($specialEvents as $specialEvent): ?>
+                        <article class="info-card admin-card">
+                            <p class="card-tag"><?= e((string) ($specialEvent['date'] ?? '')) ?></p>
+                            <h3><?= e((string) ($specialEvent['titre'] ?? 'Evenement')) ?></h3>
+                            <?php if (($specialEvent['lieu'] ?? '') !== ''): ?>
+                                <p><?= e((string) $specialEvent['lieu']) ?></p>
+                            <?php endif; ?>
+                            <p><?= e((string) ($specialEvent['description'] ?? '')) ?></p>
+
+                            <form method="post" action="<?= e(url_route('admin')) ?>#admin-evenements" class="admin-inline-form">
+                                <input type="hidden" name="action" value="delete_special_event">
+                                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="identifiant_evenement" value="<?= e((string) ($specialEvent['identifiant'] ?? '')) ?>">
+                                <button type="submit" class="button button-secondary">Supprimer</button>
+                            </form>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </article>
+    </div>
 </section>
 
 <section class="section-block reveal reveal-3 admin-tab-panel" data-admin-tab-panel="trafic">
@@ -685,7 +814,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
                     <label class="form-group">
                         <span>Prix en euros</span>
-                        <input type="number" name="prix_produit_boutique" min="0" max="10000" step="1" value="0" required>
+                        <input type="number" name="prix_produit_boutique" min="0" max="10000" step="0.01" value="0.00" required>
                     </label>
 
                     <label class="form-group">
@@ -768,7 +897,7 @@ while (count($lignesHorairesAdmin) < 10) {
                             <p><?= e((string) ($shopProduct['texte'] ?? '')) ?></p>
                             <p class="card-subtitle">
                                 <?= e((string) ($shopProduct['public_label'] ?? 'Tous publics')) ?>
-                                - <?= e((string) ($shopProduct['prix_euros'] ?? 0)) ?> EUR
+                                - <?= e($shopFormatPrice((int) ($shopProduct['prix_euros'] ?? 0))) ?> EUR
                                 - <?= e((string) ($shopProduct['stock_label'] ?? 'Disponible')) ?>
                             </p>
 
@@ -828,7 +957,7 @@ while (count($lignesHorairesAdmin) < 10) {
 
                                         <label class="form-group">
                                             <span>Prix en euros</span>
-                                            <input type="number" name="prix_produit_boutique" min="0" max="10000" step="1" value="<?= e((string) ($shopProduct['prix_euros'] ?? 0)) ?>" required>
+                                            <input type="number" name="prix_produit_boutique" min="0" max="10000" step="0.01" value="<?= e($shopFormatPrice((int) ($shopProduct['prix_euros'] ?? 0))) ?>" required>
                                         </label>
 
                                         <label class="form-group">

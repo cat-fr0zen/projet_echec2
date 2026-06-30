@@ -3,7 +3,7 @@
  * Vue: Articles.
  *
  * Affiche:
- * - les articles publies avec leur mise en page complete
+ * - les articles publies avec recherche et lecture detaillee
  * - un editeur d'article par blocs pour les adherents et admins
  * - le suivi des soumissions du membre connecte
  */
@@ -65,6 +65,22 @@ $renderArticleBlocks = static function (array $article): void {
             <?php
         }
     }
+};
+
+$articleSearchText = static function (array $article): string {
+    $parts = [
+        (string) ($article['titre'] ?? ''),
+        (string) ($article['auteur_affiche'] ?? $article['nom_auteur'] ?? ''),
+        (string) ($article['resume'] ?? ''),
+    ];
+
+    foreach (($article['blocs'] ?? []) as $block) {
+        $parts[] = (string) ($block['texte'] ?? '');
+        $parts[] = (string) ($block['legende'] ?? '');
+        $parts[] = (string) ($block['texte_alternatif'] ?? '');
+    }
+
+    return trim(implode(' ', array_filter($parts, static fn ($value): bool => trim((string) $value) !== '')));
 };
 ?>
 
@@ -197,7 +213,7 @@ $renderArticleBlocks = static function (array $article): void {
     <div class="section-head">
         <p class="eyebrow">Publication publique</p>
         <h2>Articles visibles par tous.</h2>
-        <p>Les articles publiés apparaissent ici après validation par l'administrateur du club.</p>
+        <p>Retrouve rapidement un sujet, puis ouvre la version complète seulement quand tu veux la lire.</p>
     </div>
 
     <?php if ($publishedArticles === []): ?>
@@ -207,21 +223,55 @@ $renderArticleBlocks = static function (array $article): void {
             <p>Le cadre éditorial est prêt. Les publications apparaîtront ici une fois modérées.</p>
         </div>
     <?php else: ?>
-        <div class="published-article-list">
-            <?php foreach ($publishedArticles as $article): ?>
-                <article class="published-article">
-                    <h2><?= e((string) ($article['titre'] ?? 'Article')) ?></h2>
-                    <div class="published-article-body">
-                        <?php $renderArticleBlocks($article); ?>
-                    </div>
-                    <footer class="published-article-footer">
-                        <span><?= e((string) ($article['auteur_affiche'] ?? $article['nom_auteur'] ?? 'Auteur')) ?></span>
-                        <time datetime="<?= e(mb_substr((string) ($article['cree_le'] ?? ''), 0, 10)) ?>">
-                            <?= e((string) ($article['date_creation_libelle'] ?? '')) ?>
-                        </time>
-                    </footer>
+        <section class="article-search" data-article-search>
+            <label class="article-search-field" for="article-search-input">
+                <span class="eyebrow">Recherche rapide</span>
+                <input
+                    id="article-search-input"
+                    type="search"
+                    placeholder="Titre, auteur, mot-clé..."
+                    autocomplete="off"
+                    data-article-search-input
+                >
+            </label>
+            <button type="button" class="button button-secondary article-search-reset" data-article-search-reset>Effacer</button>
+            <p class="article-search-status" data-article-search-status aria-live="polite"></p>
+        </section>
+
+        <div class="published-article-list published-article-list--compact" data-article-search-list>
+            <?php foreach ($publishedArticles as $index => $article): ?>
+                <?php
+                $articleTitle = (string) ($article['titre'] ?? 'Article');
+                $articleAuthor = (string) ($article['auteur_affiche'] ?? $article['nom_auteur'] ?? 'Auteur');
+                $articleDateLabel = (string) ($article['date_creation_libelle'] ?? '');
+                $articleSearchPayload = $articleSearchText($article);
+                ?>
+                <article
+                    class="published-article-card"
+                    data-article-search-item
+                    data-article-search-text="<?= e(mb_strtolower($articleSearchPayload)) ?>"
+                >
+                    <a
+                        class="published-article-card-button"
+                        href="<?= e('/articles/' . rawurlencode((string) ($article['identifiant'] ?? ''))) ?>"
+                    >
+                        <span class="published-article-card-meta">
+                            <span class="card-tag"><?= e($articleAuthor) ?></span>
+                            <?php if ($articleDateLabel !== ''): ?>
+                                <span class="published-article-card-date"><?= e($articleDateLabel) ?></span>
+                            <?php endif; ?>
+                        </span>
+                        <strong class="published-article-card-title"><?= e($articleTitle) ?></strong>
+                        <span class="published-article-card-action">Lire l'article</span>
+                    </a>
                 </article>
             <?php endforeach; ?>
+        </div>
+
+        <div class="empty-state" data-article-search-empty hidden>
+            <p class="card-tag">Aucun résultat</p>
+            <h3>Aucun article ne correspond à ta recherche.</h3>
+            <p>Essaie un autre titre, un nom d'auteur ou un mot-clé plus simple.</p>
         </div>
     <?php endif; ?>
 </section>

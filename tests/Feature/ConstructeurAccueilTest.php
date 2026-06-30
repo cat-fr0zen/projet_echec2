@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace Tests\Feature;
 
 use App\Repositories\ConstructeurPagesRepository;
+use App\Repositories\ParametreSiteRepository;
 use App\Repositories\UserRepository;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -187,6 +188,80 @@ final class ConstructeurAccueilTest extends TestCase
         $reponseAccueil->assertSeeText('Notre club');
         $reponseAccueil->assertSeeText("Un texte modifié par l'administration.");
         $reponseAccueil->assertSeeText('Les nouveaux membres sont les bienvenus.');
+    }
+
+    public function test_un_admin_peut_modifier_le_bloc_liens_utiles_et_ses_urls(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $administrateur = (new UserRepository())->creer($this->donneesCompte('admin-liens@example.test', 'Alice', 'Admin'));
+
+        $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+        ])->get('/admin')->assertOk();
+
+        $jetonCsrf = (string) session()->token();
+
+        $reponse = $this->withSession([
+            'identifiant_utilisateur' => (string) $administrateur['identifiant'],
+            '_token' => $jetonCsrf,
+        ])->post('/admin', [
+            '_token' => $jetonCsrf,
+            'jeton_csrf' => $jetonCsrf,
+            'action' => 'update_home_builder',
+            'ordre_bloc' => [
+                'liens_utiles' => 3,
+                'mot_du_club' => 4,
+                'pieces_echecs' => 5,
+                'chiffres_du_club' => 6,
+            ],
+            'bloc_actif' => [
+                'liens_utiles' => '1',
+                'mot_du_club' => '1',
+                'pieces_echecs' => '1',
+                'chiffres_du_club' => '1',
+            ],
+            'titre_bloc' => [
+                'liens_utiles' => 'Nos liens favoris',
+            ],
+            'contenu_bloc' => [
+                'liens_utiles' => 'Retrouve ici les deux raccourcis externes les plus utiles.',
+            ],
+            'accueil_lien_utile_libelle' => [
+                1 => 'FFE Club',
+                2 => 'Ligue regionale',
+            ],
+            'accueil_lien_utile_url' => [
+                1 => 'https://example.test/ffe',
+                2 => 'https://example.test/ligue',
+            ],
+        ]);
+
+        $reponse->assertRedirect('/admin#admin-constructeur');
+
+        self::assertDatabaseHas('constructeur_page_bloc', [
+            'code_page' => 'accueil',
+            'code_bloc' => 'liens_utiles',
+            'titre_personnalise' => 'Nos liens favoris',
+        ]);
+
+        self::assertSame(
+            'FFE Club',
+            app(ParametreSiteRepository::class)->obtenirTexte(ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_1_LIBELLE)
+        );
+        self::assertSame(
+            'https://example.test/ligue',
+            app(ParametreSiteRepository::class)->obtenirTexte(ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_2_URL)
+        );
+
+        $reponseAccueil = $this->get('/');
+        $reponseAccueil->assertOk();
+        $reponseAccueil->assertSeeText('Nos liens favoris');
+        $reponseAccueil->assertSeeText('Retrouve ici les deux raccourcis externes les plus utiles.');
+        $reponseAccueil->assertSeeText('FFE Club');
+        $reponseAccueil->assertSeeText('Ligue regionale');
+        $reponseAccueil->assertSee('https://example.test/ffe', false);
+        $reponseAccueil->assertSee('https://example.test/ligue', false);
     }
 
     /**

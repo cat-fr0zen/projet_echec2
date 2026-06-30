@@ -15,13 +15,16 @@ $enStockSeulement = (string) ($_GET['en_stock'] ?? '') === '1';
 $adhesionSeulement = (string) ($_GET['adhesion_only'] ?? '') === '1';
 $prixMaxCatalogue = 0;
 $lienHelloAssoBoutique = (string) ($siteData['lien_helloasso_boutique'] ?? \App\Repositories\ParametreSiteRepository::LIEN_HELLOASSO_PAR_DEFAUT);
+$formaterPrixBoutique = static function (int $prixCentimes): string {
+    return number_format($prixCentimes / 100, 2, ',', ' ').' €';
+};
 
 foreach ($catalogueBoutique as $produitBoutique) {
     $prixMaxCatalogue = max($prixMaxCatalogue, (int) ($produitBoutique['prix_euros'] ?? 0));
 }
 
-$prixMaxCatalogue = max($prixMaxCatalogue, 100);
-$prixMaxActif = (int) ($_GET['prix_max'] ?? $prixMaxCatalogue);
+$prixMaxCatalogue = max($prixMaxCatalogue, 10000);
+$prixMaxActif = (int) round((float) str_replace(',', '.', (string) ($_GET['prix_max'] ?? ($prixMaxCatalogue / 100))) * 100);
 $prixMaxActif = max(0, min($prixMaxActif, $prixMaxCatalogue));
 
 $categoriesDisponibles = [];
@@ -148,8 +151,20 @@ $libelleAdhesion = (string) ($membre['membership_label'] ?? ($estAdherent ? 'Adh
     </article>
 </section>
 
+<button
+    type="button"
+    class="shop-sidebar-toggle"
+    data-shop-sidebar-toggle
+    aria-expanded="false"
+    aria-controls="shop-sidebar"
+    aria-label="Ouvrir les filtres de la boutique"
+    title="Ouvrir les filtres"
+>
+    <span class="shop-sidebar-toggle__icon" data-shop-sidebar-toggle-icon aria-hidden="true">&gt;</span>
+</button>
+
 <section class="shop-layout reveal reveal-4">
-    <aside class="panel shop-sidebar">
+    <aside class="panel shop-sidebar" id="shop-sidebar" data-shop-sidebar>
         <div class="section-head section-head--compact">
             <p class="eyebrow">Filtrer les produits</p>
             <h2>Affiner la boutique</h2>
@@ -199,11 +214,11 @@ $libelleAdhesion = (string) ($membre['membership_label'] ?? ($estAdherent ? 'Adh
                     type="number"
                     name="prix_max"
                     min="0"
-                    max="<?= e((string) $prixMaxCatalogue) ?>"
-                    step="1"
-                    value="<?= e((string) $prixMaxActif) ?>"
+                    max="<?= e(number_format($prixMaxCatalogue / 100, 2, '.', '')) ?>"
+                    step="0.01"
+                    value="<?= e(number_format($prixMaxActif / 100, 2, '.', '')) ?>"
                 >
-                <small class="shop-help">Budget actuel : jusqu'a <?= e((string) $prixMaxActif) ?> EUR.</small>
+                <small class="shop-help">Budget actuel : jusqu'a <?= e($formaterPrixBoutique($prixMaxActif)) ?>.</small>
             </label>
 
             <label class="shop-field">
@@ -295,7 +310,7 @@ $libelleAdhesion = (string) ($membre['membership_label'] ?? ($estAdherent ? 'Adh
                             </div>
 
                             <h3><?= e((string) ($produitBoutique['titre'] ?? 'Produit')) ?></h3>
-                            <p class="shop-card-price"><?= e((string) ($produitBoutique['prix_euros'] ?? 0)) ?> EUR</p>
+                            <p class="shop-card-price"><?= e($formaterPrixBoutique((int) ($produitBoutique['prix_euros'] ?? 0))) ?></p>
                             <p><?= e((string) ($produitBoutique['texte'] ?? '')) ?></p>
 
                             <div class="shop-card-meta">

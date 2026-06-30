@@ -14,6 +14,7 @@ use App\Repositories\BoutiqueProduitRepository;
 use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
+use App\Repositories\EvenementRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
@@ -51,7 +52,8 @@ final class SitePageRenderer
         private ?BoutiqueCartService $boutiqueCartService = null,
         private ?BoutiqueProduitRepository $boutiqueProduitRepository = null,
         private ?ParametreSiteRepository $parametreSiteRepository = null,
-        private ?BureauMembreRepository $bureauMembreRepository = null
+        private ?BureauMembreRepository $bureauMembreRepository = null,
+        private ?EvenementRepository $evenementRepository = null
     ) {}
 
     public function afficher(string $segment): string
@@ -93,9 +95,11 @@ final class SitePageRenderer
         $this->boutiqueProduitRepository ??= new BoutiqueProduitRepository;
         $this->parametreSiteRepository ??= new ParametreSiteRepository;
         $this->bureauMembreRepository ??= new BureauMembreRepository;
+        $this->evenementRepository ??= new EvenementRepository($this->parametreSiteRepository);
         $siteData['cartes_boutique'] = $this->boutiqueProduitRepository->listerCatalogue();
         $siteData['lien_helloasso_boutique'] = $this->parametreSiteRepository->obtenirLienBoutiqueHelloAsso();
         $siteData['helloasso_shop_url'] = $siteData['lien_helloasso_boutique'];
+        $siteData['accueil_liens_utiles'] = $this->chargerLiensUtilesAccueil();
         $siteData['bureau_section'] = $this->chargerTextesSectionBureau($siteData);
         $siteData['bureau_section_texts'] = $siteData['bureau_section'];
         $siteData['membres_bureau'] = $this->bureauMembreRepository->listerPourAccueil(
@@ -107,6 +111,7 @@ final class SitePageRenderer
         $siteData['paiement_boutique'] = $this->boutiqueCartService->configurationPaiementCarte();
         $siteData['constructeur_accueil_blocs'] = $this->constructeurPagesRepository->listerPourPage('accueil');
         $siteData['constructeur_accueil_blocs_actifs'] = $this->constructeurPagesRepository->listerActifsPourPage('accueil');
+        $siteData['evenements_speciaux'] = $this->evenementRepository->lister();
 
         if (! ($authData['est_connecte'] ?? false) && $this->trafficRepository !== null) {
             $this->trafficRepository->enregistrerVisitePublique($segment);
@@ -206,6 +211,89 @@ final class SitePageRenderer
         return (string) ob_get_clean();
     }
 
+    public function afficherArticle(string $identifiant): string
+    {
+        $currentUser = $this->recupererUtilisateurCourant();
+
+        if ($currentUser !== null && ($currentUser['statut_compte'] ?? '') !== User::STATUT_COMPTE_ACTIF) {
+            deconnecter_utilisateur_courant();
+            ajouter_message_flash('error', "Votre compte n'est plus actif. Merci de recontacter le club.");
+            rediriger_vers(url_route('accueil'));
+        }
+
+        $siteData = $this->siteContent->obtenirDonneesSite();
+        $pages = $this->siteContent->obtenirPages();
+        $authData = $this->construireDonneesAuthentification($currentUser);
+
+        $siteData['theme'] = theme_courant();
+        $siteData['jeton_csrf'] = jeton_csrf();
+        $siteData['messages_flash'] = $this->messagesFlash;
+        $siteData['etat_formulaire'] = $this->formState;
+        $siteData['page_courante'] = 'articles';
+        $siteData['authentification'] = $authData;
+        $siteData['navigation_principale'] = $this->filtrerNavigationPrincipale(
+            $siteData['navigation_principale'] ?? [],
+            $authData
+        );
+        $siteData['primary_nav'] = $siteData['navigation_principale'];
+        $siteData['navigation_secondaire'] = $this->filtrerNavigationSecondaire(
+            $siteData['navigation_secondaire'] ?? [],
+            $authData
+        );
+        $siteData['secondary_nav'] = $siteData['navigation_secondaire'];
+        $this->boutiqueProduitRepository ??= new BoutiqueProduitRepository;
+        $this->parametreSiteRepository ??= new ParametreSiteRepository;
+        $this->bureauMembreRepository ??= new BureauMembreRepository;
+        $this->evenementRepository ??= new EvenementRepository($this->parametreSiteRepository);
+        $siteData['cartes_boutique'] = $this->boutiqueProduitRepository->listerCatalogue();
+        $siteData['lien_helloasso_boutique'] = $this->parametreSiteRepository->obtenirLienBoutiqueHelloAsso();
+        $siteData['helloasso_shop_url'] = $siteData['lien_helloasso_boutique'];
+        $siteData['accueil_liens_utiles'] = $this->chargerLiensUtilesAccueil();
+        $siteData['bureau_section'] = $this->chargerTextesSectionBureau($siteData);
+        $siteData['bureau_section_texts'] = $siteData['bureau_section'];
+        $siteData['membres_bureau'] = $this->bureauMembreRepository->listerPourAccueil(
+            is_array($siteData['membres_bureau'] ?? null) ? $siteData['membres_bureau'] : []
+        );
+        $siteData['bureau_members'] = $siteData['membres_bureau'];
+        $this->boutiqueCartService ??= new BoutiqueCartService;
+        $siteData['panier_boutique'] = $this->boutiqueCartService->obtenirPanier($siteData['cartes_boutique']);
+        $siteData['paiement_boutique'] = $this->boutiqueCartService->configurationPaiementCarte();
+        $siteData = $this->chargerDonneesDynamiques($siteData, $authData, $currentUser);
+
+        $article = $this->articleRepository->trouverParIdentifiant($identifiant);
+
+        if ($article === null || (string) ($article['statut'] ?? '') !== \App\Models\Article::STATUT_PUBLIE) {
+            http_response_code(404);
+            $pageCourante = 'introuvable';
+            $pageData = $this->siteContent->obtenirDonneesIntrouvable();
+            $pageTitle = 'Article introuvable';
+            $viewFile = resource_path('views/pages/introuvable.blade.php');
+        } else {
+            $pageCourante = 'articles';
+            $pageData = $pages['articles'] ?? [];
+            $pageData['titre'] = (string) ($article['titre'] ?? 'Article');
+            $pageData['title'] = $pageData['titre'];
+            $pageData['intro'] = (string) ($article['resume'] ?? '');
+            $pageData['article_detail'] = $article;
+            $pageTitle = $pageData['titre'];
+            $viewFile = resource_path('views/pages/article-detail.blade.php');
+        }
+
+        $metaTitle = $pageTitle.' | '.$siteData['brand'];
+        $metaDescription = (string) (($pageData['intro'] ?? $siteData['accroche'] ?? $siteData['tagline'] ?? ''));
+
+        $donneesSite = normaliser_structure_utf8($siteData);
+        $donneesPage = normaliser_structure_utf8($pageData);
+        $metaTitre = normaliser_texte_utf8($metaTitle);
+        $descriptionMeta = normaliser_texte_utf8($metaDescription);
+        $fichierVue = $viewFile;
+
+        ob_start();
+        require resource_path('views/layouts/app.blade.php');
+
+        return (string) ob_get_clean();
+    }
+
     private function recupererUtilisateurCourant(): ?array
     {
         try {
@@ -284,7 +372,12 @@ final class SitePageRenderer
                 ? $this->orderRepository->listerParIdentifiantUtilisateur((string) $currentUser['identifiant'])
                 : [];
             $siteData['member_orders'] = $siteData['commandes_membre'];
-            $siteData['toutes_commandes'] = $authData['est_admin'] ? $this->orderRepository->listerToutes() : [];
+            $siteData['toutes_commandes'] = $authData['est_admin']
+                ? array_values(array_filter(
+                    $this->orderRepository->listerToutes(),
+                    static fn (array $commande): bool => (string) ($commande['statut'] ?? '') !== \App\Models\CommandeLocale::STATUT_ANNULEE
+                ))
+                : [];
             $siteData['all_orders'] = $siteData['toutes_commandes'];
             $siteData['resume_trafic_visiteurs'] = $authData['est_admin'] && $this->trafficRepository !== null
                 ? $this->trafficRepository->obtenirResumeAdmin()
@@ -360,8 +453,10 @@ final class SitePageRenderer
         $siteData['all_media'] = [];
         $this->parametreSiteRepository ??= new ParametreSiteRepository;
         $this->bureauMembreRepository ??= new BureauMembreRepository;
+        $this->evenementRepository ??= new EvenementRepository($this->parametreSiteRepository);
         $siteData['lien_helloasso_boutique'] = $this->parametreSiteRepository->obtenirLienBoutiqueHelloAsso();
         $siteData['helloasso_shop_url'] = $siteData['lien_helloasso_boutique'];
+        $siteData['accueil_liens_utiles'] = $this->chargerLiensUtilesAccueil();
         $siteData['bureau_section'] = $this->chargerTextesSectionBureau($siteData);
         $siteData['bureau_section_texts'] = $siteData['bureau_section'];
         $siteData['membres_bureau'] = $this->bureauMembreRepository->listerPourAccueil(
@@ -396,6 +491,7 @@ final class SitePageRenderer
         $siteData['dammier_score_utilisateur'] = null;
         $siteData['constructeur_accueil_blocs'] = $this->constructeurPagesRepository->listerPourPage('accueil');
         $siteData['constructeur_accueil_blocs_actifs'] = $this->constructeurPagesRepository->listerActifsPourPage('accueil');
+        $siteData['evenements_speciaux'] = $this->evenementRepository->lister();
 
         return $siteData;
     }
@@ -433,6 +529,35 @@ final class SitePageRenderer
                 ParametreSiteRepository::CLE_BUREAU_DESCRIPTION,
                 (string) ($bureauSectionParDefaut['text'] ?? '')
             ) ?? '',
+        ];
+    }
+
+    /**
+     * @return array<int, array{label: string, url: string}>
+     */
+    private function chargerLiensUtilesAccueil(): array
+    {
+        return [
+            [
+                'label' => $this->parametreSiteRepository?->obtenirTexte(
+                    ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_1_LIBELLE,
+                    ParametreSiteRepository::ACCUEIL_LIEN_UTILE_1_LIBELLE_PAR_DEFAUT
+                ) ?? ParametreSiteRepository::ACCUEIL_LIEN_UTILE_1_LIBELLE_PAR_DEFAUT,
+                'url' => $this->parametreSiteRepository?->obtenirTexte(
+                    ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_1_URL,
+                    ParametreSiteRepository::ACCUEIL_LIEN_UTILE_1_URL_PAR_DEFAUT
+                ) ?? ParametreSiteRepository::ACCUEIL_LIEN_UTILE_1_URL_PAR_DEFAUT,
+            ],
+            [
+                'label' => $this->parametreSiteRepository?->obtenirTexte(
+                    ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_2_LIBELLE,
+                    ParametreSiteRepository::ACCUEIL_LIEN_UTILE_2_LIBELLE_PAR_DEFAUT
+                ) ?? ParametreSiteRepository::ACCUEIL_LIEN_UTILE_2_LIBELLE_PAR_DEFAUT,
+                'url' => $this->parametreSiteRepository?->obtenirTexte(
+                    ParametreSiteRepository::CLE_ACCUEIL_LIEN_UTILE_2_URL,
+                    ParametreSiteRepository::ACCUEIL_LIEN_UTILE_2_URL_PAR_DEFAUT
+                ) ?? ParametreSiteRepository::ACCUEIL_LIEN_UTILE_2_URL_PAR_DEFAUT,
+            ],
         ];
     }
 

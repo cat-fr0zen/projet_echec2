@@ -1,64 +1,41 @@
 <?php
 /**
- * Vue: Activites.
- *
- * Affiche les activites du club (cours, tournois, evenements), a partir des
- * donnees calculees par le controleur.
- *
- * Variables attendues:
- * - $pageData: titre/intro
- * - $siteData['activities']: liste d'activites
+ * Vue: Evenements.
  */
-$activities = $siteData['activities'];
+$events = is_array($siteData['evenements_speciaux'] ?? null) ? $siteData['evenements_speciaux'] : [];
 ?>
 
 <section class="page-banner reveal reveal-2">
-    <p class="eyebrow">Activités</p>
+    <p class="eyebrow">Evenements</p>
     <h1><?= e($pageData['title']) ?></h1>
     <p><?= e($pageData['intro']) ?></p>
 </section>
 
 <section class="section-block reveal reveal-3">
     <div class="section-head">
-        <p class="eyebrow">Organisation des contenus</p>
-        <h2>Des cartes prêtes pour les activités à venir.</h2>
-        <p>
-            La page garde ses cadres, ses rythmes et sa hiérarchie visuelle tout en
-            attendant la validation des informations officielles à publier.
-        </p>
+        <p class="eyebrow">Calendrier special</p>
+        <h2>Les prochains rendez-vous officiels du club.</h2>
+        <p>Les evenements ajoutes par l'administration apparaissent ici et peuvent etre relayes par newsletter.</p>
     </div>
 
-    <div class="card-grid card-grid--three">
-        <?php foreach ($activities as $activity): ?>
-            <article class="info-card">
-                <p class="card-tag"><?= e($activity['tag']) ?></p>
-                <h3><?= e($activity['title']) ?></h3>
-                <p><?= e($activity['text']) ?></p>
-            </article>
-        <?php endforeach; ?>
-    </div>
-</section>
-
-<section class="split-grid reveal reveal-4">
-    <article class="panel panel-contrast">
-        <div class="section-head section-head--compact">
-            <p class="eyebrow">Publication responsable</p>
-            <h2>Rien n'est publié tant que ce n'est pas validé.</h2>
-            <p>
-                Cette page peut accueillir des activités réelles, des calendriers et des documents,
-                mais uniquement après confirmation par les responsables de l'association.
-            </p>
+    <?php if ($events === []): ?>
+        <div class="empty-state">
+            <p class="card-tag">Aucun evenement</p>
+            <h3>Aucun evenement special n'est annonce pour le moment.</h3>
+            <p>Les prochaines animations, tournois, stages ou rendez-vous speciaux apparaitront ici.</p>
         </div>
-    </article>
-
-    <article class="panel">
-        <div class="section-head section-head--compact">
-            <p class="eyebrow">Documents et accès</p>
-            <h2>Le design reste prêt pour les prochaines intégrations.</h2>
-            <p>
-                Bulletins, règlements, planning, inscriptions ou actualités pourront être ajoutés ici
-                sans remettre en cause la structure des cartes ni la lisibilité du parcours.
-            </p>
+    <?php else: ?>
+        <div class="card-grid card-grid--three">
+            <?php foreach ($events as $event): ?>
+                <article class="info-card">
+                    <p class="card-tag"><?= e((string) ($event['date'] ?? '')) ?></p>
+                    <h3><?= e((string) ($event['titre'] ?? 'Evenement')) ?></h3>
+                    <?php if (($event['lieu'] ?? '') !== ''): ?>
+                        <p class="card-subtitle"><?= e((string) $event['lieu']) ?></p>
+                    <?php endif; ?>
+                    <p><?= e((string) ($event['description'] ?? '')) ?></p>
+                </article>
+            <?php endforeach; ?>
         </div>
-    </article>
+    <?php endif; ?>
 </section>

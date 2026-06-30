@@ -15,6 +15,14 @@ final class ParametreSiteRepository
 {
     public const CLE_LIEN_BOUTIQUE_HELLOASSO = 'lien_boutique_helloasso';
 
+    public const CLE_ACCUEIL_LIEN_UTILE_1_LIBELLE = 'accueil_lien_utile_1_libelle';
+
+    public const CLE_ACCUEIL_LIEN_UTILE_1_URL = 'accueil_lien_utile_1_url';
+
+    public const CLE_ACCUEIL_LIEN_UTILE_2_LIBELLE = 'accueil_lien_utile_2_libelle';
+
+    public const CLE_ACCUEIL_LIEN_UTILE_2_URL = 'accueil_lien_utile_2_url';
+
     public const CLE_BUREAU_SURTITRE = 'bureau_section_surtitre';
 
     public const CLE_BUREAU_TITRE = 'bureau_section_titre';
@@ -22,6 +30,14 @@ final class ParametreSiteRepository
     public const CLE_BUREAU_DESCRIPTION = 'bureau_section_description';
 
     public const LIEN_HELLOASSO_PAR_DEFAUT = 'https://www.helloasso.com/associations/les-cavaliers-d-herouville';
+
+    public const ACCUEIL_LIEN_UTILE_1_LIBELLE_PAR_DEFAUT = "Federation Francaise d'Echecs (FFE)";
+
+    public const ACCUEIL_LIEN_UTILE_1_URL_PAR_DEFAUT = 'https://www.echecs.asso.fr/ListeJoueurs.aspx?Action=JOUEURCLUBREF&ClubRef=3012';
+
+    public const ACCUEIL_LIEN_UTILE_2_LIBELLE_PAR_DEFAUT = 'Ligue de Normandie des echecs';
+
+    public const ACCUEIL_LIEN_UTILE_2_URL_PAR_DEFAUT = 'https://www.normandie-echecs.fr/cdje14';
 
     public function obtenirLienBoutiqueHelloAsso(): string
     {

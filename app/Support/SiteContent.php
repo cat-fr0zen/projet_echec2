@@ -29,7 +29,7 @@ final class SiteContent
 
         $navigationSecondaire = [
             ['slug' => 'club', 'label' => 'Le club'],
-            ['slug' => 'activites', 'label' => 'Activités'],
+            ['slug' => 'activites', 'label' => 'Evenements'],
             ['slug' => 'contact', 'label' => 'Contact'],
         ];
 
@@ -558,10 +558,10 @@ final class SiteContent
                 intro: "Cette page est réservée à la présentation officielle du club, de ses responsables et de son fonctionnement validé."
             ),
             'activites' => $this->page(
-                'Activités',
+                'Evenements',
                 'activites.php',
-                'Organisation des activités, documents utiles et publication officielle.',
-                intro: "Cette page accueillera les activités, les documents et le calendrier uniquement lorsqu'ils auront été officiellement validés."
+                'Evenements speciaux du club, dates utiles et publication officielle.',
+                intro: "Retrouve ici les evenements speciaux annonces officiellement par le club."
             ),
             'contact' => $this->page(
                 'Contact',

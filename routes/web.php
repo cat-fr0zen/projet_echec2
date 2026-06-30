@@ -66,6 +66,10 @@ Route::post('/mot-de-passe/reinitialiser', [ResetPasswordController::class, 'upd
 
 Route::get('/merch', fn () => redirect()->route('boutique'))->name('merch');
 
+Route::get('/articles/{identifiant}', [PageController::class, 'showArticle'])
+    ->where('identifiant', '[A-Za-z0-9_-]+')
+    ->name('articles.show');
+
 Route::get('/{page}', [PageController::class, 'show'])
     ->where('page', $pagesRoutables)
     ->name('page.show');

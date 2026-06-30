@@ -210,6 +210,11 @@ final class NewsletterRepository
         string $statutEnvoi,
         string $erreurEnvoi = ''
     ): void {
+        DB::table('ref_type_evenement_newsletter')->insertOrIgnore([
+            'code_type_evenement' => $typeEvenement,
+            'libelle_type_evenement' => ucfirst($typeEvenement),
+        ]);
+
         DB::table('newsletter_envoi')->insert([
             'identifiant_envoi' => 'newsletter_envoi_' . bin2hex(random_bytes(8)),
             'identifiant_abonnement' => $identifiantAbonnement,

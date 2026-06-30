@@ -51,6 +51,7 @@ $courseFormaterDate = static function (string $date): string {
 };
 
 $courseDocumentsGroupes = [];
+$courseRechercheActive = in_array($courseRubrique, ['cours', 'methodologie', 'strategie'], true);
 
 foreach ($courseDocuments as $courseDocument) {
     $courseGroupeDocument = trim((string) ($courseDocument['groupe_document'] ?? ''));
@@ -87,6 +88,33 @@ foreach ($courseDocuments as $courseDocument) {
         </div>
     </div>
 
+    <?php if ($courseRechercheActive): ?>
+        <div
+            class="course-search"
+            data-course-search
+            data-course-search-empty-message="Aucun document ne correspond a cette recherche."
+        >
+            <label class="course-search-label" for="<?= e($courseRubrique) ?>-search">
+                Rechercher dans <?= e(mb_strtolower($courseTitre, 'UTF-8')) ?>
+            </label>
+            <div class="course-search-field">
+                <input
+                    id="<?= e($courseRubrique) ?>-search"
+                    class="course-search-input"
+                    type="search"
+                    name="<?= e($courseRubrique) ?>_search"
+                    placeholder="Titre, dossier, description, PDF..."
+                    autocomplete="off"
+                    spellcheck="false"
+                    data-course-search-input
+                    aria-describedby="<?= e($courseRubrique) ?>-search-status"
+                >
+                <button type="button" class="course-search-reset" data-course-search-reset hidden>Effacer</button>
+            </div>
+            <p id="<?= e($courseRubrique) ?>-search-status" class="course-search-status" data-course-search-status aria-live="polite"></p>
+        </div>
+    <?php endif; ?>
+
     <div class="course-document-list">
         <?php if ($courseDocuments === []): ?>
             <div class="empty-state course-empty-state">
@@ -103,7 +131,11 @@ foreach ($courseDocuments as $courseDocument) {
                     : [];
                 ?>
 
-                <section class="course-document-group<?= $courseLabelGroupe === '' ? ' course-document-group--root' : '' ?>">
+                <section
+                    class="course-document-group<?= $courseLabelGroupe === '' ? ' course-document-group--root' : '' ?>"
+                    data-course-search-group
+                    data-course-search-text="<?= e(mb_strtolower($courseLabelGroupe, 'UTF-8')) ?>"
+                >
                     <?php if ($courseLabelGroupe !== ''): ?>
                         <div class="course-document-group-head">
                             <p class="card-tag">Dossier</p>
@@ -119,7 +151,11 @@ foreach ($courseDocuments as $courseDocument) {
                             : [];
                         ?>
 
-                        <div class="course-document-subgroup<?= $courseLabelSousGroupe === '' ? ' course-document-subgroup--root' : '' ?>">
+                        <div
+                            class="course-document-subgroup<?= $courseLabelSousGroupe === '' ? ' course-document-subgroup--root' : '' ?>"
+                            data-course-search-subgroup
+                            data-course-search-text="<?= e(mb_strtolower($courseLabelSousGroupe, 'UTF-8')) ?>"
+                        >
                             <?php if ($courseLabelSousGroupe !== ''): ?>
                                 <p class="course-document-subgroup-title"><?= e($courseLabelSousGroupe) ?></p>
                             <?php endif; ?>
@@ -149,9 +185,22 @@ foreach ($courseDocuments as $courseDocument) {
                                     if ($courseDateMiseAJour !== '') {
                                         $courseMetaDocument[] = 'Mis a jour le '.$courseDateMiseAJour;
                                     }
+
+                                    $courseSearchChunks = array_filter([
+                                        $courseTitreDocument,
+                                        $courseDescriptionDocument,
+                                        $courseLabelGroupe,
+                                        $courseLabelSousGroupe,
+                                        implode(' ', $courseMetaDocument),
+                                    ], static fn ($value): bool => trim((string) $value) !== '');
+                                    $courseSearchText = mb_strtolower(implode(' ', $courseSearchChunks), 'UTF-8');
                                     ?>
 
-                                    <article class="course-document-row">
+                                    <article
+                                        class="course-document-row"
+                                        data-course-search-item
+                                        data-course-search-text="<?= e($courseSearchText) ?>"
+                                    >
                                         <div class="course-document-row-main">
                                             <div class="course-document-main">
                                                 <?php if ($coursePeutGererDocuments): ?>
@@ -284,6 +333,10 @@ foreach ($courseDocuments as $courseDocument) {
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
+
+    <?php if ($courseRechercheActive): ?>
+        <p class="course-search-empty" data-course-search-empty hidden>Aucun document ne correspond a cette recherche.</p>
+    <?php endif; ?>
 
     <?php if ($coursePeutGererDocuments): ?>
         <details class="course-upload-toggle">

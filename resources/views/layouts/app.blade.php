@@ -76,9 +76,112 @@ $cspNonce = (string) request()->attributes->get('csp_nonce', '');
             <?php require $fichierVue; ?>
         </main>
     </div>
+    <button
+        type="button"
+        class="scroll-jump-button"
+        data-scroll-jump
+        hidden
+        aria-label="Aller en bas de la page"
+        title="Aller en bas de la page"
+    >
+        <span class="scroll-jump-button__icon" data-scroll-jump-icon aria-hidden="true">↓</span>
+        <span class="scroll-jump-button__label" data-scroll-jump-label>Bas</span>
+    </button>
+    <button
+        type="button"
+        class="accessibility-toggle"
+        data-accessibility-open
+        aria-haspopup="dialog"
+        aria-controls="accessibility-panel"
+        aria-expanded="false"
+        aria-label="Ouvrir les options de lecture confortable"
+        title="Lecture confortable"
+    >
+        <span aria-hidden="true">Aa</span>
+        <span class="accessibility-toggle__label">Lecture</span>
+    </button>
     <?php require dirname(__DIR__) . '/partials/pied-de-page.blade.php'; ?>
     <?php require dirname(__DIR__) . '/partials/modale-authentification.blade.php'; ?>
     <?php require dirname(__DIR__) . '/partials/consentement.blade.php'; ?>
+    <div
+        id="accessibility-panel"
+        class="accessibility-panel"
+        data-accessibility-panel
+        hidden
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="accessibility-panel-title"
+        aria-describedby="accessibility-panel-description"
+    >
+        <div class="accessibility-panel__card" tabindex="-1">
+            <div class="accessibility-panel__topbar">
+                <div>
+                    <p class="eyebrow">Accessibilite</p>
+                    <h2 id="accessibility-panel-title">Lecture confortable</h2>
+                    <p id="accessibility-panel-description" class="accessibility-panel__description">
+                        Active un mode plus lisible et ajuste le texte, le contraste et la lecture de la page.
+                    </p>
+                </div>
+                <button type="button" class="accessibility-panel__close" data-accessibility-close aria-label="Fermer les options">
+                    Fermer
+                </button>
+            </div>
+
+            <div class="accessibility-panel__actions">
+                <button type="button" class="button button-primary" data-accessibility-preset>Activer lecture confortable</button>
+                <button type="button" class="button button-secondary" data-accessibility-reset>Reinitialiser</button>
+            </div>
+
+            <div class="accessibility-panel__grid">
+                <section class="accessibility-panel__section">
+                    <h3>Texte</h3>
+                    <div class="accessibility-stepper" role="group" aria-label="Taille du texte">
+                        <button type="button" class="button button-secondary" data-accessibility-font-decrease>A-</button>
+                        <p class="accessibility-stepper__value" data-accessibility-font-value>100 %</p>
+                        <button type="button" class="button button-secondary" data-accessibility-font-increase>A+</button>
+                    </div>
+                    <label class="accessibility-option">
+                        <input type="checkbox" data-accessibility-readable-font>
+                        <span>Police plus lisible</span>
+                    </label>
+                    <label class="accessibility-option">
+                        <input type="checkbox" data-accessibility-spacing>
+                        <span>Espacement de texte plus grand</span>
+                    </label>
+                </section>
+
+                <section class="accessibility-panel__section">
+                    <h3>Affichage</h3>
+                    <label class="accessibility-option">
+                        <input type="checkbox" data-accessibility-contrast>
+                        <span>Contraste renforce</span>
+                    </label>
+                    <label class="accessibility-option">
+                        <input type="checkbox" data-accessibility-visible-actions>
+                        <span>Liens et boutons plus visibles</span>
+                    </label>
+                    <label class="accessibility-option">
+                        <input type="checkbox" data-accessibility-reduced-motion>
+                        <span>Reduire les animations</span>
+                    </label>
+                </section>
+
+                <section class="accessibility-panel__section">
+                    <h3>Lecture</h3>
+                    <button type="button" class="button button-secondary" data-accessibility-read>
+                        Lire la page
+                    </button>
+                    <button type="button" class="button button-secondary" data-accessibility-stop-read>
+                        Arreter la lecture
+                    </button>
+                    <p class="accessibility-panel__hint">La lecture vocale utilise la synthese vocale disponible sur l'appareil.</p>
+                </section>
+            </div>
+
+            <p class="accessibility-panel__status" data-accessibility-status aria-live="polite"></p>
+        </div>
+    </div>
     <div
         class="confirm-modal"
         data-confirm-modal
