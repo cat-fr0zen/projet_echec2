@@ -178,7 +178,9 @@ function initConsentGate() {
     }
 
     if (acceptButton instanceof HTMLButtonElement) {
-        acceptButton.addEventListener("click", () => {
+        acceptButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
             setCookieValue(cookieName, "accepted");
             setCookieValue("site_cookie_level", "essential-preferences");
             unlockSite();
@@ -186,7 +188,9 @@ function initConsentGate() {
     }
 
     if (continueButton instanceof HTMLButtonElement) {
-        continueButton.addEventListener("click", () => {
+        continueButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            event.stopPropagation();
             setCookieValue(cookieName, "essential");
             setCookieValue("site_cookie_level", "essential-only");
             unlockSite();
