@@ -15,6 +15,7 @@ use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\EvenementRepository;
+use App\Repositories\MediaAlbumRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
@@ -81,7 +82,8 @@ final class SiteActionHandler
         private ?BoutiqueProduitRepository $depotProduitsBoutique = null,
         private ?ParametreSiteRepository $depotParametresSite = null,
         private ?BureauMembreRepository $depotMembresBureau = null,
-        private ?EvenementRepository $depotEvenements = null
+        private ?EvenementRepository $depotEvenements = null,
+        private ?MediaAlbumRepository $depotAlbumsMedias = null
     ) {
         $this->adhesionRenewalService ??= new AdhesionRenewalService($this->depotUtilisateurs);
         $this->rateLimiter ??= new SensitiveActionRateLimiter;
@@ -90,6 +92,7 @@ final class SiteActionHandler
         $this->depotParametresSite ??= new ParametreSiteRepository;
         $this->depotMembresBureau ??= new BureauMembreRepository;
         $this->depotEvenements ??= new EvenementRepository($this->depotParametresSite);
+        $this->depotAlbumsMedias ??= new MediaAlbumRepository($this->depotParametresSite);
     }
 
     /**
@@ -156,6 +159,10 @@ final class SiteActionHandler
             case 'submit_media':
                 $this->traiterSoumissionMedia();
                 break;
+            case 'creer_media_admin':
+            case 'create_admin_media':
+                $this->traiterSoumissionMediaAdmin();
+                break;
             case 'commander_produit':
             case 'order_product':
                 $this->traiterCommandeProduit();
@@ -207,6 +214,22 @@ final class SiteActionHandler
             case 'moderer_media':
             case 'review_media':
                 $this->traiterModerationMedia();
+                break;
+            case 'creer_album_media':
+            case 'create_media_album':
+                $this->traiterCreationAlbumMedia();
+                break;
+            case 'soumettre_album_media':
+            case 'submit_media_album':
+                $this->traiterSoumissionAlbumMedia();
+                break;
+            case 'moderer_album_media':
+            case 'review_media_album':
+                $this->traiterModerationAlbumMedia();
+                break;
+            case 'supprimer_album_media':
+            case 'delete_media_album':
+                $this->traiterSuppressionAlbumMedia();
                 break;
             case 'mettre_a_jour_statut_commande':
             case 'update_order_status':
@@ -1089,6 +1112,98 @@ final class SiteActionHandler
         rediriger_vers(url_route('mediatheque'));
     }
 
+    /** Upload d'un media depuis l'administration. */
+    private function traiterSoumissionMediaAdmin(): void
+    {
+        $this->exigerAdmin();
+
+        $utilisateurCourant = $this->obtenirUtilisateurCourant();
+
+        if ($utilisateurCourant === null) {
+            ajouter_message_flash('error', 'Session administrateur introuvable.');
+            rediriger_vers(url_route('admin'));
+        }
+
+        $titre = trim((string) ($_POST['titre_media'] ?? $_POST['media_title'] ?? ''));
+        $description = trim((string) ($_POST['description_media'] ?? $_POST['media_description'] ?? ''));
+        $typeMedia = trim((string) ($_POST['type_media'] ?? $_POST['media_type'] ?? ''));
+        $statut = trim((string) ($_POST['statut_media_creation'] ?? 'publie'));
+        $fichier = $_FILES['media_fichier'] ?? null;
+
+        $erreurs = [];
+
+        if ($titre === '' || mb_strlen($titre) > 150) {
+            $erreurs[] = 'Le titre du média est obligatoire et doit rester inférieur à 150 caractères.';
+        }
+
+        if (mb_strlen($description) > 500) {
+            $erreurs[] = 'La description du média doit rester inférieure à 500 caractères.';
+        }
+
+        if (! in_array($typeMedia, [DepotMedias::TYPE_PHOTO, DepotMedias::TYPE_VIDEO], true)) {
+            $erreurs[] = 'Le type de média est invalide.';
+        }
+
+        if (! in_array($statut, [DepotMedias::STATUT_EN_ATTENTE, DepotMedias::STATUT_PUBLIE], true)) {
+            $erreurs[] = 'Le statut de publication est invalide.';
+        }
+
+        if (! is_array($fichier) || (($fichier['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK)) {
+            $erreurs[] = 'Un fichier valide est obligatoire.';
+        }
+
+        if ($erreurs !== []) {
+            ajouter_message_flash('error', implode(' ', $erreurs));
+            rediriger_vers(url_route('admin'));
+        }
+
+        $validationFichier = $this->validerFichierMedia($fichier, $typeMedia);
+
+        if ($validationFichier['erreurs'] !== []) {
+            ajouter_message_flash('error', implode(' ', $validationFichier['erreurs']));
+            rediriger_vers(url_route('admin').'#admin-media');
+        }
+
+        if (! $this->preparerDossierUpload($this->dossierUploadMedias)) {
+            ajouter_message_flash('error', "Le dossier d'envoi des medias n'est pas disponible.");
+            rediriger_vers(url_route('admin').'#admin-media');
+        }
+
+        $nomStocke = 'media_'.bin2hex(random_bytes(12)).'.'.$validationFichier['extension'];
+        $cheminDestination = rtrim($this->dossierUploadMedias, '/\\').DIRECTORY_SEPARATOR.$nomStocke;
+
+        if (! $this->deplacerFichierTeleverse((string) $fichier['tmp_name'], $cheminDestination)) {
+            ajouter_message_flash('error', 'Le téléversement du média a échoué.');
+            rediriger_vers(url_route('admin').'#admin-media');
+        }
+
+        $this->securiserFichierTeleverse($cheminDestination);
+
+        $nomAuteur = trim((string) $utilisateurCourant['prenom'].' '.(string) $utilisateurCourant['nom']);
+
+        $this->depotMedias->creer([
+            'identifiant_auteur' => $utilisateurCourant['identifiant'],
+            'nom_auteur' => $nomAuteur !== '' ? $nomAuteur : (string) $utilisateurCourant['courriel'],
+            'type_media' => $typeMedia,
+            'titre' => $titre,
+            'description' => $description,
+            'nom_fichier_original' => (string) ($fichier['name'] ?? ''),
+            'nom_fichier_stocke' => $nomStocke,
+            'chemin_public' => UploadStorage::cheminMedia($nomStocke),
+            'type_mime' => $validationFichier['mime'],
+            'taille_octets' => (int) ($fichier['size'] ?? 0),
+            'statut' => $statut,
+        ]);
+
+        ajouter_message_flash(
+            'success',
+            $statut === DepotMedias::STATUT_PUBLIE
+                ? 'Le média a été ajouté et publié.'
+                : 'Le média a été ajouté en attente de validation.'
+        );
+        rediriger_vers(url_route('admin'));
+    }
+
     /** Moderation d'un article (admin). */
     private function traiterModerationArticle(): void
     {
@@ -1114,7 +1229,7 @@ final class SiteActionHandler
 
         if ($articleMisAJour === null) {
             ajouter_message_flash('error', "Impossible de mettre à jour l'article.");
-            rediriger_vers(url_route('admin'));
+            rediriger_vers(url_route('admin').'#admin-media');
         }
 
         ajouter_message_flash('success', "Le statut de l'article a été mis à jour.");
@@ -1154,6 +1269,152 @@ final class SiteActionHandler
 
         ajouter_message_flash('success', 'Le statut du média a été mis à jour.');
         rediriger_vers(url_route('admin'));
+    }
+
+    /** Creation d'un album de medias admin. */
+    private function traiterCreationAlbumMedia(): void
+    {
+        $this->exigerAdmin();
+
+        $titre = trim((string) ($_POST['titre_album_media'] ?? ''));
+        $description = trim((string) ($_POST['description_album_media'] ?? ''));
+        $mediaIds = $_POST['album_media_ids'] ?? [];
+        $mediaIds = is_array($mediaIds) ? array_values(array_filter(array_map('trim', $mediaIds))) : [];
+
+        if ($titre === '' || mb_strlen($titre) > 150) {
+            ajouter_message_flash('error', "Le titre de l'album est obligatoire et doit rester inferieur a 150 caracteres.");
+            rediriger_vers(url_route('admin').'#admin-media');
+        }
+
+        if (mb_strlen($description) > 500) {
+            ajouter_message_flash('error', "La description de l'album doit rester inferieure a 500 caracteres.");
+            rediriger_vers(url_route('admin').'#admin-media');
+        }
+
+        if ($mediaIds === []) {
+            ajouter_message_flash('error', 'Selectionne au moins un media pour creer un album.');
+            rediriger_vers(url_route('admin').'#admin-media');
+        }
+
+        $mediasDisponibles = array_values(array_filter(
+            $this->depotMedias->listerTous(),
+            static fn (array $media): bool => (string) ($media['statut'] ?? '') !== DepotMedias::STATUT_REFUSE
+        ));
+        $mediaIdsDisponibles = array_column($mediasDisponibles, 'identifiant');
+        $mediaIdsValides = array_values(array_intersect($mediaIds, $mediaIdsDisponibles));
+
+        if ($mediaIdsValides === []) {
+            ajouter_message_flash('error', "L'album doit contenir au moins un media autorise.");
+            rediriger_vers(url_route('admin').'#admin-media');
+        }
+
+        $this->depotAlbumsMedias->ajouter([
+            'titre' => $titre,
+            'description' => $description,
+            'media_ids' => $mediaIdsValides,
+            'statut' => MediaAlbumRepository::STATUT_PUBLIE,
+        ]);
+
+        ajouter_message_flash('success', "L'album media a ete cree.");
+        rediriger_vers(url_route('admin').'#admin-media');
+    }
+
+    /** Soumission d'un album de medias depuis l'espace membre. */
+    private function traiterSoumissionAlbumMedia(): void
+    {
+        $utilisateurCourant = $this->obtenirUtilisateurCourant();
+
+        if ($utilisateurCourant === null) {
+            ajouter_message_flash('error', 'Vous devez être connecté pour proposer un album.');
+            rediriger_vers(url_route('mediatheque'));
+        }
+
+        if (! $this->utilisateurPeutPublierContenu($utilisateurCourant)) {
+            ajouter_message_flash('error', 'Seuls les adhérents du club peuvent proposer un album.');
+            rediriger_vers(url_route('mediatheque'));
+        }
+
+        $titre = trim((string) ($_POST['titre_album_media'] ?? ''));
+        $description = trim((string) ($_POST['description_album_media'] ?? ''));
+        $mediaIds = $_POST['album_media_ids'] ?? [];
+        $mediaIds = is_array($mediaIds) ? array_values(array_filter(array_map('trim', $mediaIds))) : [];
+
+        if ($titre === '' || mb_strlen($titre) > 150) {
+            ajouter_message_flash('error', "Le titre de l'album est obligatoire et doit rester inférieur à 150 caractères.");
+            rediriger_vers(url_route('mediatheque'));
+        }
+
+        if (mb_strlen($description) > 500) {
+            ajouter_message_flash('error', "La description de l'album doit rester inférieure à 500 caractères.");
+            rediriger_vers(url_route('mediatheque'));
+        }
+
+        if ($mediaIds === []) {
+            ajouter_message_flash('error', 'Sélectionne au moins un média de ton compte pour créer un album.');
+            rediriger_vers(url_route('mediatheque'));
+        }
+
+        $mediasAuteur = $this->depotMedias->trouverParIdentifiantAuteur((string) $utilisateurCourant['identifiant']);
+        $mediaIdsAutorises = array_values(array_map(
+            static fn (array $media): string => (string) ($media['identifiant'] ?? ''),
+            array_filter(
+                $mediasAuteur,
+                static fn (array $media): bool => (string) ($media['statut'] ?? '') !== DepotMedias::STATUT_REFUSE
+            )
+        ));
+        $mediaIdsValides = array_values(array_intersect($mediaIds, $mediaIdsAutorises));
+
+        if ($mediaIdsValides === []) {
+            ajouter_message_flash('error', "L'album doit contenir au moins un média autorisé de ton compte.");
+            rediriger_vers(url_route('mediatheque'));
+        }
+
+        $nomAuteur = trim((string) $utilisateurCourant['prenom'].' '.(string) $utilisateurCourant['nom']);
+
+        $this->depotAlbumsMedias->ajouter([
+            'titre' => $titre,
+            'description' => $description,
+            'media_ids' => $mediaIdsValides,
+            'identifiant_auteur' => (string) $utilisateurCourant['identifiant'],
+            'nom_auteur' => $nomAuteur !== '' ? $nomAuteur : (string) $utilisateurCourant['courriel'],
+            'statut' => MediaAlbumRepository::STATUT_EN_ATTENTE,
+        ]);
+
+        ajouter_message_flash('success', 'Votre album a été envoyé à la modération.');
+        rediriger_vers(url_route('mediatheque'));
+    }
+
+    /** Moderation d'un album de medias (admin). */
+    private function traiterModerationAlbumMedia(): void
+    {
+        $this->exigerAdmin();
+
+        $identifiantAlbum = trim((string) ($_POST['identifiant_album_media'] ?? ''));
+        $statut = trim((string) ($_POST['statut_album_media'] ?? ''));
+
+        if ($identifiantAlbum === '' || $this->depotAlbumsMedias->changerStatut($identifiantAlbum, $statut) === null) {
+            ajouter_message_flash('error', "Impossible de mettre à jour l'album média.");
+            rediriger_vers(url_route('admin').'#admin-media');
+        }
+
+        ajouter_message_flash('success', "Le statut de l'album média a été mis à jour.");
+        rediriger_vers(url_route('admin').'#admin-media');
+    }
+
+    /** Suppression d'un album de medias admin. */
+    private function traiterSuppressionAlbumMedia(): void
+    {
+        $this->exigerAdmin();
+
+        $identifiantAlbum = trim((string) ($_POST['identifiant_album_media'] ?? ''));
+
+        if ($identifiantAlbum === '' || ! $this->depotAlbumsMedias->supprimer($identifiantAlbum)) {
+            ajouter_message_flash('error', "Impossible de supprimer l'album media.");
+            rediriger_vers(url_route('admin').'#admin-media');
+        }
+
+        ajouter_message_flash('success', "L'album media a ete supprime.");
+        rediriger_vers(url_route('admin').'#admin-media');
     }
 
     /** Ancien point d'entree: redirige vers le nouveau panier boutique. */
@@ -2645,3 +2906,4 @@ final class SiteActionHandler
         exit;
     }
 }
+

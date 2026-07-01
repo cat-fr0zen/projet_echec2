@@ -14,7 +14,7 @@ use Throwable;
 final class ScheduleRepository
 {
     private const IDENTIFIANT = 'club_schedule';
-    private const MAX_ITEMS = 16;
+    private const MAX_ITEMS = 50;
 
     public function obtenir(): array
     {

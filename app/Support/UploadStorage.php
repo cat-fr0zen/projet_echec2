@@ -26,7 +26,7 @@ final class UploadStorage
 
     public static function dossierCours(): string
     {
-        $dossierPersonnalise = trim((string) env('COURSE_UPLOADS_PATH', ''));
+        $dossierPersonnalise = trim((string) env('PDF_STORAGE_PATH', env('COURSE_UPLOADS_PATH', '')));
 
         if ($dossierPersonnalise !== '') {
             return $dossierPersonnalise;

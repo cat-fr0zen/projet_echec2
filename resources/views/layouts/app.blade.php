@@ -161,10 +161,6 @@ $cspNonce = (string) request()->attributes->get('csp_nonce', '');
                         <input type="checkbox" data-accessibility-visible-actions>
                         <span>Liens et boutons plus visibles</span>
                     </label>
-                    <label class="accessibility-option">
-                        <input type="checkbox" data-accessibility-reduced-motion>
-                        <span>Reduire les animations</span>
-                    </label>
                 </section>
 
                 <section class="accessibility-panel__section">
@@ -206,6 +202,22 @@ $cspNonce = (string) request()->attributes->get('csp_nonce', '');
                 <button type="button" class="button button-secondary" data-confirm-modal-cancel>Annuler</button>
                 <button type="button" class="button button-danger" data-confirm-modal-submit>Oui, supprimer définitivement</button>
             </div>
+        </div>
+    </div>
+    <div
+        class="media-lightbox"
+        data-media-lightbox
+        hidden
+        aria-hidden="true"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="media-lightbox-title"
+    >
+        <div class="media-lightbox-panel" tabindex="-1">
+            <button type="button" class="media-lightbox-close" data-media-lightbox-close aria-label="Fermer le média agrandi">&times;</button>
+            <p class="eyebrow">Médiathèque</p>
+            <h2 id="media-lightbox-title" class="media-lightbox-title">Aperçu agrandi</h2>
+            <div class="media-lightbox-content" data-media-lightbox-content></div>
         </div>
     </div>
     <script src="<?= e($siteScriptUrl) ?>" defer nonce="<?= e($cspNonce) ?>"></script>

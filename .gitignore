@@ -42,6 +42,10 @@
 /storage/framework/views/*
 /storage/app/*
 !/storage/app/.gitignore
+/storage/*
+!/storage/.gitkeep
+!/storage/pdfs/
+!/storage/pdfs/.gitkeep
 
 # Tests et rapports locaux
 /coverage/
@@ -87,3 +91,7 @@
 # Artefacts front locaux
 /public/build/
 /public/hot
+
+# Build de preparation deploiement
+/build/*
+!/build/.gitignore

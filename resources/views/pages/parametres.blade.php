@@ -29,7 +29,7 @@ $registreCookies = $donneesSite['registre_cookies'] ?? $donneesSite['cookie_regi
         <div class="stack-list">
             <div class="schedule-item">
                 <h3>Ameliorations disponibles</h3>
-                <p>Taille du texte, contraste renforce, police plus lisible, espacement du texte, boutons plus visibles, reduction des animations et lecture vocale.</p>
+                <p>Taille du texte, contraste renforce, police plus lisible, espacement du texte, boutons plus visibles et lecture vocale.</p>
             </div>
             <div class="schedule-item">
                 <h3>Ouvrir les reglages</h3>

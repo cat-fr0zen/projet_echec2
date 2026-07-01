@@ -4147,8 +4147,103 @@ body[data-theme="dark"] .legal-card {
     object-fit: cover;
 }
 
+.media-card--clickable {
+    padding: 0.8rem;
+}
+
+.media-card-trigger {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: zoom-in;
+    text-align: left;
+}
+
+.media-card-trigger .media-preview {
+    margin-top: 0;
+}
+
+.media-card-trigger:focus-visible {
+    outline: 2px solid rgba(196, 147, 63, 0.75);
+    outline-offset: 0.25rem;
+    border-radius: 1rem;
+}
+
 .media-preview--small {
     max-height: 12rem;
+}
+
+.media-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgba(22, 16, 10, 0.82);
+    backdrop-filter: blur(8px);
+}
+
+.media-lightbox[hidden] {
+    display: none;
+}
+
+.media-lightbox-panel {
+    position: relative;
+    width: min(92vw, 72rem);
+    max-height: 90vh;
+    padding: 1.25rem;
+    overflow: auto;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 1.4rem;
+    background: linear-gradient(180deg, rgba(255, 250, 241, 0.98), rgba(248, 239, 221, 0.96));
+    box-shadow: 0 2rem 4rem rgba(0, 0, 0, 0.28);
+}
+
+.media-lightbox-close {
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    width: 2.6rem;
+    height: 2.6rem;
+    border: 1px solid rgba(120, 94, 52, 0.18);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #20150d;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.media-lightbox-title {
+    margin-right: 3rem;
+}
+
+.media-lightbox-content {
+    margin-top: 1rem;
+}
+
+.media-lightbox-media {
+    display: block;
+    width: 100%;
+    max-height: 72vh;
+    margin: 0 auto;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.4);
+    object-fit: contain;
+}
+
+body[data-theme="dark"] .media-lightbox-panel {
+    border-color: rgba(232, 212, 177, 0.15);
+    background: linear-gradient(180deg, rgba(31, 24, 21, 0.98), rgba(46, 34, 25, 0.96));
+}
+
+body[data-theme="dark"] .media-lightbox-close {
+    border-color: rgba(232, 212, 177, 0.16);
+    background: rgba(57, 44, 35, 0.9);
+    color: #f6ead9;
 }
 
 .admin-summary-grid {
@@ -4570,6 +4665,101 @@ h3,
     font-weight: 600;
     letter-spacing: -0.04em;
     text-wrap: balance;
+}
+
+.page-banner--error {
+    padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.error-page {
+    display: grid;
+    grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+    gap: clamp(1.25rem, 3vw, 2.5rem);
+    align-items: center;
+}
+
+.error-page__visual {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: 220px;
+    padding: 1rem;
+}
+
+.error-page__visual::before {
+    content: "";
+    position: absolute;
+    inset: 12% 8%;
+    border-radius: 999px;
+    background:
+        radial-gradient(circle, rgba(222, 184, 111, 0.36), rgba(222, 184, 111, 0.06) 58%, transparent 72%);
+    filter: blur(4px);
+}
+
+.error-page__logo {
+    position: relative;
+    z-index: 1;
+    width: min(180px, 100%);
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 40px rgba(77, 53, 26, 0.18));
+}
+
+.error-page__badge {
+    position: absolute;
+    right: 12%;
+    bottom: 12%;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 4.5rem;
+    min-height: 4.5rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(131, 89, 27, 0.18);
+    border-radius: 999px;
+    background: linear-gradient(135deg, #deb86f, #b77d2b);
+    color: #1b1411;
+    font-family: "Cormorant Garamond", Georgia, serif;
+    font-size: 2rem;
+    font-weight: 700;
+    box-shadow:
+        0 16px 32px rgba(150, 103, 28, 0.24),
+        inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+.error-page__content {
+    position: relative;
+    z-index: 1;
+}
+
+.error-page__lead {
+    font-size: 1.08rem;
+    font-weight: 600;
+}
+
+.error-page__hint {
+    max-width: 44rem;
+}
+
+@media (max-width: 760px) {
+    .error-page {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .error-page__visual {
+        min-height: 180px;
+    }
+
+    .error-page__badge {
+        right: 18%;
+        bottom: 4%;
+    }
+
+    .error-page .button-row {
+        justify-content: center;
+    }
 }
 
 .lead {

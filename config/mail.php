@@ -26,8 +26,8 @@ return [
             'host' => $mailProvider['host'],
             'port' => $mailProvider['port'],
             'encryption' => $mailProvider['encryption'],
-            'username' => env('MAIL_USERNAME'),
-            'password' => env('MAIL_PASSWORD'),
+            'username' => env('MAIL_USERNAME', env('MAIL_FROM')),
+            'password' => env('MAIL_PASSWORD', env('MAIL_PASS')),
             'timeout' => null,
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
             'verify_peer' => $mailVerifyPeer ?? true,
@@ -52,7 +52,7 @@ return [
     ],
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'noreply@cavaliers-herouville.fr'),
+        'address' => env('MAIL_FROM_ADDRESS', env('MAIL_FROM', 'noreply@cavaliers-herouville.fr')),
         'name' => env('MAIL_FROM_NAME', "Cavaliers d'Herouville"),
     ],
 ];

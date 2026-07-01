@@ -15,6 +15,7 @@ use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\EvenementRepository;
+use App\Repositories\MediaAlbumRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
@@ -53,7 +54,8 @@ final class SitePageRenderer
         private ?BoutiqueProduitRepository $boutiqueProduitRepository = null,
         private ?ParametreSiteRepository $parametreSiteRepository = null,
         private ?BureauMembreRepository $bureauMembreRepository = null,
-        private ?EvenementRepository $evenementRepository = null
+        private ?EvenementRepository $evenementRepository = null,
+        private ?MediaAlbumRepository $mediaAlbumRepository = null
     ) {}
 
     public function afficher(string $segment): string
@@ -96,6 +98,7 @@ final class SitePageRenderer
         $this->parametreSiteRepository ??= new ParametreSiteRepository;
         $this->bureauMembreRepository ??= new BureauMembreRepository;
         $this->evenementRepository ??= new EvenementRepository($this->parametreSiteRepository);
+        $this->mediaAlbumRepository ??= new MediaAlbumRepository($this->parametreSiteRepository);
         $siteData['cartes_boutique'] = $this->boutiqueProduitRepository->listerCatalogue();
         $siteData['lien_helloasso_boutique'] = $this->parametreSiteRepository->obtenirLienBoutiqueHelloAsso();
         $siteData['helloasso_shop_url'] = $siteData['lien_helloasso_boutique'];
@@ -330,6 +333,10 @@ final class SitePageRenderer
             $myMedia = $currentUser !== null
                 ? $this->mediaRepository->trouverParIdentifiantAuteur((string) $currentUser['identifiant'])
                 : [];
+            $publishedAlbums = $this->mediaAlbumRepository->listerPublies();
+            $myAlbums = $currentUser !== null
+                ? $this->mediaAlbumRepository->listerParIdentifiantAuteur((string) $currentUser['identifiant'])
+                : [];
 
             $siteData['articles_publies'] = $publishedArticles;
             $siteData['published_articles'] = $publishedArticles;
@@ -337,8 +344,14 @@ final class SitePageRenderer
             $siteData['my_articles'] = $myArticles;
             $siteData['medias_publies'] = $publishedMedia;
             $siteData['published_media'] = $publishedMedia;
+            $siteData['albums_medias'] = $this->hydraterAlbumsMedias(
+                $publishedAlbums,
+                $publishedMedia
+            );
             $siteData['mes_medias'] = $myMedia;
             $siteData['my_media'] = $myMedia;
+            $siteData['mes_albums_medias'] = $this->hydraterAlbumsMedias($myAlbums, $myMedia);
+            $siteData['my_media_albums'] = $siteData['mes_albums_medias'];
             $siteData['peut_gerer_documents_cours'] = $authData['est_admin'] || $authData['est_prof'];
             $siteData['documents_cours_par_rubrique'] = $siteData['peut_gerer_documents_cours']
                 ? $this->coursDocumentRepository->listerParRubrique()
@@ -368,6 +381,9 @@ final class SitePageRenderer
             $siteData['all_articles'] = $siteData['tous_articles'];
             $siteData['tous_medias'] = $authData['est_admin'] ? $this->mediaRepository->listerTous() : [];
             $siteData['all_media'] = $siteData['tous_medias'];
+            $siteData['all_media_albums'] = $authData['est_admin']
+                ? $this->hydraterAlbumsMedias($this->mediaAlbumRepository->lister(), $siteData['tous_medias'])
+                : [];
             $siteData['commandes_membre'] = $currentUser !== null
                 ? $this->orderRepository->listerParIdentifiantUtilisateur((string) $currentUser['identifiant'])
                 : [];
@@ -436,8 +452,11 @@ final class SitePageRenderer
         $siteData['my_articles'] = [];
         $siteData['medias_publies'] = [];
         $siteData['published_media'] = [];
+        $siteData['albums_medias'] = [];
         $siteData['mes_medias'] = [];
         $siteData['my_media'] = [];
+        $siteData['mes_albums_medias'] = [];
+        $siteData['my_media_albums'] = [];
         $siteData['peut_gerer_documents_cours'] = false;
         $siteData['documents_cours_par_rubrique'] = [];
         $siteData['tous_utilisateurs'] = [];
@@ -451,9 +470,11 @@ final class SitePageRenderer
         $siteData['all_articles'] = [];
         $siteData['tous_medias'] = [];
         $siteData['all_media'] = [];
+        $siteData['all_media_albums'] = [];
         $this->parametreSiteRepository ??= new ParametreSiteRepository;
         $this->bureauMembreRepository ??= new BureauMembreRepository;
         $this->evenementRepository ??= new EvenementRepository($this->parametreSiteRepository);
+        $this->mediaAlbumRepository ??= new MediaAlbumRepository($this->parametreSiteRepository);
         $siteData['lien_helloasso_boutique'] = $this->parametreSiteRepository->obtenirLienBoutiqueHelloAsso();
         $siteData['helloasso_shop_url'] = $siteData['lien_helloasso_boutique'];
         $siteData['accueil_liens_utiles'] = $this->chargerLiensUtilesAccueil();
@@ -494,6 +515,52 @@ final class SitePageRenderer
         $siteData['evenements_speciaux'] = $this->evenementRepository->lister();
 
         return $siteData;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $albums
+     * @param  array<int, array<string, mixed>>  $medias
+     * @return array<int, array<string, mixed>>
+     */
+    private function hydraterAlbumsMedias(array $albums, array $medias): array
+    {
+        $mediasParId = [];
+
+        foreach ($medias as $media) {
+            $identifiant = (string) ($media['identifiant'] ?? '');
+
+            if ($identifiant !== '') {
+                $mediasParId[$identifiant] = $media;
+            }
+        }
+
+        $albumsHydrates = [];
+
+        foreach ($albums as $album) {
+            $elements = [];
+
+            foreach (($album['media_ids'] ?? []) as $mediaId) {
+                if (isset($mediasParId[$mediaId])) {
+                    $elements[] = $mediasParId[$mediaId];
+                }
+            }
+
+            if ($elements === []) {
+                continue;
+            }
+
+            $albumsHydrates[] = [
+                'identifiant' => (string) ($album['identifiant'] ?? ''),
+                'titre' => (string) ($album['titre'] ?? ''),
+                'description' => (string) ($album['description'] ?? ''),
+                'media_ids' => $album['media_ids'] ?? [],
+                'medias' => $elements,
+                'nombre_medias' => count($elements),
+                'apercu' => array_slice($elements, 0, 3),
+            ];
+        }
+
+        return $albumsHydrates;
     }
 
     /**

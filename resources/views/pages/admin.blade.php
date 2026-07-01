@@ -14,6 +14,7 @@
 $allUsers = $siteData['all_users'] ?? [];
 $allArticles = $siteData['all_articles'] ?? [];
 $allMedia = $siteData['all_media'] ?? [];
+$allMediaAlbums = $siteData['all_media_albums'] ?? [];
 $allOrders = $siteData['all_orders'] ?? [];
 $authData = is_array($siteData['authentification'] ?? null) ? $siteData['authentification'] : [];
 $currentAdmin = is_array($authData['user'] ?? null) ? $authData['user'] : [];
@@ -72,6 +73,7 @@ $adminTabs = [
     'newsletter' => 'Newsletter',
     'accueil' => 'Accueil',
     'evenements' => 'Evenements',
+    'media' => 'Media',
     'pilotage' => 'Pilotage',
     'trafic' => 'Trafic',
     'horaires' => 'Horaires',
@@ -81,7 +83,7 @@ $adminTabs = [
     'contenus' => 'Contenus',
 ];
 
-while (count($lignesHorairesAdmin) < 10) {
+while (count($lignesHorairesAdmin) < 50) {
     $lignesHorairesAdmin[] = [
         'day' => '',
         'time' => '',
@@ -115,25 +117,25 @@ while (count($lignesHorairesAdmin) < 10) {
 <section id="admin-newsletter" class="section-block reveal reveal-2 admin-tab-panel" data-admin-tab-panel="newsletter">
     <div class="section-head">
         <p class="eyebrow">Newsletter</p>
-        <h2>Suivre les abonnés et les envois.</h2>
-        <p>Cette zone centralise la liste des emails inscrits, les désabonnements et les derniers messages envoyés.</p>
+        <h2>Suivre les abonnÃ©s et les envois.</h2>
+        <p>Cette zone centralise la liste des emails inscrits, les dÃ©sabonnements et les derniers messages envoyÃ©s.</p>
     </div>
 
     <div class="admin-summary-grid">
         <article class="info-card">
-            <p class="card-tag">Abonnés</p>
+            <p class="card-tag">AbonnÃ©s</p>
             <span class="metric-value"><?= e((string) ($newsletterSummary['abonnes_total'] ?? 0)) ?></span>
             <h3>Total en base</h3>
         </article>
         <article class="info-card">
             <p class="card-tag">Actifs</p>
             <span class="metric-value"><?= e((string) ($newsletterSummary['abonnes_actifs'] ?? 0)) ?></span>
-            <h3>Reçoivent les emails</h3>
+            <h3>ReÃ§oivent les emails</h3>
         </article>
         <article class="info-card">
-            <p class="card-tag">Désabonnés</p>
+            <p class="card-tag">DÃ©sabonnÃ©s</p>
             <span class="metric-value"><?= e((string) ($newsletterSummary['abonnes_desabonnes'] ?? 0)) ?></span>
-            <h3>Ont retiré leur consentement</h3>
+            <h3>Ont retirÃ© leur consentement</h3>
         </article>
         <article class="info-card">
             <p class="card-tag">Envois</p>
@@ -145,8 +147,8 @@ while (count($lignesHorairesAdmin) < 10) {
     <div class="split-grid">
         <article class="panel">
             <div class="section-head section-head--compact">
-                <p class="eyebrow">Abonnés</p>
-                <h2>Qui reçoit la newsletter ?</h2>
+                <p class="eyebrow">AbonnÃ©s</p>
+                <h2>Qui reÃ§oit la newsletter ?</h2>
             </div>
 
             <div class="admin-list admin-list--compact">
@@ -160,9 +162,9 @@ while (count($lignesHorairesAdmin) < 10) {
                         <article class="info-card admin-card admin-card--compact">
                             <p class="card-tag"><?= e((string) ($abonneNewsletter['statut_libelle'] ?? $abonneNewsletter['statut'] ?? 'Actif')) ?></p>
                             <h3><?= e((string) ($abonneNewsletter['courriel'] ?? '')) ?></h3>
-                            <p class="card-subtitle">Source : <?= e((string) ($abonneNewsletter['source_inscription'] ?? 'footer')) ?> · Inscrit le : <?= e((string) ($abonneNewsletter['cree_le'] ?? '')) ?></p>
+                            <p class="card-subtitle">Source : <?= e((string) ($abonneNewsletter['source_inscription'] ?? 'footer')) ?> Â· Inscrit le <?= e((string) ($abonneNewsletter['cree_le_libelle'] ?? $abonneNewsletter['cree_le'] ?? '')) ?></p>
                             <?php if (($abonneNewsletter['desabonne_le'] ?? '') !== ''): ?>
-                                <p class="card-subtitle">Désabonné le : <?= e((string) $abonneNewsletter['desabonne_le']) ?></p>
+                                <p class="card-subtitle">DÃ©sabonnÃ© le <?= e((string) ($abonneNewsletter['desabonne_le_libelle'] ?? $abonneNewsletter['desabonne_le'] ?? '')) ?></p>
                             <?php endif; ?>
                         </article>
                     <?php endforeach; ?>
@@ -173,14 +175,14 @@ while (count($lignesHorairesAdmin) < 10) {
         <article class="panel">
             <div class="section-head section-head--compact">
                 <p class="eyebrow">Derniers envois</p>
-                <h2>Ce qui est parti récemment</h2>
+                <h2>Ce qui est parti rÃ©cemment</h2>
             </div>
 
             <div class="admin-list">
                 <?php if ($newsletterSends === []): ?>
                     <div class="empty-state">
                         <p class="card-tag">Aucun envoi</p>
-                        <h3>Aucun email newsletter n'a encore été journalisé.</h3>
+                        <h3>Aucun email newsletter n'a encore Ã©tÃ© journalisÃ©.</h3>
                     </div>
                 <?php else: ?>
                     <?php foreach ($newsletterSends as $envoiNewsletter): ?>
@@ -188,7 +190,7 @@ while (count($lignesHorairesAdmin) < 10) {
                             <p class="card-tag"><?= e((string) ($envoiNewsletter['type_evenement_libelle'] ?? $envoiNewsletter['code_type_evenement'] ?? '')) ?></p>
                             <h3><?= e((string) ($envoiNewsletter['titre_evenement'] ?? '')) ?></h3>
                             <p><?= e((string) ($envoiNewsletter['courriel'] ?? '')) ?></p>
-                            <p class="card-subtitle"><?= e((string) ($envoiNewsletter['statut_envoi_libelle'] ?? $envoiNewsletter['code_statut_envoi'] ?? '')) ?> - <?= e((string) ($envoiNewsletter['envoye_le'] ?? '')) ?></p>
+                            <p class="card-subtitle"><?= e((string) ($envoiNewsletter['statut_envoi_libelle'] ?? $envoiNewsletter['code_statut_envoi'] ?? '')) ?> - <?= e((string) ($envoiNewsletter['envoye_le_libelle'] ?? $envoiNewsletter['envoye_le'] ?? '')) ?></p>
                         </article>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -200,8 +202,8 @@ while (count($lignesHorairesAdmin) < 10) {
 <section id="admin-newsletter-boutique" class="section-block reveal reveal-6 admin-tab-panel" data-admin-tab-panel="newsletter">
     <div class="section-head">
         <p class="eyebrow">Newsletter</p>
-        <h2>Informer les abonnés d'une nouveauté boutique.</h2>
-        <p>Ce bouton envoie une actualité email aux personnes inscrites à la newsletter lorsque le club ajoute un nouvel objet ou une information boutique.</p>
+        <h2>Informer les abonnÃ©s d'une nouveautÃ© boutique.</h2>
+        <p>Ce bouton envoie une actualitÃ© email aux personnes inscrites Ã  la newsletter lorsque le club ajoute un nouvel objet ou une information boutique.</p>
     </div>
 
     <form method="post" action="<?= e(url_route('admin')) ?>#admin-newsletter-boutique" class="article-form">
@@ -218,15 +220,15 @@ while (count($lignesHorairesAdmin) < 10) {
             required
         >
 
-        <button type="submit" class="button button-primary">Envoyer l'actualité boutique</button>
+        <button type="submit" class="button button-primary">Envoyer l'actualitÃ© boutique</button>
     </form>
 </section>
 
 <section class="section-block reveal reveal-3 admin-tab-panel" data-admin-tab-panel="pilotage">
     <div class="section-head">
         <p class="eyebrow">Tableau de bord</p>
-        <h2>Piloter les comptes, les articles et les médias.</h2>
-        <p>Cette page est réservée au président administrateur. Toutes les décisions se prennent ici sans quitter le site.</p>
+        <h2>Piloter les comptes, les articles et les mÃ©dias.</h2>
+        <p>Cette page est rÃ©servÃ©e au prÃ©sident administrateur. Toutes les dÃ©cisions se prennent ici sans quitter le site.</p>
     </div>
 
     <div class="admin-summary-grid">
@@ -241,9 +243,9 @@ while (count($lignesHorairesAdmin) < 10) {
             <h3>Articles en base</h3>
         </article>
         <article class="info-card">
-            <p class="card-tag">Médias</p>
+            <p class="card-tag">MÃ©dias</p>
             <span class="metric-value"><?= e((string) count($allMedia)) ?></span>
-            <h3>Médias déposés</h3>
+            <h3>MÃ©dias dÃ©posÃ©s</h3>
         </article>
         <article class="info-card">
             <p class="card-tag">Commandes</p>
@@ -253,7 +255,7 @@ while (count($lignesHorairesAdmin) < 10) {
         <article class="info-card">
             <p class="card-tag">Professeurs</p>
             <span class="metric-value"><?= e((string) $profCount) ?> / <?= e((string) $profLimit) ?></span>
-            <h3>Rôles prof attribués</h3>
+            <h3>RÃ´les prof attribuÃ©s</h3>
         </article>
         <article class="info-card">
             <p class="card-tag">Visiteurs</p>
@@ -267,7 +269,7 @@ while (count($lignesHorairesAdmin) < 10) {
     <div class="section-head">
         <p class="eyebrow">Constructeur</p>
         <h2>Modifier simplement les blocs de l'accueil.</h2>
-        <p>Les blocs verrouillés restent à leur place. Les autres peuvent être déplacés ou masqués sans toucher au code.</p>
+        <p>Les blocs verrouillÃ©s restent Ã  leur place. Les autres peuvent Ãªtre dÃ©placÃ©s ou masquÃ©s sans toucher au code.</p>
     </div>
 
     <form method="post" action="<?= e(url_route('admin')) ?>#admin-constructeur" class="admin-form">
@@ -312,9 +314,9 @@ while (count($lignesHorairesAdmin) < 10) {
                                 <span><?= e($estVerrouilleConstructeur ? 'Toujours visible' : 'Afficher ce bloc') ?></span>
                             </span>
                             <?php if ($estVerrouilleConstructeur): ?>
-                                <small class="form-helper">Ce bloc reste visible et ne peut pas être déplacé.</small>
+                                <small class="form-helper">Ce bloc reste visible et ne peut pas Ãªtre dÃ©placÃ©.</small>
                             <?php else: ?>
-                                <small class="form-helper">Décoche cette case pour masquer temporairement ce bloc.</small>
+                                <small class="form-helper">DÃ©coche cette case pour masquer temporairement ce bloc.</small>
                             <?php endif; ?>
                         </label>
 
@@ -324,10 +326,10 @@ while (count($lignesHorairesAdmin) < 10) {
                                 <input
                                     type="text"
                                     name="titre_bloc[<?= e($codeBlocConstructeur) ?>]"
-                                    value="<?= e((string) ($blocConstructeur['titre_personnalise'] ?? 'Présentation')) ?>"
+                                    value="<?= e((string) ($blocConstructeur['titre_personnalise'] ?? 'PrÃ©sentation')) ?>"
                                     maxlength="160"
                                 >
-                                <small class="form-helper">Ce titre s'affiche sur la carte de présentation de l'accueil.</small>
+                                <small class="form-helper">Ce titre s'affiche sur la carte de prÃ©sentation de l'accueil.</small>
                             </label>
 
                             <label class="form-group">
@@ -336,7 +338,7 @@ while (count($lignesHorairesAdmin) < 10) {
                                     name="contenu_bloc[<?= e($codeBlocConstructeur) ?>]"
                                     rows="8"
                                 ><?= e((string) ($blocConstructeur['contenu_personnalise'] ?? '')) ?></textarea>
-                                <small class="form-helper">Tu peux modifier ici le texte de présentation visible publiquement sur l'accueil.</small>
+                                <small class="form-helper">Tu peux modifier ici le texte de prÃ©sentation visible publiquement sur l'accueil.</small>
                             </label>
                         <?php endif; ?>
 
@@ -474,20 +476,20 @@ while (count($lignesHorairesAdmin) < 10) {
 <section class="section-block reveal reveal-3 admin-tab-panel" data-admin-tab-panel="trafic">
     <div class="section-head">
         <p class="eyebrow">Trafic visiteurs</p>
-        <h2>Surveiller le trafic des visiteurs non connectés.</h2>
-        <p>Ce suivi reste centré sur la fréquentation publique du site, sans conserver d'adresse IP brute.</p>
+        <h2>Surveiller le trafic des visiteurs non connectÃ©s.</h2>
+        <p>Ce suivi reste centrÃ© sur la frÃ©quentation publique du site, sans conserver d'adresse IP brute.</p>
     </div>
 
     <div class="admin-summary-grid">
         <article class="info-card">
             <p class="card-tag">Aujourd'hui</p>
             <span class="metric-value"><?= e((string) ($trafficSummary['visites_aujourdhui'] ?? 0)) ?></span>
-            <h3>Visites invitées</h3>
+            <h3>Visites invitÃ©es</h3>
         </article>
         <article class="info-card">
             <p class="card-tag">7 jours</p>
             <span class="metric-value"><?= e((string) ($trafficSummary['visites_7_jours'] ?? 0)) ?></span>
-            <h3>Pages vues invitées</h3>
+            <h3>Pages vues invitÃ©es</h3>
         </article>
         <article class="info-card">
             <p class="card-tag">7 jours</p>
@@ -506,7 +508,7 @@ while (count($lignesHorairesAdmin) < 10) {
             <div class="admin-list">
                 <?php if ($popularPages === []): ?>
                     <div class="empty-state">
-                        <p class="card-tag">Aucune donnée</p>
+                        <p class="card-tag">Aucune donnÃ©e</p>
                         <h3>Le journal visiteurs est encore vide.</h3>
                     </div>
                 <?php else: ?>
@@ -523,21 +525,21 @@ while (count($lignesHorairesAdmin) < 10) {
 
         <article class="panel">
             <div class="section-head section-head--compact">
-                <p class="eyebrow">Dernières visites</p>
-                <h2>D'où viennent les visiteurs ?</h2>
+                <p class="eyebrow">DerniÃ¨res visites</p>
+                <h2>D'oÃ¹ viennent les visiteurs ?</h2>
             </div>
 
             <div class="admin-list">
                 <?php if ($latestVisits === []): ?>
                     <div class="empty-state">
-                        <p class="card-tag">Aucune donnée</p>
-                        <h3>Aucune visite invitée récente.</h3>
+                        <p class="card-tag">Aucune donnÃ©e</p>
+                        <h3>Aucune visite invitÃ©e rÃ©cente.</h3>
                     </div>
                 <?php else: ?>
                     <?php foreach ($latestVisits as $visite): ?>
                         <article class="info-card admin-card">
                             <p class="card-tag"><?= e((string) ($visite['page'] ?? '')) ?></p>
-                            <h3><?= e((string) (($visite['hote_referent'] ?? '') !== '' ? $visite['hote_referent'] : 'Accès direct')) ?></h3>
+                            <h3><?= e((string) (($visite['hote_referent'] ?? '') !== '' ? $visite['hote_referent'] : 'AccÃ¨s direct')) ?></h3>
                             <p><?= e((string) ($visite['visite_le'] ?? '')) ?></p>
                         </article>
                     <?php endforeach; ?>
@@ -551,7 +553,8 @@ while (count($lignesHorairesAdmin) < 10) {
     <div class="section-head">
         <p class="eyebrow">Horaires</p>
         <h2>Modifier l'emploi du temps public.</h2>
-        <p>L'administrateur peut adapter les créneaux à tout moment, y compris pour un jour férié ou une fermeture exceptionnelle.</p>
+        <p>L'administrateur peut adapter les crÃ©neaux Ã  tout moment, y compris pour un jour fÃ©riÃ© ou une fermeture exceptionnelle.</p>
+        <p>Jusqu'Ã  50 crÃ©neaux peuvent Ãªtre enregistrÃ©s.</p>
     </div>
 
     <form method="post" action="<?= e(url_route('admin')) ?>#admin-horaires-club" class="admin-form schedule-admin-form">
@@ -572,16 +575,16 @@ while (count($lignesHorairesAdmin) < 10) {
             </label>
 
             <label class="form-group">
-                <span>Message jour férié / exception</span>
+                <span>Message jour fÃ©riÃ© / exception</span>
                 <textarea name="message_jour_ferie" rows="3" maxlength="320"><?= e((string) ($horairesClub['holiday_notice'] ?? '')) ?></textarea>
-                <small class="form-helper">Ce message apparaît sur l'accueil avec le libellé “Jour férié”.</small>
+                <small class="form-helper">Ce message apparaÃ®t sur l'accueil avec le libellÃ© Ã¢â‚¬Å“Jour fÃ©riÃ©Ã¢â‚¬Â.</small>
             </label>
         </div>
 
         <div class="admin-schedule-grid">
             <?php foreach ($lignesHorairesAdmin as $indexHoraire => $horaire): ?>
                 <fieldset class="info-card admin-card admin-schedule-card">
-                    <legend>Créneau <?= e((string) ($indexHoraire + 1)) ?></legend>
+                    <legend>CrÃ©neau <?= e((string) ($indexHoraire + 1)) ?></legend>
 
                     <label class="form-group">
                         <span>Jour</span>
@@ -601,12 +604,12 @@ while (count($lignesHorairesAdmin) < 10) {
                             name="horaire_heure[]"
                             value="<?= e((string) ($horaire['time'] ?? '')) ?>"
                             maxlength="80"
-                            placeholder="Exemple : 10h30 à 12h00"
+                            placeholder="Exemple : 10h30 Ã  12h00"
                         >
                     </label>
 
                     <label class="form-group">
-                        <span>Activité affichée dans le détail</span>
+                        <span>ActivitÃ© affichÃ©e dans le dÃ©tail</span>
                         <input
                             type="text"
                             name="horaire_titre[]"
@@ -617,12 +620,12 @@ while (count($lignesHorairesAdmin) < 10) {
                     </label>
 
                     <label class="form-group">
-                        <span>Détails de l'emploi du temps</span>
+                        <span>DÃ©tails de l'emploi du temps</span>
                         <textarea
                             name="horaire_details[]"
                             rows="5"
                             maxlength="1400"
-                            placeholder="Lieu, intervenants, groupes, précisions..."
+                            placeholder="Lieu, intervenants, groupes, prÃ©cisions..."
                         ><?= e((string) ($horaire['details'] ?? '')) ?></textarea>
                     </label>
 
@@ -633,7 +636,7 @@ while (count($lignesHorairesAdmin) < 10) {
                             value="<?= e((string) $indexHoraire) ?>"
                             <?= !empty($horaire['is_holiday']) ? 'checked' : '' ?>
                         >
-                        <span>Marquer ce créneau comme jour férié / exception</span>
+                        <span>Marquer ce crÃ©neau comme jour fÃ©riÃ© / exception</span>
                     </label>
                 </fieldset>
             <?php endforeach; ?>
@@ -646,8 +649,8 @@ while (count($lignesHorairesAdmin) < 10) {
 <section class="section-block reveal reveal-4 admin-tab-panel" data-admin-tab-panel="comptes">
     <div class="section-head">
         <p class="eyebrow">Comptes</p>
-        <h2>Gérer les rôles et les statuts.</h2>
-        <p>Le rôle détermine les droits, et le statut permet de suspendre un accès si besoin.</p>
+        <h2>GÃ©rer les rÃ´les et les statuts.</h2>
+        <p>Le rÃ´le dÃ©termine les droits, et le statut permet de suspendre un accÃ¨s si besoin.</p>
     </div>
 
     <div class="admin-list">
@@ -667,10 +670,10 @@ while (count($lignesHorairesAdmin) < 10) {
                     <input type="hidden" name="identifiant_utilisateur_cible" value="<?= e((string) ($user['identifiant'] ?? '')) ?>">
 
                     <label class="form-group">
-                        <span>Rôle</span>
+                        <span>RÃ´le</span>
                         <select name="role_utilisateur">
-                            <option value="connecte"<?= ($user['role'] ?? '') === 'connecte' ? ' selected' : '' ?>>Connecté</option>
-                            <option value="adherent"<?= ($user['role'] ?? '') === 'adherent' ? ' selected' : '' ?>>Adhérent</option>
+                            <option value="connecte"<?= ($user['role'] ?? '') === 'connecte' ? ' selected' : '' ?>>ConnectÃ©</option>
+                            <option value="adherent"<?= ($user['role'] ?? '') === 'adherent' ? ' selected' : '' ?>>AdhÃ©rent</option>
                             <option value="prof"<?= ($user['role'] ?? '') === 'prof' ? ' selected' : '' ?>>Prof</option>
                             <option value="admin"<?= ($user['role'] ?? '') === 'admin' ? ' selected' : '' ?>>Admin</option>
                         </select>
@@ -685,14 +688,14 @@ while (count($lignesHorairesAdmin) < 10) {
                     </label>
 
                     <label class="form-group">
-                        <span>Adhésion</span>
+                        <span>AdhÃ©sion</span>
                         <select name="statut_adhesion_utilisateur">
-                            <option value="aucune"<?= ($user['statut_adhesion'] ?? '') === 'aucune' ? ' selected' : '' ?>>Non adhérent</option>
-                            <option value="active"<?= ($user['statut_adhesion'] ?? '') === 'active' ? ' selected' : '' ?>>Adhérent actif</option>
+                            <option value="aucune"<?= ($user['statut_adhesion'] ?? '') === 'aucune' ? ' selected' : '' ?>>Non adhÃ©rent</option>
+                            <option value="active"<?= ($user['statut_adhesion'] ?? '') === 'active' ? ' selected' : '' ?>>AdhÃ©rent actif</option>
                         </select>
                     </label>
 
-                    <button type="submit" class="button button-primary">Mettre à jour</button>
+                    <button type="submit" class="button button-primary">Mettre Ã  jour</button>
                 </form>
 
                 <?php if ($currentAdminId !== '' && (string) ($user['identifiant'] ?? '') !== $currentAdminId): ?>
@@ -703,15 +706,15 @@ while (count($lignesHorairesAdmin) < 10) {
                         <input type="hidden" name="identifiant_utilisateur_cible" value="<?= e((string) ($user['identifiant'] ?? '')) ?>">
 
                         <label class="form-group">
-                            <span>Mon rôle après transfert</span>
+                            <span>Mon rÃ´le aprÃ¨s transfert</span>
                             <select name="role_apres_transfert">
                                 <option value="prof">Prof</option>
-                                <option value="adherent">Adhérent</option>
-                                <option value="connecte">Compte connecté</option>
+                                <option value="adherent">AdhÃ©rent</option>
+                                <option value="connecte">Compte connectÃ©</option>
                             </select>
                         </label>
 
-                        <button type="submit" class="button button-secondary">Transférer le rôle admin</button>
+                        <button type="submit" class="button button-secondary">TransfÃ©rer le rÃ´le admin</button>
                     </form>
                 <?php endif; ?>
             </article>
@@ -1034,7 +1037,7 @@ while (count($lignesHorairesAdmin) < 10) {
     </div>
 </section>
 
-<section id="admin-bureau-club" class="section-block reveal reveal-5 admin-tab-panel" data-admin-tab-panel="contenus">
+<section id="admin-bureau-club" class="section-block reveal reveal-5 admin-tab-panel" data-admin-tab-panel="accueil">
     <div class="section-head">
         <p class="eyebrow">Bureau du club</p>
         <h2>Gerer les cartes du bureau visibles sur l'accueil.</h2>
@@ -1072,7 +1075,7 @@ while (count($lignesHorairesAdmin) < 10) {
                         name="bureau_titre"
                         maxlength="180"
                         value="<?= e((string) ($bureauSection['titre'] ?? $bureauSection['title'] ?? '')) ?>"
-                        placeholder="Les membres du bureau des échecs."
+                        placeholder="Les membres du bureau des Ã©checs."
                     >
                 </label>
 
@@ -1229,9 +1232,9 @@ while (count($lignesHorairesAdmin) < 10) {
 <section class="split-grid reveal reveal-5 admin-tab-panel" data-admin-tab-panel="contenus">
     <article class="panel">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Modération articles</p>
+            <p class="eyebrow">ModÃ©ration articles</p>
             <h2>Valider ou refuser les articles.</h2>
-            <p>Chaque article soumis peut rester en attente, être publié ou être refusé.</p>
+            <p>Chaque article soumis peut rester en attente, Ãªtre publiÃ© ou Ãªtre refusÃ©.</p>
         </div>
 
         <div class="admin-list">
@@ -1247,7 +1250,7 @@ while (count($lignesHorairesAdmin) < 10) {
                         <h3><?= e((string) ($article['titre'] ?? 'Article')) ?></h3>
                         <p><?= e((string) ($article['resume'] ?? '')) ?></p>
                         <p class="card-subtitle">Auteur: <?= e((string) ($article['auteur_affiche'] ?? $article['nom_auteur'] ?? '')) ?></p>
-                        <p class="card-subtitle">Créé le: <?= e((string) ($article['date_creation_libelle'] ?? '')) ?></p>
+                        <p class="card-subtitle">CrÃ©Ã© le: <?= e((string) ($article['date_creation_libelle'] ?? '')) ?></p>
 
                         <form method="post" action="<?= e(url_route('admin')) ?>" class="admin-form admin-inline-form">
                             <input type="hidden" name="action" value="review_article">
@@ -1275,16 +1278,16 @@ while (count($lignesHorairesAdmin) < 10) {
 
     <article class="panel panel-contrast">
         <div class="section-head section-head--compact">
-            <p class="eyebrow">Modération médias</p>
-            <h2>Valider ou refuser les photos et vidéos.</h2>
-            <p>Le président choisit ici ce qui devient visible publiquement sur la médiathèque.</p>
+            <p class="eyebrow">ModÃ©ration mÃ©dias</p>
+            <h2>Valider ou refuser les photos et vidÃ©os.</h2>
+            <p>Le prÃ©sident choisit ici ce qui devient visible publiquement sur la mÃ©diathÃ¨que.</p>
         </div>
 
         <div class="admin-list">
             <?php if ($allMedia === []): ?>
                 <div class="empty-state empty-state--contrast">
-                    <p class="card-tag">Aucun média</p>
-                    <h3>Aucun dépôt de média pour le moment.</h3>
+                    <p class="card-tag">Aucun mÃ©dia</p>
+                    <h3>Aucun dÃ©pÃ´t de mÃ©dia pour le moment.</h3>
                 </div>
             <?php else: ?>
                 <?php foreach ($allMedia as $media): ?>
@@ -1324,11 +1327,213 @@ while (count($lignesHorairesAdmin) < 10) {
     </article>
 </section>
 
+<section id="admin-media" class="section-block reveal reveal-5 admin-tab-panel" data-admin-tab-panel="media">
+    <div class="section-head">
+        <p class="eyebrow">Media</p>
+        <h2>Photos, videos et albums de la mediatheque.</h2>
+        <p>Depuis cet onglet, l'administrateur peut ajouter des medias, les valider et composer des albums publics.</p>
+    </div>
+
+    <div class="split-grid">
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Ajout direct</p>
+                <h2>Publier une photo ou une video.</h2>
+                <p>Le media peut etre publie tout de suite ou laisse en attente.</p>
+            </div>
+
+            <form method="post" action="<?= e(url_route('admin')) ?>#admin-media" class="admin-form" enctype="multipart/form-data">
+                <input type="hidden" name="action" value="create_admin_media">
+                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+                <label class="form-group">
+                    <span>Titre</span>
+                    <input type="text" name="media_title" maxlength="150" required>
+                </label>
+
+                <div class="admin-schedule-settings">
+                    <label class="form-group">
+                        <span>Type</span>
+                        <select name="media_type" required>
+                            <option value="photo">Photo</option>
+                            <option value="video">Video</option>
+                        </select>
+                    </label>
+
+                    <label class="form-group">
+                        <span>Publication</span>
+                        <select name="statut_media_creation" required>
+                            <option value="publie">Publier immediatement</option>
+                            <option value="en_attente_validation">Laisser en attente</option>
+                        </select>
+                    </label>
+                </div>
+
+                <label class="form-group">
+                    <span>Description</span>
+                    <textarea name="media_description" rows="4" maxlength="500"></textarea>
+                </label>
+
+                <label class="form-group">
+                    <span>Fichier</span>
+                    <input type="file" name="media_fichier" required accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.mov">
+                </label>
+
+                <button type="submit" class="button button-primary">Ajouter le media</button>
+            </form>
+        </article>
+
+        <article class="panel panel-contrast">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Albums</p>
+                <h2>Creer un album photo ou video.</h2>
+                <p>Tu peux y mettre des medias publies ou encore en attente, tant qu'ils ne sont pas refuses.</p>
+            </div>
+
+            <form method="post" action="<?= e(url_route('admin')) ?>#admin-media" class="admin-form">
+                <input type="hidden" name="action" value="create_media_album">
+                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+
+                <label class="form-group">
+                    <span>Titre de l'album</span>
+                    <input type="text" name="titre_album_media" maxlength="150" required>
+                </label>
+
+                <label class="form-group">
+                    <span>Description</span>
+                    <textarea name="description_album_media" rows="3" maxlength="500"></textarea>
+                </label>
+
+                <label class="form-group">
+                    <span>Medias a inclure</span>
+                    <div class="stack-list">
+                        <?php foreach ($allMedia as $media): ?>
+                            <?php if (($media['statut'] ?? '') === 'refuse') { continue; } ?>
+                            <label class="schedule-item">
+                                <span class="checkbox-inline">
+                                    <input type="checkbox" name="album_media_ids[]" value="<?= e((string) ($media['identifiant'] ?? '')) ?>">
+                                    <span><?= e((string) ($media['titre'] ?? 'Media')) ?> - <?= e((string) ($media['type_media'] ?? 'media')) ?> - <?= e((string) ($media['libelle_statut'] ?? 'En attente')) ?></span>
+                                </span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                </label>
+
+                <button type="submit" class="button button-secondary">Creer l'album</button>
+            </form>
+        </article>
+    </div>
+
+    <div class="split-grid">
+        <article class="panel">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Moderation medias</p>
+                <h2>Valider ou refuser les depots.</h2>
+                <p>Le president choisit ici ce qui devient visible publiquement sur la mediatheque.</p>
+            </div>
+
+            <div class="admin-list">
+                <?php if ($allMedia === []): ?>
+                    <div class="empty-state">
+                        <p class="card-tag">Aucun media</p>
+                        <h3>Aucun depot de media pour le moment.</h3>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($allMedia as $media): ?>
+                        <article class="info-card admin-card">
+                            <p class="card-tag"><?= e((string) ($media['libelle_statut'] ?? 'En attente')) ?></p>
+                            <h3><?= e((string) ($media['titre'] ?? 'Media')) ?></h3>
+                            <p><?= e((string) ($media['description'] ?? '')) ?></p>
+                            <p class="card-subtitle">Auteur: <?= e((string) ($media['nom_auteur'] ?? '')) ?></p>
+
+                            <?php if (($media['type_media'] ?? '') === 'video'): ?>
+                                <video class="media-preview media-preview--small" controls preload="metadata">
+                                    <source src="<?= e((string) ($media['chemin_public'] ?? '')) ?>" type="<?= e((string) ($media['type_mime'] ?? 'video/mp4')) ?>">
+                                </video>
+                            <?php else: ?>
+                                <img
+                                    class="media-preview media-preview--small"
+                                    src="<?= e((string) ($media['chemin_public'] ?? '')) ?>"
+                                    alt="<?= e((string) ($media['titre'] ?? 'Media')) ?>"
+                                    loading="lazy"
+                                >
+                            <?php endif; ?>
+
+                            <form method="post" action="<?= e(url_route('admin')) ?>#admin-media" class="admin-form admin-inline-form">
+                                <input type="hidden" name="action" value="review_media">
+                                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="identifiant_media" value="<?= e((string) ($media['identifiant'] ?? '')) ?>">
+
+                                <button type="submit" name="statut_media" value="publie" class="button button-primary">Publier</button>
+                                <button type="submit" name="statut_media" value="refuse" class="button button-secondary">Refuser</button>
+                                <button type="submit" name="statut_media" value="en_attente_validation" class="button button-secondary">Remettre en attente</button>
+                            </form>
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </article>
+
+        <article class="panel panel-contrast">
+            <div class="section-head section-head--compact">
+                <p class="eyebrow">Albums existants</p>
+                <h2>ModÃ©rer et supprimer les albums.</h2>
+                <p>Les albums envoyÃ©s par les adhÃ©rents passent aussi ici avant publication.</p>
+            </div>
+
+            <div class="admin-list">
+                <?php if ($allMediaAlbums === []): ?>
+                    <div class="empty-state empty-state--contrast">
+                        <p class="card-tag">Aucun album</p>
+                        <h3>Aucun album media n'a encore ete cree.</h3>
+                    </div>
+                <?php else: ?>
+                    <?php foreach ($allMediaAlbums as $album): ?>
+                        <article class="info-card admin-card admin-card--contrast">
+                            <p class="card-tag"><?= e((string) ($album['libelle_statut'] ?? 'En attente')) ?> â€¢ <?= e((string) ($album['nombre_medias'] ?? 0)) ?> medias</p>
+                            <h3><?= e((string) ($album['titre'] ?? 'Album')) ?></h3>
+                            <p><?= e((string) ($album['description'] ?? '')) ?></p>
+                            <?php if (((string) ($album['nom_auteur'] ?? '')) !== ''): ?>
+                                <p class="card-subtitle">Auteur: <?= e((string) ($album['nom_auteur'] ?? '')) ?></p>
+                            <?php endif; ?>
+                            <p class="card-subtitle">
+                                <?= e(implode(' â€¢ ', array_map(static fn (array $media): string => (string) ($media['titre'] ?? 'Media'), array_slice($album['medias'] ?? [], 0, 3)))) ?>
+                            </p>
+
+                            <form method="post" action="<?= e(url_route('admin')) ?>#admin-media" class="admin-form admin-inline-form">
+                                <input type="hidden" name="action" value="review_media_album">
+                                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="identifiant_album_media" value="<?= e((string) ($album['identifiant'] ?? '')) ?>">
+
+                                <button type="submit" name="statut_album_media" value="publie" class="button button-primary">Publier</button>
+                                <button type="submit" name="statut_album_media" value="refuse" class="button button-secondary">Refuser</button>
+                                <button type="submit" name="statut_album_media" value="en_attente_validation" class="button button-secondary">Remettre en attente</button>
+                            </form>
+
+                            <form method="post" action="<?= e(url_route('admin')) ?>#admin-media" class="admin-form admin-inline-form" data-confirm-delete>
+                                <input type="hidden" name="action" value="delete_media_album">
+                                <input type="hidden" name="_token" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="jeton_csrf" value="<?= e($siteData['jeton_csrf']) ?>">
+                                <input type="hidden" name="identifiant_album_media" value="<?= e((string) ($album['identifiant'] ?? '')) ?>">
+                                <button type="submit" class="button button-secondary button-danger">Supprimer l'album</button>
+                            </form>
+                        </article>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </article>
+    </div>
+</section>
+
 <section id="admin-boutique-commandes" class="section-block reveal reveal-6 admin-tab-panel" data-admin-tab-panel="boutique">
     <div class="section-head">
         <p class="eyebrow">Commandes</p>
         <h2>Suivre le merchandising.</h2>
-        <p>Le président peut mettre à jour le statut des commandes créées depuis la boutique.</p>
+        <p>Le prÃ©sident peut mettre Ã  jour le statut des commandes crÃ©Ã©es depuis la boutique.</p>
     </div>
 
     <div class="admin-list">
@@ -1360,3 +1565,4 @@ while (count($lignesHorairesAdmin) < 10) {
         <?php endif; ?>
     </div>
 </section>
+

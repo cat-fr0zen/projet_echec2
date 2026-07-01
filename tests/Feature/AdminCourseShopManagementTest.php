@@ -135,7 +135,7 @@ final class AdminCourseShopManagementTest extends TestCase
         $this->assertDatabaseHas('boutique_produit', [
             'reference_produit' => 'TEXT-001',
             'titre_produit' => 'Sweat du club',
-            'prix_euros' => 45,
+            'prix_euros' => 4500,
         ]);
 
         $identifiantProduit = (string) DB::table('boutique_produit')
@@ -172,7 +172,7 @@ final class AdminCourseShopManagementTest extends TestCase
             'identifiant_produit' => $identifiantProduit,
             'titre_produit' => 'Sweat premium du club',
             'public_cible' => 'membre',
-            'prix_euros' => 49,
+            'prix_euros' => 4900,
             'mode_vente' => 'precommande',
         ]);
 
@@ -335,7 +335,7 @@ final class AdminCourseShopManagementTest extends TestCase
             'titre_produit' => 'Polo du club',
             'categorie_produit' => 'textile',
             'public_cible' => 'tous',
-            'prix_euros' => 28,
+            'prix_euros' => 2800,
             'badge' => 'Club',
             'mode_vente' => 'reservation',
             'texte_produit' => 'Polo brode pour les evenements.',
@@ -353,7 +353,7 @@ final class AdminCourseShopManagementTest extends TestCase
             ->assertOk()
             ->assertSee('Polo du club', false)
             ->assertSee('TEXT-777', false)
-            ->assertSee('28 EUR', false);
+            ->assertSee('28,00 €', false);
     }
 
     /**

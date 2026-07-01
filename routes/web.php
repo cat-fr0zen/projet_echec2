@@ -76,3 +76,5 @@ Route::get('/{page}', [PageController::class, 'show'])
 
 Route::post('/{page}', [ActionController::class, 'handle'])
     ->where('page', $pagesRoutables);
+
+Route::fallback([PageController::class, 'show']);

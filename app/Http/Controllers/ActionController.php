@@ -14,6 +14,7 @@ use App\Repositories\CoursDocumentRepository;
 use App\Repositories\ConstructeurPagesRepository;
 use App\Repositories\DammierRepository;
 use App\Repositories\EvenementRepository;
+use App\Repositories\MediaAlbumRepository;
 use App\Repositories\MediaRepository;
 use App\Repositories\NewsletterRepository;
 use App\Repositories\OrderRepository;
@@ -58,7 +59,8 @@ final class ActionController extends Controller
             new BoutiqueProduitRepository,
             new ParametreSiteRepository,
             new BureauMembreRepository,
-            new EvenementRepository(new ParametreSiteRepository)
+            new EvenementRepository(new ParametreSiteRepository),
+            new MediaAlbumRepository(new ParametreSiteRepository)
         );
 
         $handler->traiter();

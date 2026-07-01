@@ -11,7 +11,9 @@ use App\Mail\NewsletterActualiteMail;
 use App\Mail\NewsletterConfirmationMail;
 use App\Repositories\NewsletterRepository;
 use Illuminate\Mail\Mailable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Schema;
 use Throwable;
 
 final class NewsletterMailerService
@@ -26,11 +28,15 @@ final class NewsletterMailerService
         private NewsletterRepository $depotNewsletter,
         private string $adresseExpediteur,
         private string $nomExpediteur,
-        private string $urlPublique
+        private string $urlPublique,
+        private string $modeLivraison = 'direct',
+        private int $tailleLot = 20
     ) {
         $this->adresseExpediteur = $this->normaliserAdresseExpediteur($this->adresseExpediteur);
         $this->nomExpediteur = $this->nettoyerEntete($this->nomExpediteur !== '' ? $this->nomExpediteur : "Cavaliers d'Herouville");
         $this->urlPublique = rtrim($this->urlPublique, '/');
+        $this->modeLivraison = in_array($this->modeLivraison, ['direct', 'queue'], true) ? $this->modeLivraison : 'direct';
+        $this->tailleLot = max(1, $this->tailleLot);
     }
 
     public static function depuisEnvironnement(NewsletterRepository $depotNewsletter): self
@@ -43,7 +49,9 @@ final class NewsletterMailerService
             $depotNewsletter,
             is_string($adresseExpediteur) && $adresseExpediteur !== '' ? $adresseExpediteur : 'noreply@cavaliers-herouville.fr',
             is_string($nomExpediteur) && $nomExpediteur !== '' ? $nomExpediteur : "Cavaliers d'Herouville",
-            is_string($urlPublique) && $urlPublique !== '' ? $urlPublique : '/'
+            is_string($urlPublique) && $urlPublique !== '' ? $urlPublique : '/',
+            (string) config('services.o2switch.newsletter_delivery_mode', 'direct'),
+            (int) config('services.o2switch.newsletter_batch_size', 20)
         );
     }
 
@@ -127,6 +135,12 @@ final class NewsletterMailerService
 
     private function notifierTous(string $typeEvenement, string $sujet, string $titreEvenement, string $urlEvenement, string $message): void
     {
+        if ($this->utiliseFileAttente()) {
+            $this->mettreEnFileTous($typeEvenement, $sujet, $titreEvenement, $urlEvenement, $message);
+
+            return;
+        }
+
         foreach ($this->depotNewsletter->listerActifs() as $abonnement) {
             $this->notifierUnAbonne($abonnement, $typeEvenement, $sujet, $titreEvenement, $urlEvenement, $message);
         }
@@ -229,5 +243,82 @@ final class NewsletterMailerService
     private function limiter(string $valeur, int $limite): string
     {
         return function_exists('mb_substr') ? mb_substr($valeur, 0, $limite) : substr($valeur, 0, $limite);
+    }
+
+    private function utiliseFileAttente(): bool
+    {
+        try {
+            return $this->modeLivraison === 'queue'
+                && Schema::hasTable('newsletter_campaigns')
+                && Schema::hasTable('newsletter_queue');
+        } catch (Throwable) {
+            return false;
+        }
+    }
+
+    private function mettreEnFileTous(
+        string $typeEvenement,
+        string $sujet,
+        string $titreEvenement,
+        string $urlEvenement,
+        string $message
+    ): void {
+        $abonnes = $this->depotNewsletter->listerActifs();
+
+        if ($abonnes === []) {
+            return;
+        }
+
+        $campagneId = 'campaign_' . bin2hex(random_bytes(8));
+        $maintenant = date('Y-m-d H:i:s');
+
+        DB::table('newsletter_campaigns')->insert([
+            'campaign_id' => $campagneId,
+            'event_type' => $typeEvenement,
+            'subject' => $sujet,
+            'title' => $titreEvenement,
+            'event_url' => $urlEvenement,
+            'message_text' => trim($message),
+            'sender_email' => $this->adresseExpediteur,
+            'sender_name' => $this->nomExpediteur,
+            'status' => 'queued',
+            'created_at' => $maintenant,
+            'updated_at' => $maintenant,
+        ]);
+
+        $lignes = [];
+
+        foreach ($abonnes as $abonnement) {
+            $courriel = (string) ($abonnement['courriel'] ?? '');
+            $identifiant = (string) ($abonnement['identifiant_abonnement'] ?? '');
+            $jeton = (string) ($abonnement['jeton_desabonnement'] ?? '');
+
+            if ($courriel === '' || $identifiant === '' || ! filter_var($courriel, FILTER_VALIDATE_EMAIL)) {
+                continue;
+            }
+
+            $lignes[] = [
+                'queue_id' => 'queue_' . bin2hex(random_bytes(10)),
+                'campaign_id' => $campagneId,
+                'newsletter_abonnement_id' => $identifiant,
+                'recipient_email' => $courriel,
+                'unsubscribe_token' => $jeton,
+                'template_type' => 'actualite',
+                'event_type' => $typeEvenement,
+                'subject' => $sujet,
+                'title' => $titreEvenement,
+                'message_text' => trim($message),
+                'event_url' => $urlEvenement,
+                'status' => 'pending',
+                'attempt_count' => 0,
+                'available_at' => $maintenant,
+                'created_at' => $maintenant,
+                'updated_at' => $maintenant,
+            ];
+        }
+
+        foreach (array_chunk($lignes, max(1, $this->tailleLot)) as $bloc) {
+            DB::table('newsletter_queue')->insert($bloc);
+        }
     }
 }

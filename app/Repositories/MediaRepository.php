@@ -76,7 +76,7 @@ final class MediaRepository
             'chemin_public' => (string) ($donnees['chemin_public'] ?? ''),
             'type_mime' => (string) ($donnees['type_mime'] ?? ''),
             'taille_octets' => (int) ($donnees['taille_octets'] ?? 0),
-            'code_statut' => MediaPublication::STATUT_EN_ATTENTE,
+            'code_statut' => (string) ($donnees['statut'] ?? MediaPublication::STATUT_EN_ATTENTE),
             'cree_le' => date('Y-m-d H:i:s'),
         ]);
 

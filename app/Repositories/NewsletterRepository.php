@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace App\Repositories;
 
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use Throwable;
 
 final class NewsletterRepository
 {
@@ -258,6 +260,8 @@ final class NewsletterRepository
             ...$this->normaliserAbonnement($row),
             'source_inscription' => (string) ($row['source_inscription'] ?? ''),
             'statut_libelle' => (string) ($row['statut_libelle'] ?? ucfirst((string) ($row['code_statut'] ?? 'actif'))),
+            'cree_le_libelle' => $this->formaterDateHeureFr((string) ($row['cree_le'] ?? '')),
+            'desabonne_le_libelle' => $this->formaterDateHeureFr((string) ($row['desabonne_le'] ?? '')),
         ];
     }
 
@@ -276,7 +280,23 @@ final class NewsletterRepository
             'statut_envoi_libelle' => (string) ($row['statut_envoi_libelle'] ?? ucfirst((string) ($row['code_statut_envoi'] ?? ''))),
             'erreur_envoi' => (string) ($row['erreur_envoi'] ?? ''),
             'envoye_le' => (string) ($row['envoye_le'] ?? ''),
+            'envoye_le_libelle' => $this->formaterDateHeureFr((string) ($row['envoye_le'] ?? '')),
         ];
+    }
+
+    private function formaterDateHeureFr(string $dateHeure): string
+    {
+        $dateHeure = trim($dateHeure);
+
+        if ($dateHeure === '') {
+            return '';
+        }
+
+        try {
+            return (new DateTimeImmutable($dateHeure))->format('d/m/Y \à H\hi');
+        } catch (Throwable) {
+            return $dateHeure;
+        }
     }
 
     private function normaliserCourriel(string $courriel): string

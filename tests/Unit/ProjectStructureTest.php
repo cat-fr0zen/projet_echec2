@@ -43,7 +43,7 @@ final class ProjectStructureTest extends TestCase
         }
     }
 
-    public function test_project_keeps_only_one_markdown_file_and_one_bat_file(): void
+    public function test_project_keeps_only_expected_markdown_files_and_one_bat_file(): void
     {
         $root = dirname(__DIR__, 2);
 
@@ -72,7 +72,8 @@ final class ProjectStructureTest extends TestCase
             }
         }
 
-        self::assertSame(['README.md'], $markdownFiles);
+        sort($markdownFiles);
+        self::assertSame(['DEPLOIEMENT_O2SWITCH.md', 'README.md'], $markdownFiles);
         self::assertSame(['lancement/demarrer_tout_le_site.bat'], $batFiles);
     }
 }

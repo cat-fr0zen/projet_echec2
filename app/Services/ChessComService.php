@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Repositories\ApiCacheRepository;
 use DateTimeImmutable;
 use DateTimeZone;
 use Exception;
@@ -31,17 +32,23 @@ use Throwable;
  */
 final class ChessComService
 {
-    private const URL_PROFIL = 'https://api.chess.com/pub/player/%s';
-    private const URL_STATISTIQUES = 'https://api.chess.com/pub/player/%s/stats';
+    private const URL_PROFIL = '%s/player/%s';
+    private const URL_STATISTIQUES = '%s/player/%s/stats';
     private const DUREE_CACHE_SUCCES = 43200;
     private const DUREE_CACHE_ERREUR = 900;
+    private string $baseUrl;
 
     public function __construct(
         private ?string $dossierCache,
-        private string $agentUtilisateur = 'association-echecs-site/1.0'
+        private string $agentUtilisateur = 'association-echecs-site/1.0',
+        private ?ApiCacheRepository $cacheBase = null,
+        ?string $baseUrl = null,
+        private ?int $cacheTtlSecondes = null
     ) {
+        $this->baseUrl = rtrim((string) ($baseUrl !== null && $baseUrl !== '' ? $baseUrl : 'https://api.chess.com/pub'), '/');
+
         if ($this->dossierCache !== null && $this->dossierCache !== '' && !is_dir($this->dossierCache)) {
-            mkdir($this->dossierCache, 0755, true);
+            @mkdir($this->dossierCache, 0755, true);
         }
     }
 
@@ -63,27 +70,27 @@ final class ChessComService
             ]);
         }
 
-        $instantaneCache = $this->lireCache($pseudoNormalise);
+        $instantaneCache = $this->lireCacheBase($pseudoNormalise) ?? $this->lireCache($pseudoNormalise);
 
         if ($instantaneCache !== null) {
             return $this->ajouterAliasCompatibilite($instantaneCache);
         }
 
         $pseudoEncode = rawurlencode($pseudoNormalise);
-        $reponseProfil = $this->effectuerRequeteJson(sprintf(self::URL_PROFIL, $pseudoEncode));
+        $reponseProfil = $this->effectuerRequeteJson(sprintf(self::URL_PROFIL, $this->baseUrl, $pseudoEncode));
 
         if (($reponseProfil['code_statut'] ?? 0) !== 200 || !is_array($reponseProfil['donnees'] ?? null)) {
             $instantane = $this->construireInstantaneErreur($pseudoNormalise, (int) ($reponseProfil['code_statut'] ?? 0));
-            $this->ecrireCache($pseudoNormalise, $instantane, self::DUREE_CACHE_ERREUR);
+            $this->ecrireCacheComplet($pseudoNormalise, $instantane, $this->dureeCacheErreur());
 
             return $this->ajouterAliasCompatibilite($instantane);
         }
 
-        $reponseStatistiques = $this->effectuerRequeteJson(sprintf(self::URL_STATISTIQUES, $pseudoEncode));
+        $reponseStatistiques = $this->effectuerRequeteJson(sprintf(self::URL_STATISTIQUES, $this->baseUrl, $pseudoEncode));
 
         if (($reponseStatistiques['code_statut'] ?? 0) !== 200 || !is_array($reponseStatistiques['donnees'] ?? null)) {
             $instantane = $this->construireInstantaneErreur($pseudoNormalise, (int) ($reponseStatistiques['code_statut'] ?? 0));
-            $this->ecrireCache($pseudoNormalise, $instantane, self::DUREE_CACHE_ERREUR);
+            $this->ecrireCacheComplet($pseudoNormalise, $instantane, $this->dureeCacheErreur());
 
             return $this->ajouterAliasCompatibilite($instantane);
         }
@@ -94,7 +101,7 @@ final class ChessComService
             $reponseStatistiques['donnees']
         );
 
-        $this->ecrireCache($pseudoNormalise, $instantane, self::DUREE_CACHE_SUCCES);
+        $this->ecrireCacheComplet($pseudoNormalise, $instantane, $this->dureeCacheSucces());
 
         return $this->ajouterAliasCompatibilite($instantane);
     }
@@ -419,6 +426,55 @@ final class ChessComService
             json_encode($chargeUtile, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             LOCK_EX
         );
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    private function lireCacheBase(string $pseudo): ?array
+    {
+        if ($this->cacheBase === null) {
+            return null;
+        }
+
+        $instantane = $this->cacheBase->lire('chesscom', 'chesscom:user:' . $pseudo);
+
+        if ($instantane === null) {
+            return null;
+        }
+
+        $instantane['source_cache'] = 'cache';
+
+        return $instantane;
+    }
+
+    /**
+     * @param array<string, mixed> $instantane
+     */
+    private function ecrireCacheComplet(string $pseudo, array $instantane, int $dureeSecondes): void
+    {
+        if ($this->cacheBase !== null) {
+            $this->cacheBase->ecrire(
+                'chesscom',
+                'chesscom:user:' . $pseudo,
+                $instantane,
+                $dureeSecondes
+            );
+        }
+
+        $this->ecrireCache($pseudo, $instantane, $dureeSecondes);
+    }
+
+    private function dureeCacheSucces(): int
+    {
+        return $this->cacheTtlSecondes !== null && $this->cacheTtlSecondes > 0
+            ? $this->cacheTtlSecondes
+            : self::DUREE_CACHE_SUCCES;
+    }
+
+    private function dureeCacheErreur(): int
+    {
+        return max(300, min($this->dureeCacheSucces(), self::DUREE_CACHE_ERREUR));
     }
 
     /**

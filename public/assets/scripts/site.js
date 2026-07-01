@@ -1857,7 +1857,6 @@ function initAccessibilityTools() {
     const spacingToggle = panelRoot?.querySelector("[data-accessibility-spacing]");
     const contrastToggle = panelRoot?.querySelector("[data-accessibility-contrast]");
     const visibleActionsToggle = panelRoot?.querySelector("[data-accessibility-visible-actions]");
-    const reducedMotionToggle = panelRoot?.querySelector("[data-accessibility-reduced-motion]");
     const storageKey = "site_accessibility_preferences";
     let previousFocusedElement = null;
 
@@ -1871,7 +1870,6 @@ function initAccessibilityTools() {
         spacing: false,
         contrast: false,
         visibleActions: false,
-        reducedMotion: false,
     };
 
     function setStatus(message) {
@@ -1921,9 +1919,6 @@ function initAccessibilityTools() {
             visibleActionsToggle.checked = preferences.visibleActions;
         }
 
-        if (reducedMotionToggle instanceof HTMLInputElement) {
-            reducedMotionToggle.checked = preferences.reducedMotion;
-        }
     }
 
     function applyPreferences(announceMessage = "") {
@@ -1932,7 +1927,6 @@ function initAccessibilityTools() {
         document.body.setAttribute("data-readable-spacing", preferences.spacing ? "true" : "false");
         document.body.setAttribute("data-high-contrast", preferences.contrast ? "true" : "false");
         document.body.setAttribute("data-visible-actions", preferences.visibleActions ? "true" : "false");
-        document.body.setAttribute("data-reduced-motion", preferences.reducedMotion ? "true" : "false");
         syncControls();
 
         if (announceMessage) {
@@ -2000,7 +1994,6 @@ function initAccessibilityTools() {
                 spacing: true,
                 contrast: true,
                 visibleActions: true,
-                reducedMotion: true,
             };
             savePreferences();
             applyPreferences("Le mode lecture confortable est active.");
@@ -2035,7 +2028,6 @@ function initAccessibilityTools() {
         [spacingToggle, "spacing", "Espacement du texte mis a jour."],
         [contrastToggle, "contrast", "Contraste renforce mis a jour."],
         [visibleActionsToggle, "visibleActions", "Visibilite des actions mise a jour."],
-        [reducedMotionToggle, "reducedMotion", "Reduction des animations mise a jour."],
     ].forEach(([input, key, message]) => {
         if (!(input instanceof HTMLInputElement)) {
             return;
@@ -2278,6 +2270,112 @@ function initLegalModals() {
     });
 }
 
+function initMediaLightbox() {
+    const modalRoot = document.querySelector("[data-media-lightbox]");
+    const modalPanel = modalRoot?.querySelector(".media-lightbox-panel");
+    const modalContent = modalRoot?.querySelector("[data-media-lightbox-content]");
+    const modalTitle = modalRoot?.querySelector("#media-lightbox-title");
+    const closeButtons = Array.from(modalRoot?.querySelectorAll("[data-media-lightbox-close]") || []);
+    const triggers = Array.from(document.querySelectorAll("[data-media-lightbox-trigger]"));
+    let lastTrigger = null;
+
+    if (
+        !(modalRoot instanceof HTMLElement)
+        || !(modalPanel instanceof HTMLElement)
+        || !(modalContent instanceof HTMLElement)
+        || !(modalTitle instanceof HTMLElement)
+        || triggers.length === 0
+    ) {
+        return;
+    }
+
+    function closeModal() {
+        modalContent.innerHTML = "";
+        modalRoot.hidden = true;
+        modalRoot.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("modal-open");
+
+        if (lastTrigger instanceof HTMLElement) {
+            focusElementWithoutScroll(lastTrigger);
+        }
+    }
+
+    function openModal(trigger) {
+        const src = trigger.getAttribute("data-media-src") || "";
+        const mediaType = trigger.getAttribute("data-media-type") || "photo";
+        const mediaMime = trigger.getAttribute("data-media-mime") || "";
+        const mediaLabel = trigger.getAttribute("data-media-label") || "Aperçu agrandi";
+
+        if (src === "") {
+            return;
+        }
+
+        modalContent.innerHTML = "";
+        modalTitle.textContent = mediaLabel;
+
+        if (mediaType === "video") {
+            const video = document.createElement("video");
+            video.className = "media-lightbox-media";
+            video.controls = true;
+            video.preload = "metadata";
+            video.playsInline = true;
+
+            const source = document.createElement("source");
+            source.src = src;
+            if (mediaMime !== "") {
+                source.type = mediaMime;
+            }
+
+            video.appendChild(source);
+            modalContent.appendChild(video);
+        } else {
+            const image = document.createElement("img");
+            image.className = "media-lightbox-media";
+            image.src = src;
+            image.alt = mediaLabel;
+            image.loading = "eager";
+            modalContent.appendChild(image);
+        }
+
+        lastTrigger = trigger;
+        modalRoot.hidden = false;
+        modalRoot.setAttribute("aria-hidden", "false");
+        document.body.classList.add("modal-open");
+        focusElementWithoutScroll(modalPanel);
+    }
+
+    triggers.forEach((trigger) => {
+        trigger.addEventListener("click", () => {
+            if (trigger instanceof HTMLElement) {
+                openModal(trigger);
+            }
+        });
+    });
+
+    closeButtons.forEach((button) => {
+        button.addEventListener("click", closeModal);
+    });
+
+    modalRoot.addEventListener("click", (event) => {
+        if (event.target === modalRoot) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (modalRoot.hidden) {
+            return;
+        }
+
+        trapFocus(event, modalRoot);
+
+        if (event.key === "Escape") {
+            event.preventDefault();
+            closeModal();
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     scheduleHorizontalScrollReset();
     initConsentGate();
@@ -2297,6 +2395,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initShopSidebarDrawer();
     initDeleteConfirmations();
     initLegalModals();
+    initMediaLightbox();
     initSettingsActions();
 });
 

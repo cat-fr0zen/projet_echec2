@@ -37,7 +37,7 @@ final class GoogleReviewsService
         $this->cleApi = trim($this->cleApi);
 
         if ($this->dossierCache !== null && $this->dossierCache !== '' && !is_dir($this->dossierCache)) {
-            mkdir($this->dossierCache, 0755, true);
+            @mkdir($this->dossierCache, 0755, true);
         }
     }
 
